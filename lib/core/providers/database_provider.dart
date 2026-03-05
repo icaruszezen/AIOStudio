@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/app_database.dart';
+import '../database/daos/ai_provider_config_dao.dart';
 import '../database/daos/ai_task_dao.dart';
 import '../database/daos/asset_dao.dart';
 import '../database/daos/project_dao.dart';
@@ -33,6 +34,10 @@ final promptDaoProvider = Provider<PromptDao>((ref) {
 
 final aiTaskDaoProvider = Provider<AiTaskDao>((ref) {
   return ref.watch(appDatabaseProvider).aiTaskDao;
+});
+
+final aiProviderConfigDaoProvider = Provider<AiProviderConfigDao>((ref) {
+  return ref.watch(appDatabaseProvider).aiProviderConfigDao;
 });
 
 final localStorageServiceProvider = Provider<LocalStorageService>((ref) {

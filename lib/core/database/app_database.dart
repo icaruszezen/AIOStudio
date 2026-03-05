@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import 'daos/ai_provider_config_dao.dart';
 import 'daos/ai_task_dao.dart';
 import 'daos/asset_dao.dart';
 import 'daos/project_dao.dart';
@@ -36,6 +37,7 @@ part 'app_database.g.dart';
     TagDao,
     PromptDao,
     AiTaskDao,
+    AiProviderConfigDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
