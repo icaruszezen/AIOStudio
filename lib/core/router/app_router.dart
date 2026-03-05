@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/assets/views/asset_detail_page.dart';
 import '../../features/assets/views/assets_page.dart';
 import '../../features/projects/views/project_detail_page.dart';
 import '../../features/projects/views/projects_page.dart';
@@ -45,7 +46,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: ':assetId',
                 builder: (context, state) {
                   final id = state.pathParameters['assetId']!;
-                  return _PlaceholderPage(title: '资产详情: $id');
+                  return AssetDetailPage(assetId: id);
                 },
               ),
             ],

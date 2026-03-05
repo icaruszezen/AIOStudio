@@ -4,8 +4,10 @@ import 'package:desktop_drop/desktop_drop.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/router/app_router.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../../projects/providers/projects_provider.dart';
@@ -337,6 +339,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
               asset: asset,
               isSelected: _selectedIds.contains(asset.id),
               onTap: () => _handleItemTap(asset, index, assets),
+              onDoubleTap: () => context.go('${AppRoutes.assets}/${asset.id}'),
               onFavoriteToggle: () =>
                   ref.read(assetActionsProvider).toggleFavorite(asset.id),
               onDelete: () => _confirmDeleteSingle(asset),
@@ -357,6 +360,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
           asset: asset,
           isSelected: _selectedIds.contains(asset.id),
           onTap: () => _handleItemTap(asset, index, assets),
+          onDoubleTap: () => context.go('${AppRoutes.assets}/${asset.id}'),
           onFavoriteToggle: () =>
               ref.read(assetActionsProvider).toggleFavorite(asset.id),
           onDelete: () => _confirmDeleteSingle(asset),
