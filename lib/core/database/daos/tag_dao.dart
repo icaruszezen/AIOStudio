@@ -54,4 +54,27 @@ class TagDao extends DatabaseAccessor<AppDatabase> with _$TagDaoMixin {
               (t) => t.assetId.equals(assetId) & t.tagId.equals(tagId),
             ))
           .go();
+
+  Stream<List<Tag>> watchTagsForAsset(String assetId) {
+    final query = select(tags).join([
+      innerJoin(assetTags, assetTags.tagId.equalsExp(tags.id)),
+    ])
+      ..where(assetTags.assetId.equals(assetId));
+    return query.watch().map(
+          (rows) => rows.map((r) => r.readTable(tags)).toList(),
+        );
+  }
+
+  Future<void> batchAddTagToAssets(List<String> assetIds, String tagId) async {
+    for (final assetId in assetIds) {
+      await into(assetTags).insertOnConflictUpdate(
+        AssetTagsCompanion.insert(assetId: assetId, tagId: tagId),
+      );
+    }
+  }
+
+  Stream<List<AssetTag>> watchAllAssetTags() => select(assetTags).watch();
+
+  Future<void> removeAllTagsForAsset(String assetId) =>
+      (delete(assetTags)..where((t) => t.assetId.equals(assetId))).go();
 }

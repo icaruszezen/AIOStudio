@@ -66,18 +66,69 @@ class AssetDao extends DatabaseAccessor<AppDatabase> with _$AssetDaoMixin {
 
   Future<int> countByProject(String projectId) async {
     final count = countAll();
-    final query = selectOnly(assets)..addColumns([count]);
-    query.where(assets.projectId.equals(projectId));
+    final query = selectOnly(assets)
+      ..addColumns([count])
+      ..where(assets.projectId.equals(projectId));
     final result = await query.getSingle();
     return result.read(count) ?? 0;
   }
 
   Future<int> countByProjectAndType(String projectId, String type) async {
     final count = countAll();
+    final query = selectOnly(assets)
+      ..addColumns([count])
+      ..where(assets.projectId.equals(projectId) & assets.type.equals(type));
+    final result = await query.getSingle();
+    return result.read(count) ?? 0;
+  }
+
+  Stream<List<Asset>> watchAssets({String? projectId}) {
+    final query = select(assets)
+      ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
+    if (projectId != null) {
+      query.where((t) => t.projectId.equals(projectId));
+    }
+    return query.watch();
+  }
+
+  Stream<List<Asset>> watchFavorites() =>
+      (select(assets)
+            ..where((t) => t.isFavorite.equals(true))
+            ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
+          .watch();
+
+  Future<List<Asset>> searchByName(String query) {
+    final sanitized = query.replaceAll('%', '').replaceAll('_', '');
+    return (select(assets)..where((t) => t.name.like('%$sanitized%'))).get();
+  }
+
+  Future<void> batchDelete(List<String> ids) async {
+    await (delete(assetTags)..where((t) => t.assetId.isIn(ids))).go();
+    await (delete(assets)..where((t) => t.id.isIn(ids))).go();
+  }
+
+  Future<void> batchMoveToProject(List<String> ids, String? projectId) =>
+      (update(assets)..where((t) => t.id.isIn(ids))).write(
+        AssetsCompanion(
+          projectId: Value(projectId),
+          updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
+        ),
+      );
+
+  Future<void> batchToggleFavorite(
+    List<String> ids, {
+    required bool favorite,
+  }) =>
+      (update(assets)..where((t) => t.id.isIn(ids))).write(
+        AssetsCompanion(
+          isFavorite: Value(favorite),
+          updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
+        ),
+      );
+
+  Future<int> countAllAssets() async {
+    final count = countAll();
     final query = selectOnly(assets)..addColumns([count]);
-    query.where(
-      assets.projectId.equals(projectId) & assets.type.equals(type),
-    );
     final result = await query.getSingle();
     return result.read(count) ?? 0;
   }

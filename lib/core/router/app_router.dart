@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/assets/views/assets_page.dart';
 import '../../features/projects/views/project_detail_page.dart';
 import '../../features/projects/views/projects_page.dart';
 import '../../shared/widgets/app_shell.dart';
@@ -38,8 +39,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: AppRoutes.assets,
-            builder: (context, state) =>
-                const _PlaceholderPage(title: '资产库'),
+            builder: (context, state) => const AssetsPage(),
             routes: [
               GoRoute(
                 path: ':assetId',
