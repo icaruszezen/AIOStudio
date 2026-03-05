@@ -1,0 +1,52 @@
+import 'package:drift/drift.dart';
+
+import '../app_database.dart';
+import '../tables/ai_tasks.dart';
+
+part 'ai_task_dao.g.dart';
+
+@DriftAccessor(tables: [AiTasks])
+class AiTaskDao extends DatabaseAccessor<AppDatabase> with _$AiTaskDaoMixin {
+  AiTaskDao(super.db);
+
+  Future<List<AiTask>> getAllTasks() => select(aiTasks).get();
+
+  Stream<List<AiTask>> watchAllTasks() => select(aiTasks).watch();
+
+  Future<AiTask?> getTaskById(String id) =>
+      (select(aiTasks)..where((t) => t.id.equals(id))).getSingleOrNull();
+
+  Future<int> insertTask(AiTasksCompanion entry) =>
+      into(aiTasks).insert(entry);
+
+  Future<bool> updateTask(AiTasksCompanion entry) =>
+      update(aiTasks).replace(entry);
+
+  Future<int> deleteTask(String id) =>
+      (delete(aiTasks)..where((t) => t.id.equals(id))).go();
+
+  Future<List<AiTask>> filterByStatus(String status) =>
+      (select(aiTasks)..where((t) => t.status.equals(status))).get();
+
+  Future<List<AiTask>> filterByProject(String projectId) =>
+      (select(aiTasks)..where((t) => t.projectId.equals(projectId))).get();
+
+  Stream<List<AiTask>> watchByProject(String projectId) =>
+      (select(aiTasks)..where((t) => t.projectId.equals(projectId))).watch();
+
+  Future<int> countByProject(String projectId) async {
+    final count = countAll();
+    final query = selectOnly(aiTasks)..addColumns([count]);
+    query.where(aiTasks.projectId.equals(projectId));
+    final result = await query.getSingle();
+    return result.read(count) ?? 0;
+  }
+
+  Future<int> sumTokenUsageByProject(String projectId) async {
+    final sum = aiTasks.tokenUsage.sum();
+    final query = selectOnly(aiTasks)..addColumns([sum]);
+    query.where(aiTasks.projectId.equals(projectId));
+    final result = await query.getSingle();
+    return result.read(sum) ?? 0;
+  }
+}
