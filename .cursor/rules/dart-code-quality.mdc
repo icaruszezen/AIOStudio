@@ -1,0 +1,14 @@
+---
+description: Dart/Flutter 代码质量规范，确保生成的代码符合项目标准
+globs: "**/*.dart"
+alwaysApply: false
+---
+
+# Dart 代码质量要求
+
+1. 使用 Dart 3.x 语法特征（records, patterns, sealed class 等）
+2. 所有公开 API 添加 dartdoc 注释
+3. 错误处理使用 Result 模式或 AsyncValue
+4. 避免硬编码字符串，使用常量或枚举
+5. Widget 拆分合理，单个 build 方法不超过 80 行
+6. 所有 fluent_ui 组件使用正确，不混用 Material 组件

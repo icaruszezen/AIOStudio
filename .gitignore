@@ -1,0 +1,128 @@
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+
+# =========================
+# IDE / Editor
+# =========================
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.code-workspace
+
+# =========================
+# Flutter / Dart
+# =========================
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+/build/
+/coverage/
+
+# 代码生成产物（drift, json_serializable, riverpod_generator 等）
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+
+# Flutter 构建缓存
+.flutter-plugins-dependencies
+
+# =========================
+# 平台构建产物
+# =========================
+# Android
+/android/app/debug
+/android/app/profile
+/android/app/release
+/android/.gradle/
+/android/local.properties
+/android/key.properties
+/android/app/*.jks
+/android/app/*.keystore
+
+# iOS / macOS
+**/ios/Pods/
+**/ios/.symlinks/
+**/macos/Pods/
+**/macos/.symlinks/
+**/ios/Flutter/Generated.xcconfig
+**/macos/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/macos/Flutter/ephemeral/
+
+# Windows
+/windows/flutter/generated_plugin_registrant.cc
+/windows/flutter/generated_plugin_registrant.h
+/windows/flutter/generated_plugins.cmake
+
+# Linux
+/linux/flutter/generated_plugin_registrant.cc
+/linux/flutter/generated_plugin_registrant.h
+/linux/flutter/generated_plugins.cmake
+/linux/flutter/ephemeral/
+
+# Web
+/web/flutter_service_worker.js
+
+# =========================
+# 浏览器扩展 (extension/)
+# =========================
+extension/node_modules/
+extension/dist/
+extension/.env
+
+# =========================
+# 安全 / 环境配置
+# =========================
+.env
+.env.*
+*.env
+credentials.json
+secrets.yaml
+*.pem
+*.p12
+
+# =========================
+# 数据库 / 本地数据
+# =========================
+*.db
+*.sqlite
+*.sqlite3
+
+# =========================
+# 混淆 / 符号化
+# =========================
+app.*.symbols
+app.*.map.json
+
+# =========================
+# 日志 / 临时文件
+# =========================
+*.log
+*.tmp
+*.temp
+
+# =========================
+# 打包产物
+# =========================
+*.msix
+*.appx
+*.apk
+*.aab
+*.ipa
+*.dmg
+*.deb
+*.rpm
+*.snap

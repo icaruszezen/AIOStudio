@@ -1,0 +1,23 @@
+---
+description: AIO Studio 项目上下文与技术栈约定，AI 在所有对话中自动了解项目背景
+alwaysApply: true
+---
+
+# AIO Studio 项目上下文
+
+我正在开发 AIO Studio，一个跨平台的 AGI 项目与资产管理应用。
+
+## 技术栈
+
+- Flutter (Dart) 全平台客户端
+- fluent_ui (^4.14.0) 作为 UI 框架（Windows Fluent Design 风格）
+- flutter_riverpod + riverpod_annotation 状态管理
+- go_router 路由
+- drift SQLite 本地数据库
+- dio HTTP 客户端
+- window_manager 桌面窗口管理
+- TypeScript + React 浏览器扩展
+
+## 项目结构
+
+采用 feature-first 组织方式，每个功能模块包含 providers/views/widgets 子目录。

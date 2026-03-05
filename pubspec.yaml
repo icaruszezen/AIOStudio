@@ -1,0 +1,44 @@
+name: aio_studio
+description: "AIO Studio - 跨平台 AGI 项目与资产管理工具"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.7
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  fluent_ui: ^4.14.0
+  flutter_riverpod: ^3.2.1
+  riverpod_annotation: ^4.0.2
+  go_router: ^17.1.0
+  dio: ^5.7.0
+  drift: ^2.32.0
+  sqlite3_flutter_libs: ^0.5.0
+  window_manager: ^0.5.1
+  path_provider: ^2.1.0
+  cached_network_image: ^3.4.0
+  file_picker: ^8.0.0
+  json_annotation: ^4.9.0
+  uuid: ^4.5.0
+  intl: ^0.20.2
+  logger: ^2.5.0
+  shared_preferences: ^2.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  json_serializable: ^6.8.0
+  flutter_lints: ^5.0.0
+  # 以下代码生成工具当前与 flutter_test/riverpod 的 analyzer 版本存在传递依赖冲突，
+  # Phase 2 引入数据库代码生成时再解决：
+  # build_runner: ^2.4.0
+  # drift_dev: ^2.32.0
+  # riverpod_generator: ^4.0.3
+  # riverpod_lint: ^3.1.3
+
+flutter:
+  uses-material-design: true
