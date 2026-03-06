@@ -11,17 +11,26 @@ import '../../projects/providers/projects_provider.dart';
 import '../providers/assets_provider.dart';
 
 class AssetImportDialog extends ConsumerStatefulWidget {
-  const AssetImportDialog({super.key, this.initialFiles});
+  const AssetImportDialog({
+    super.key,
+    this.initialFiles,
+    this.initialProjectId,
+  });
 
   final List<String>? initialFiles;
+  final String? initialProjectId;
 
   static Future<int?> show(
     BuildContext context, {
     List<String>? initialFiles,
+    String? initialProjectId,
   }) {
     return showDialog<int>(
       context: context,
-      builder: (_) => AssetImportDialog(initialFiles: initialFiles),
+      builder: (_) => AssetImportDialog(
+        initialFiles: initialFiles,
+        initialProjectId: initialProjectId,
+      ),
     );
   }
 
@@ -39,6 +48,7 @@ class _AssetImportDialogState extends ConsumerState<AssetImportDialog> {
   @override
   void initState() {
     super.initState();
+    _selectedProjectId = widget.initialProjectId;
     if (widget.initialFiles != null) {
       _addFiles(widget.initialFiles!);
     }

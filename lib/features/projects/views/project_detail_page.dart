@@ -11,6 +11,9 @@ import '../../../shared/widgets/breadcrumb_navigation.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../providers/projects_provider.dart';
+import '../widgets/project_assets_tab.dart';
+import '../widgets/project_prompts_tab.dart';
+import '../widgets/project_tasks_tab.dart';
 import 'project_create_dialog.dart';
 
 class ProjectDetailPage extends ConsumerStatefulWidget {
@@ -183,32 +186,17 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
         Tab(
           text: const Text('资产'),
           icon: const Icon(FluentIcons.photo_collection, size: 14),
-          body: _buildPlaceholderTab(
-            theme,
-            icon: FluentIcons.photo_collection,
-            title: '资产管理',
-            description: '此功能将在后续阶段实现',
-          ),
+          body: ProjectAssetsTab(projectId: project.id),
         ),
         Tab(
           text: const Text('提示词'),
           icon: const Icon(FluentIcons.text_document, size: 14),
-          body: _buildPlaceholderTab(
-            theme,
-            icon: FluentIcons.text_document,
-            title: '提示词管理',
-            description: '此功能将在后续阶段实现',
-          ),
+          body: ProjectPromptsTab(projectId: project.id),
         ),
         Tab(
           text: const Text('AI 任务'),
           icon: const Icon(FluentIcons.processing, size: 14),
-          body: _buildPlaceholderTab(
-            theme,
-            icon: FluentIcons.processing,
-            title: 'AI 任务历史',
-            description: '此功能将在后续阶段实现',
-          ),
+          body: ProjectTasksTab(projectId: project.id),
         ),
         Tab(
           text: const Text('统计'),
@@ -216,19 +204,6 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
           body: _buildStatsTab(theme, project),
         ),
       ],
-    );
-  }
-
-  Widget _buildPlaceholderTab(
-    FluentThemeData theme, {
-    required IconData icon,
-    required String title,
-    required String description,
-  }) {
-    return EmptyState(
-      icon: icon,
-      title: title,
-      description: description,
     );
   }
 

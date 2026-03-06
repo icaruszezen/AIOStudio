@@ -22,6 +22,11 @@ final projectDetailProvider =
   return ref.watch(projectDaoProvider).watchProjectById(id);
 });
 
+final projectAiTasksProvider =
+    StreamProvider.family<List<AiTask>, String>((ref, projectId) {
+  return ref.watch(aiTaskDaoProvider).watchByProject(projectId);
+});
+
 // ---------------------------------------------------------------------------
 // Future providers
 // ---------------------------------------------------------------------------
