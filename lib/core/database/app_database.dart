@@ -50,7 +50,17 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) => m.createAll(),
+        onCreate: (m) async {
+          await m.createAll();
+          await customStatement(
+              'CREATE INDEX idx_assets_project_id ON assets(project_id)');
+          await customStatement(
+              'CREATE INDEX idx_assets_type ON assets(type)');
+          await customStatement(
+              'CREATE INDEX idx_assets_created_at ON assets(created_at)');
+          await customStatement(
+              'CREATE INDEX idx_assets_is_favorite ON assets(is_favorite)');
+        },
       );
 }
 

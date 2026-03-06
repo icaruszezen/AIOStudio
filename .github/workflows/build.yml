@@ -1,0 +1,158 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  FLUTTER_VERSION: '3.32.0'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+      - run: flutter build windows --release
+
+      - run: dart run msix:create
+        continue-on-error: true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: build/windows/x64/runner/Release/
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+      - run: flutter build macos --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-release
+          path: build/macos/Build/Products/Release/*.app
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libmpv-dev
+
+      - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+      - run: flutter build linux --release
+
+      - name: Package as tar.gz
+        run: |
+          cd build/linux/x64/release/bundle
+          tar czf ../../../../../aio-studio-linux-x64.tar.gz .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-release
+          path: aio-studio-linux-x64.tar.gz
+
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+      - run: flutter build apk --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-release
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+      - run: flutter build ipa --no-codesign
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-release
+          path: build/ios/ipa/*.ipa
+
+  release:
+    needs: [build-windows, build-macos, build-linux, build-android, build-ios]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release assets
+        run: |
+          cd artifacts
+          zip -r ../aio-studio-windows-x64.zip windows-release/
+          zip -r ../aio-studio-macos.zip macos-release/
+          cp linux-release/aio-studio-linux-x64.tar.gz ../
+          cp android-release/app-release.apk ../aio-studio.apk
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            aio-studio-windows-x64.zip
+            aio-studio-macos.zip
+            aio-studio-linux-x64.tar.gz
+            aio-studio.apk
+          generate_release_notes: true

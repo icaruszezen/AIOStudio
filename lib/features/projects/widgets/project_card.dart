@@ -153,6 +153,7 @@ class _ProjectCardState extends State<ProjectCard> {
         height: height,
         width: double.infinity,
         fit: BoxFit.cover,
+        cacheWidth: 400,
         errorBuilder: (_, __, ___) => _buildGradientPlaceholder(project, height),
       );
     } else {

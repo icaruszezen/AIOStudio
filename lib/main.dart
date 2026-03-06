@@ -1,3 +1,4 @@
+import 'package:flutter/painting.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_kit/media_kit.dart';
@@ -12,6 +13,8 @@ import 'core/utils/platform_utils.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
+
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 100 << 20; // 100 MB
 
   if (PlatformUtils.isDesktop) {
     await windowManager.ensureInitialized();

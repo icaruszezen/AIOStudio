@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Aio Studio</string>
+	<string>AIO Studio</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>aio_studio</string>
+	<string>AIO Studio</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>AIO Studio 需要访问您的相册以导入和管理媒体资产</string>
+	<key>NSCameraUsageDescription</key>
+	<string>AIO Studio 需要使用相机拍摄照片用于 AI 处理</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>AIO Studio 需要使用麦克风录制音频内容</string>
 </dict>
 </plist>

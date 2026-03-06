@@ -57,6 +57,8 @@ class AssetThumbnail extends StatelessWidget {
     return Image.file(
       file,
       fit: BoxFit.cover,
+      cacheWidth: 300,
+      cacheHeight: 300,
       errorBuilder: (_, __, ___) => _buildPlaceholder(
         theme,
         FluentIcons.photo2,
@@ -71,6 +73,8 @@ class AssetThumbnail extends StatelessWidget {
       content = Image.file(
         File(asset.thumbnailPath!),
         fit: BoxFit.cover,
+        cacheWidth: 300,
+        cacheHeight: 300,
         errorBuilder: (_, __, ___) => _buildPlaceholder(
           theme,
           FluentIcons.video,
