@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/ai_chat/views/chat_page.dart';
 import '../../features/assets/views/asset_detail_page.dart';
 import '../../features/assets/views/assets_page.dart';
 import '../../features/projects/views/project_detail_page.dart';
@@ -54,8 +55,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: AppRoutes.aiChat,
-            builder: (context, state) =>
-                const _PlaceholderPage(title: 'AI 对话'),
+            builder: (context, state) => const ChatPage(),
           ),
           GoRoute(
             path: AppRoutes.aiImage,
