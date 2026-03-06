@@ -1,0 +1,372 @@
+import 'package:drift/drift.dart' show Value;
+import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/database/app_database.dart';
+import '../../../core/providers/ai_providers.dart';
+import '../../../core/providers/database_provider.dart';
+import '../views/ai_provider_dialog.dart';
+
+final _allProvidersProvider = StreamProvider<List<AiProviderConfig>>((ref) {
+  return ref.watch(aiProviderConfigDaoProvider).watchAll();
+});
+
+class AiProvidersSection extends ConsumerWidget {
+  const AiProvidersSection({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = FluentTheme.of(context);
+    final providersAsync = ref.watch(_allProvidersProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(FluentIcons.cloud, size: 20),
+            const SizedBox(width: 8),
+            Text('AI 服务商管理', style: theme.typography.subtitle),
+            const Spacer(),
+            FilledButton(
+              onPressed: () => _addProvider(context, ref),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(FluentIcons.add, size: 12),
+                  SizedBox(width: 6),
+                  Text('添加服务商'),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        providersAsync.when(
+          loading: () => const Padding(
+            padding: EdgeInsets.all(20),
+            child: Center(child: ProgressRing()),
+          ),
+          error: (e, _) => InfoBar(
+            title: const Text('加载失败'),
+            content: Text('$e'),
+            severity: InfoBarSeverity.error,
+          ),
+          data: (providers) {
+            if (providers.isEmpty) {
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Icon(
+                          FluentIcons.cloud_not_synced,
+                          size: 32,
+                          color: theme.resources.textFillColorSecondary,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '尚未配置任何 AI 服务商',
+                          style: theme.typography.body?.copyWith(
+                            color: theme.resources.textFillColorSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Button(
+                          onPressed: () => _addProvider(context, ref),
+                          child: const Text('添加服务商'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+            return Card(
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: [
+                  for (var i = 0; i < providers.length; i++) ...[
+                    _ProviderRow(config: providers[i]),
+                    if (i < providers.length - 1) const Divider(),
+                  ],
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  void _addProvider(BuildContext context, WidgetRef ref) {
+    AiProviderDialog.show(context).then((saved) {
+      if (saved == true) {
+        ref.invalidate(aiServicesReadyProvider);
+      }
+    });
+  }
+}
+
+class _ProviderRow extends ConsumerStatefulWidget {
+  const _ProviderRow({required this.config});
+
+  final AiProviderConfig config;
+
+  @override
+  ConsumerState<_ProviderRow> createState() => _ProviderRowState();
+}
+
+class _ProviderRowState extends ConsumerState<_ProviderRow> {
+  final _flyoutController = FlyoutController();
+
+  AiProviderConfig get config => widget.config;
+
+  @override
+  void dispose() {
+    _flyoutController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FluentTheme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          _providerIcon(config.type, theme),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(config.name, style: theme.typography.bodyStrong),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    _TypeBadge(type: config.type),
+                    const SizedBox(width: 8),
+                    _StatusIndicator(
+                      configured: config.apiKey != null &&
+                          config.apiKey!.isNotEmpty,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          ToggleSwitch(
+            checked: config.isEnabled,
+            onChanged: _toggleEnabled,
+          ),
+          const SizedBox(width: 8),
+          _buildActions(theme),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActions(FluentThemeData theme) {
+    return FlyoutTarget(
+      controller: _flyoutController,
+      child: IconButton(
+        icon: const Icon(FluentIcons.more, size: 16),
+        onPressed: () {
+          _flyoutController.showFlyout(
+            barrierDismissible: true,
+            dismissOnPointerMoveAway: false,
+            builder: (ctx) => MenuFlyout(
+              items: [
+                MenuFlyoutItem(
+                  leading: const Icon(FluentIcons.edit),
+                  text: const Text('编辑'),
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    _editProvider();
+                  },
+                ),
+                MenuFlyoutItem(
+                  leading: const Icon(FluentIcons.plug_connected),
+                  text: const Text('测试连接'),
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    _testConnection();
+                  },
+                ),
+                const MenuFlyoutSeparator(),
+                MenuFlyoutItem(
+                  leading: Icon(FluentIcons.delete, color: Colors.red),
+                  text: Text('删除', style: TextStyle(color: Colors.red)),
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    _deleteProvider();
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _toggleEnabled(bool value) async {
+    final dao = ref.read(aiProviderConfigDaoProvider);
+    await dao.updateConfig(AiProviderConfigsCompanion(
+      id: Value(config.id),
+      name: Value(config.name),
+      type: Value(config.type),
+      apiKey: Value(config.apiKey),
+      baseUrl: Value(config.baseUrl),
+      defaultModel: Value(config.defaultModel),
+      isEnabled: Value(value),
+      extraConfig: Value(config.extraConfig),
+      createdAt: Value(config.createdAt),
+      updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
+    ));
+    ref.invalidate(aiServicesReadyProvider);
+  }
+
+  void _editProvider() {
+    AiProviderDialog.show(context, existing: config).then((saved) {
+      if (saved == true) {
+        ref.invalidate(aiServicesReadyProvider);
+      }
+    });
+  }
+
+  Future<void> _testConnection() async {
+    try {
+      final manager = await ref.read(aiServicesReadyProvider.future);
+      final service = manager.getService(config.id);
+      if (service == null) {
+        if (mounted) {
+          displayInfoBar(context, builder: (ctx, close) => InfoBar(
+            title: const Text('测试失败'),
+            content: const Text('服务未加载，请检查配置并确保已启用'),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          ));
+        }
+        return;
+      }
+      await service.testConnection();
+      if (mounted) {
+        displayInfoBar(context, builder: (ctx, close) => InfoBar(
+          title: const Text('连接成功'),
+          content: Text('${config.name} 连接正常'),
+          severity: InfoBarSeverity.success,
+          onClose: close,
+        ));
+      }
+    } catch (e) {
+      if (mounted) {
+        displayInfoBar(context, builder: (ctx, close) => InfoBar(
+          title: const Text('连接失败'),
+          content: Text('$e'),
+          severity: InfoBarSeverity.error,
+          onClose: close,
+        ));
+      }
+    }
+  }
+
+  Future<void> _deleteProvider() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => ContentDialog(
+        title: const Text('确认删除'),
+        content: Text('确定要删除服务商 "${config.name}" 吗？此操作不可撤销。'),
+        actions: [
+          Button(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            style: ButtonStyle(
+              backgroundColor: WidgetStatePropertyAll(Colors.red),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      final dao = ref.read(aiProviderConfigDaoProvider);
+      await dao.deleteConfig(config.id);
+      ref.invalidate(aiServicesReadyProvider);
+    }
+  }
+
+  static Widget _providerIcon(String type, FluentThemeData theme) {
+    final (IconData icon, Color color) = switch (type) {
+      'openai' => (FluentIcons.chat_bot, Colors.green),
+      'anthropic' => (FluentIcons.robot, Colors.orange),
+      'stability' => (FluentIcons.picture, Colors.purple),
+      'custom' => (FluentIcons.settings, Colors.teal),
+      _ => (FluentIcons.cloud, Colors.grey),
+    };
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(icon, size: 18, color: color),
+    );
+  }
+}
+
+class _TypeBadge extends StatelessWidget {
+  const _TypeBadge({required this.type});
+  final String type;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = switch (type) {
+      'openai' => 'OpenAI',
+      'anthropic' => 'Anthropic',
+      'stability' => 'Stability AI',
+      'custom' => '自定义',
+      _ => type,
+    };
+    final theme = FluentTheme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      decoration: BoxDecoration(
+        color: theme.resources.subtleFillColorSecondary,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(label, style: theme.typography.caption),
+    );
+  }
+}
+
+class _StatusIndicator extends StatelessWidget {
+  const _StatusIndicator({required this.configured});
+  final bool configured;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FluentTheme.of(context);
+    final color = configured ? Colors.green : Colors.orange;
+    final label = configured ? '已配置' : '未配置';
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 6,
+          height: 6,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 4),
+        Text(label, style: theme.typography.caption?.copyWith(color: color)),
+      ],
+    );
+  }
+}

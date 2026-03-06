@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/settings/providers/settings_provider.dart';
 
 class AioStudioApp extends ConsumerWidget {
   const AioStudioApp({super.key});
@@ -11,13 +12,15 @@ class AioStudioApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(themeNotifierProvider);
+    final accentColor = ref.watch(accentColorProvider);
+    final locale = ref.watch(localeProvider);
 
     return FluentApp.router(
       title: 'AIO Studio',
       themeMode: themeMode,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      locale: const Locale('zh', 'CN'),
+      theme: AppTheme.light(accentColor),
+      darkTheme: AppTheme.dark(accentColor),
+      locale: locale,
       supportedLocales: const [
         Locale('zh', 'CN'),
         Locale('en'),

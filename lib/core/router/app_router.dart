@@ -1,4 +1,3 @@
-import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -11,6 +10,7 @@ import '../../features/assets/views/assets_page.dart';
 import '../../features/projects/views/project_detail_page.dart';
 import '../../features/projects/views/projects_page.dart';
 import '../../features/prompts/views/prompts_page.dart';
+import '../../features/settings/views/settings_page.dart';
 import '../../shared/widgets/app_shell.dart';
 
 abstract final class AppRoutes {
@@ -75,8 +75,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: AppRoutes.settings,
-            builder: (context, state) =>
-                const _PlaceholderPage(title: '设置'),
+            builder: (context, state) => const SettingsPage(),
           ),
         ],
       ),
@@ -84,20 +83,3 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-class _PlaceholderPage extends StatelessWidget {
-  const _PlaceholderPage({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return ScaffoldPage(
-      content: Center(
-        child: Text(
-          title,
-          style: FluentTheme.of(context).typography.title,
-        ),
-      ),
-    );
-  }
-}

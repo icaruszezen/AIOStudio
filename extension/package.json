@@ -1,0 +1,26 @@
+{
+  "name": "aio-studio-collector",
+  "version": "1.0.0",
+  "private": true,
+  "description": "快速保存网页图片和视频到 AIO Studio",
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "tsc && node scripts/build.mjs",
+    "build:popup": "vite build",
+    "build:content": "vite build --config vite.config.content.ts"
+  },
+  "dependencies": {
+    "html2canvas": "^1.4.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0"
+  }
+}

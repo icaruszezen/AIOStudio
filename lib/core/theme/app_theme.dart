@@ -33,15 +33,36 @@ class ThemeNotifier extends Notifier<ThemeMode> {
 class AppTheme {
   AppTheme._();
 
-  static final light = FluentThemeData(
-    brightness: Brightness.light,
-    accentColor: Colors.blue,
-    visualDensity: VisualDensity.standard,
-  );
+  static AccentColor? _cachedLightAccent;
+  static FluentThemeData? _cachedLight;
+  static AccentColor? _cachedDarkAccent;
+  static FluentThemeData? _cachedDark;
 
-  static final dark = FluentThemeData(
-    brightness: Brightness.dark,
-    accentColor: Colors.blue,
-    visualDensity: VisualDensity.standard,
-  );
+  static FluentThemeData light([AccentColor? accent]) {
+    final effective = accent ?? Colors.blue;
+    if (_cachedLight != null && _cachedLightAccent == effective) {
+      return _cachedLight!;
+    }
+    _cachedLightAccent = effective;
+    _cachedLight = FluentThemeData(
+      brightness: Brightness.light,
+      accentColor: effective,
+      visualDensity: VisualDensity.standard,
+    );
+    return _cachedLight!;
+  }
+
+  static FluentThemeData dark([AccentColor? accent]) {
+    final effective = accent ?? Colors.blue;
+    if (_cachedDark != null && _cachedDarkAccent == effective) {
+      return _cachedDark!;
+    }
+    _cachedDarkAccent = effective;
+    _cachedDark = FluentThemeData(
+      brightness: Brightness.dark,
+      accentColor: effective,
+      visualDensity: VisualDensity.standard,
+    );
+    return _cachedDark!;
+  }
 }
