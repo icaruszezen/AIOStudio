@@ -1,12 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/app_database.dart';
-import '../database/daos/ai_provider_config_dao.dart';
-import '../database/daos/ai_task_dao.dart';
-import '../database/daos/asset_dao.dart';
-import '../database/daos/project_dao.dart';
-import '../database/daos/prompt_dao.dart';
-import '../database/daos/tag_dao.dart';
 import '../services/storage/asset_file_manager.dart';
 import '../services/storage/local_storage_service.dart';
 

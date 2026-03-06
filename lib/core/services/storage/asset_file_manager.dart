@@ -8,7 +8,6 @@ import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
 
 import '../../database/app_database.dart';
-import '../../database/daos/asset_dao.dart';
 import 'local_storage_service.dart';
 
 class AssetFileManager {

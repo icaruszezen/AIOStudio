@@ -81,7 +81,7 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
     final matches = _variableRegex.allMatches(content);
     final names = matches.map((m) => m.group(1)!).toSet();
 
-    Map<String, _PromptVariable> savedMap = {};
+    final Map<String, _PromptVariable> savedMap = {};
     if (savedVariablesJson != null && savedVariablesJson.isNotEmpty) {
       try {
         final list = jsonDecode(savedVariablesJson) as List;

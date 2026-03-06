@@ -1,11 +1,10 @@
 @TestOn('vm')
 library;
 
+import 'package:aio_studio/core/database/app_database.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:aio_studio/core/database/app_database.dart';
 
 void main() {
   late AppDatabase db;
@@ -20,9 +19,9 @@ void main() {
     await db.close();
   });
 
-  int _now() => DateTime.now().millisecondsSinceEpoch;
+  int now() => DateTime.now().millisecondsSinceEpoch;
 
-  AiTasksCompanion _makeTask(
+  AiTasksCompanion makeTask(
     String id, {
     String type = 'chat',
     String status = 'pending',
@@ -37,12 +36,12 @@ void main() {
       provider: Value(provider),
       projectId: Value(projectId),
       tokenUsage: Value(tokenUsage),
-      createdAt: Value(_now()),
+      createdAt: Value(now()),
     );
   }
 
-  Future<void> _seedProject(String id) async {
-    final ts = _now();
+  Future<void> seedProject(String id) async {
+    final ts = now();
     await db.projectDao.insertProject(ProjectsCompanion(
       id: Value(id),
       name: Value('Project $id'),
@@ -53,15 +52,15 @@ void main() {
 
   group('AiTaskDao', () {
     test('insertTask and getAllTasks', () async {
-      await dao.insertTask(_makeTask('t1'));
-      await dao.insertTask(_makeTask('t2'));
+      await dao.insertTask(makeTask('t1'));
+      await dao.insertTask(makeTask('t2'));
 
       final all = await dao.getAllTasks();
       expect(all, hasLength(2));
     });
 
     test('getTaskById returns correct task', () async {
-      await dao.insertTask(_makeTask('t1', provider: 'anthropic'));
+      await dao.insertTask(makeTask('t1', provider: 'anthropic'));
 
       final found = await dao.getTaskById('t1');
       expect(found, isNotNull);
@@ -71,13 +70,13 @@ void main() {
     });
 
     test('updateTask replaces the row', () async {
-      await dao.insertTask(_makeTask('t1', status: 'pending'));
+      await dao.insertTask(makeTask('t1', status: 'pending'));
       final original = await dao.getTaskById('t1');
 
       final ok = await dao.updateTask(AiTasksCompanion(
-        id: Value('t1'),
+        id: const Value('t1'),
         type: Value(original!.type),
-        status: Value('completed'),
+        status: const Value('completed'),
         provider: Value(original.provider),
         createdAt: Value(original.createdAt),
       ));
@@ -88,20 +87,20 @@ void main() {
     });
 
     test('deleteTask removes the row', () async {
-      await dao.insertTask(_makeTask('t1'));
+      await dao.insertTask(makeTask('t1'));
       await dao.deleteTask('t1');
       expect(await dao.getAllTasks(), isEmpty);
     });
 
     test('updateTaskFields partially updates fields', () async {
-      await dao.insertTask(_makeTask('t1', status: 'running'));
+      await dao.insertTask(makeTask('t1', status: 'running'));
 
       await dao.updateTaskFields(
         't1',
         AiTasksCompanion(
-          status: Value('completed'),
-          outputText: Value('result text'),
-          completedAt: Value(_now()),
+          status: const Value('completed'),
+          outputText: const Value('result text'),
+          completedAt: Value(now()),
         ),
       );
 
@@ -112,9 +111,9 @@ void main() {
     });
 
     test('filterByStatus returns matching tasks', () async {
-      await dao.insertTask(_makeTask('t1', status: 'pending'));
-      await dao.insertTask(_makeTask('t2', status: 'completed'));
-      await dao.insertTask(_makeTask('t3', status: 'pending'));
+      await dao.insertTask(makeTask('t1', status: 'pending'));
+      await dao.insertTask(makeTask('t2', status: 'completed'));
+      await dao.insertTask(makeTask('t3', status: 'pending'));
 
       final pending = await dao.filterByStatus('pending');
       expect(pending, hasLength(2));
@@ -124,10 +123,10 @@ void main() {
     });
 
     test('filterByProject and countByProject', () async {
-      await _seedProject('proj1');
-      await dao.insertTask(_makeTask('t1', projectId: 'proj1'));
-      await dao.insertTask(_makeTask('t2', projectId: 'proj1'));
-      await dao.insertTask(_makeTask('t3'));
+      await seedProject('proj1');
+      await dao.insertTask(makeTask('t1', projectId: 'proj1'));
+      await dao.insertTask(makeTask('t2', projectId: 'proj1'));
+      await dao.insertTask(makeTask('t3'));
 
       final byProject = await dao.filterByProject('proj1');
       expect(byProject, hasLength(2));
@@ -136,15 +135,15 @@ void main() {
     });
 
     test('sumTokenUsageByProject aggregates tokens', () async {
-      await _seedProject('proj1');
+      await seedProject('proj1');
       await dao.insertTask(
-        _makeTask('t1', projectId: 'proj1', tokenUsage: 100),
+        makeTask('t1', projectId: 'proj1', tokenUsage: 100),
       );
       await dao.insertTask(
-        _makeTask('t2', projectId: 'proj1', tokenUsage: 250),
+        makeTask('t2', projectId: 'proj1', tokenUsage: 250),
       );
       await dao.insertTask(
-        _makeTask('t3', projectId: 'proj1', tokenUsage: 50),
+        makeTask('t3', projectId: 'proj1', tokenUsage: 50),
       );
 
       final total = await dao.sumTokenUsageByProject('proj1');
@@ -152,7 +151,7 @@ void main() {
     });
 
     test('sumTokenUsageByProject returns 0 when no tasks', () async {
-      await _seedProject('empty');
+      await seedProject('empty');
       expect(await dao.sumTokenUsageByProject('empty'), 0);
     });
   });

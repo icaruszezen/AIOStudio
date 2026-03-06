@@ -1,11 +1,10 @@
 @TestOn('vm')
 library;
 
+import 'package:aio_studio/core/database/app_database.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:aio_studio/core/database/app_database.dart';
 
 void main() {
   late AppDatabase db;
@@ -20,25 +19,25 @@ void main() {
     await db.close();
   });
 
-  int _now() => DateTime.now().millisecondsSinceEpoch;
+  int now() => DateTime.now().millisecondsSinceEpoch;
 
-  TagsCompanion _makeTag(String id, String name, {int? color}) {
+  TagsCompanion makeTag(String id, String name, {int? color}) {
     return TagsCompanion(
       id: Value(id),
       name: Value(name),
       color: Value(color),
-      createdAt: Value(_now()),
+      createdAt: Value(now()),
     );
   }
 
-  AssetsCompanion _makeAsset(String id, String name) {
-    final ts = _now();
+  AssetsCompanion makeAsset(String id, String name) {
+    final ts = now();
     return AssetsCompanion(
       id: Value(id),
       name: Value(name),
-      type: Value('image'),
+      type: const Value('image'),
       filePath: Value('/path/$id'),
-      sourceType: Value('local'),
+      sourceType: const Value('local'),
       createdAt: Value(ts),
       updatedAt: Value(ts),
     );
@@ -46,8 +45,8 @@ void main() {
 
   group('TagDao', () {
     test('insertTag and getAllTags', () async {
-      await dao.insertTag(_makeTag('t1', 'Nature'));
-      await dao.insertTag(_makeTag('t2', 'Portrait'));
+      await dao.insertTag(makeTag('t1', 'Nature'));
+      await dao.insertTag(makeTag('t2', 'Portrait'));
 
       final all = await dao.getAllTags();
       expect(all, hasLength(2));
@@ -55,7 +54,7 @@ void main() {
     });
 
     test('getTagById returns correct tag', () async {
-      await dao.insertTag(_makeTag('t1', 'Landscape', color: 0xFF00FF00));
+      await dao.insertTag(makeTag('t1', 'Landscape', color: 0xFF00FF00));
 
       final tag = await dao.getTagById('t1');
       expect(tag, isNotNull);
@@ -66,13 +65,13 @@ void main() {
     });
 
     test('updateTag replaces the row', () async {
-      await dao.insertTag(_makeTag('t1', 'OldName'));
+      await dao.insertTag(makeTag('t1', 'OldName'));
 
       final original = await dao.getTagById('t1');
       final ok = await dao.updateTag(TagsCompanion(
-        id: Value('t1'),
-        name: Value('NewName'),
-        color: Value(0xFFFF0000),
+        id: const Value('t1'),
+        name: const Value('NewName'),
+        color: const Value(0xFFFF0000),
         createdAt: Value(original!.createdAt),
       ));
       expect(ok, isTrue);
@@ -83,15 +82,15 @@ void main() {
     });
 
     test('deleteTag removes the row', () async {
-      await dao.insertTag(_makeTag('t1', 'Temp'));
+      await dao.insertTag(makeTag('t1', 'Temp'));
       await dao.deleteTag('t1');
       expect(await dao.getAllTags(), isEmpty);
     });
 
     test('addTagToAsset and getTagsForAsset', () async {
-      await dao.insertTag(_makeTag('t1', 'Tag A'));
-      await dao.insertTag(_makeTag('t2', 'Tag B'));
-      await db.assetDao.insertAsset(_makeAsset('a1', 'Asset One'));
+      await dao.insertTag(makeTag('t1', 'Tag A'));
+      await dao.insertTag(makeTag('t2', 'Tag B'));
+      await db.assetDao.insertAsset(makeAsset('a1', 'Asset One'));
 
       await dao.addTagToAsset('a1', 't1');
       await dao.addTagToAsset('a1', 't2');
@@ -102,9 +101,9 @@ void main() {
     });
 
     test('getAssetsForTag returns tagged assets', () async {
-      await dao.insertTag(_makeTag('t1', 'Shared'));
-      await db.assetDao.insertAsset(_makeAsset('a1', 'First'));
-      await db.assetDao.insertAsset(_makeAsset('a2', 'Second'));
+      await dao.insertTag(makeTag('t1', 'Shared'));
+      await db.assetDao.insertAsset(makeAsset('a1', 'First'));
+      await db.assetDao.insertAsset(makeAsset('a2', 'Second'));
 
       await dao.addTagToAsset('a1', 't1');
       await dao.addTagToAsset('a2', 't1');
@@ -114,8 +113,8 @@ void main() {
     });
 
     test('removeTagFromAsset breaks the link', () async {
-      await dao.insertTag(_makeTag('t1', 'Removable'));
-      await db.assetDao.insertAsset(_makeAsset('a1', 'Asset'));
+      await dao.insertTag(makeTag('t1', 'Removable'));
+      await db.assetDao.insertAsset(makeAsset('a1', 'Asset'));
       await dao.addTagToAsset('a1', 't1');
 
       await dao.removeTagFromAsset('a1', 't1');
@@ -124,10 +123,10 @@ void main() {
     });
 
     test('batchAddTagToAssets tags multiple assets', () async {
-      await dao.insertTag(_makeTag('t1', 'Bulk'));
-      await db.assetDao.insertAsset(_makeAsset('a1', 'X'));
-      await db.assetDao.insertAsset(_makeAsset('a2', 'Y'));
-      await db.assetDao.insertAsset(_makeAsset('a3', 'Z'));
+      await dao.insertTag(makeTag('t1', 'Bulk'));
+      await db.assetDao.insertAsset(makeAsset('a1', 'X'));
+      await db.assetDao.insertAsset(makeAsset('a2', 'Y'));
+      await db.assetDao.insertAsset(makeAsset('a3', 'Z'));
 
       await dao.batchAddTagToAssets(['a1', 'a2', 'a3'], 't1');
 
@@ -136,9 +135,9 @@ void main() {
     });
 
     test('removeAllTagsForAsset clears all associations', () async {
-      await dao.insertTag(_makeTag('t1', 'One'));
-      await dao.insertTag(_makeTag('t2', 'Two'));
-      await db.assetDao.insertAsset(_makeAsset('a1', 'Asset'));
+      await dao.insertTag(makeTag('t1', 'One'));
+      await dao.insertTag(makeTag('t2', 'Two'));
+      await db.assetDao.insertAsset(makeAsset('a1', 'Asset'));
 
       await dao.addTagToAsset('a1', 't1');
       await dao.addTagToAsset('a1', 't2');

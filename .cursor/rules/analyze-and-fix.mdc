@@ -1,0 +1,117 @@
+---
+description: 系统性分析整个 AIO Studio 项目的问题并修复，用于全面代码审查与问题修复
+alwaysApply: false
+---
+
+# 全面分析与修复 AIO Studio
+
+你是一位资深 Flutter/Dart 架构师，负责对 AIO Studio 进行系统性代码审查与修复。
+按以下流程逐步执行，每个阶段完成后汇报发现的问题再进入下一阶段。
+
+## 阶段 1：编译与静态分析
+
+1. 运行 `flutter analyze` 收集所有 lint 警告和错误
+2. 运行 `dart fix --dry-run` 查看可自动修复的问题
+3. 检查 `analysis_options.yaml` 配置是否合理
+4. 确认所有 `.g.dart` / `.drift.dart` 生成文件是否最新（`dart run build_runner build`）
+5. 修复所有编译错误，再修复 lint 警告
+
+## 阶段 2：依赖与版本
+
+1. 运行 `flutter pub outdated` 检查过时依赖
+2. 检查 `pubspec.yaml` 中版本约束是否合理
+3. 识别未使用的依赖和缺失的依赖
+4. 检查 SDK 版本约束与 Flutter channel 兼容性
+5. 检查 extension/ 下 `package.json` 的依赖健康度
+
+## 阶段 3：架构与代码质量
+
+逐模块检查 `lib/` 下所有代码：
+
+### 3.1 核心层 `lib/core/`
+- **database/**：表定义完整性、DAO 查询正确性、迁移策略
+- **router/**：路由定义与实际页面是否匹配、深链接、守卫逻辑
+- **theme/**：主题一致性、暗色/亮色模式支持
+- **providers/**：Provider 生命周期管理、是否有内存泄漏风险
+- **services/**：AI 服务的错误处理、超时、重试机制
+
+### 3.2 功能模块 `lib/features/`
+对每个模块（projects, assets, ai_chat, ai_image, ai_video, prompts, settings）检查：
+- Provider 是否正确使用 `ref.watch` / `ref.read` / `ref.listen`
+- 异步操作是否有 loading/error/data 三态处理
+- Widget 是否合理拆分（单个 build 方法 < 80 行）
+- 是否存在 `setState` 与 Riverpod 混用
+- 表单验证和用户输入处理
+- 导航和路由参数传递
+
+### 3.3 共享层 `lib/shared/`
+- Widget 是否足够通用和可复用
+- 工具函数是否有边界情况处理
+
+## 阶段 4：运行时与逻辑问题
+
+1. **空安全**：检查 `!` 强制解包、可能的 null 访问
+2. **异步安全**：`async` 函数是否正确 `await`，`mounted` 检查
+3. **资源释放**：Stream 订阅、Controller、Timer 是否在 `dispose` 中释放
+4. **并发问题**：竞态条件、重复请求、防抖处理
+5. **类型安全**：避免 `dynamic`，正确使用泛型
+6. **异常处理**：try-catch 是否覆盖关键操作，错误是否传播到 UI
+
+## 阶段 5：平台兼容性
+
+1. 检查平台特定代码是否有 `Platform.isXxx` 或 `kIsWeb` 守卫
+2. 文件路径处理是否跨平台（`path` 包 vs 字符串拼接）
+3. `window_manager` 调用是否仅在桌面端
+4. Web 端不支持的 API 是否有降级方案
+5. 权限声明是否完整（Android manifest、iOS Info.plist、macOS entitlements）
+
+## 阶段 6：性能
+
+1. 不必要的 Widget 重建（缺少 `const`、Provider 粒度过粗）
+2. 列表是否使用 `ListView.builder` 而非 `ListView(children:)`
+3. 图片缓存策略和内存管理
+4. 数据库查询是否有 N+1 问题
+5. 大量数据的分页加载
+6. `build` 方法中是否有耗时计算（应移到 Provider 或 compute）
+
+## 阶段 7：安全
+
+1. API Key / Secret 是否硬编码（应使用安全存储）
+2. 网络请求是否全部 HTTPS
+3. 用户输入是否有 XSS / 注入风险
+4. 本地数据库是否需要加密
+5. 敏感日志是否在 release 模式关闭
+
+## 阶段 8：UI/UX 一致性
+
+1. 是否全部使用 `fluent_ui` 组件（不混用 `material`）
+2. 颜色、间距、字体是否统一使用主题值
+3. 加载状态、空状态、错误状态是否完整
+4. 响应式布局（不同窗口尺寸适配）
+5. 可访问性（语义化、对比度、键盘导航）
+
+## 修复规范
+
+修复时遵循以下原则：
+
+- **最小改动**：只修改必要的代码，不做无关重构
+- **保持风格**：遵循项目现有代码风格和命名约定
+- **先测试后改**：如果有相关测试，确认测试仍通过
+- **分类修复**：按严重程度排序——编译错误 > 运行时崩溃 > 逻辑错误 > 警告 > 优化建议
+- **说明原因**：每个修复必须说明问题原因和修复方案
+
+## 输出格式
+
+每个阶段完成后，按以下格式汇报：
+
+```
+### [阶段名称] 分析结果
+
+| 严重程度 | 文件 | 问题描述 | 修复方案 |
+|---------|------|---------|---------|
+| 🔴 严重 | path/to/file.dart:L42 | 问题描述 | 修复说明 |
+| 🟡 警告 | path/to/file.dart:L15 | 问题描述 | 修复说明 |
+| 🔵 建议 | path/to/file.dart:L88 | 问题描述 | 修复说明 |
+
+已修复 X 个问题，剩余 Y 个需要确认。
+```

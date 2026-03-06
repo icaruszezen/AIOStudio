@@ -44,16 +44,18 @@ class AiTaskDao extends DatabaseAccessor<AppDatabase> with _$AiTaskDaoMixin {
 
   Future<int> countByProject(String projectId) async {
     final count = countAll();
-    final query = selectOnly(aiTasks)..addColumns([count]);
-    query.where(aiTasks.projectId.equals(projectId));
+    final query = selectOnly(aiTasks)
+      ..addColumns([count])
+      ..where(aiTasks.projectId.equals(projectId));
     final result = await query.getSingle();
     return result.read(count) ?? 0;
   }
 
   Future<int> sumTokenUsageByProject(String projectId) async {
     final sum = aiTasks.tokenUsage.sum();
-    final query = selectOnly(aiTasks)..addColumns([sum]);
-    query.where(aiTasks.projectId.equals(projectId));
+    final query = selectOnly(aiTasks)
+      ..addColumns([sum])
+      ..where(aiTasks.projectId.equals(projectId));
     final result = await query.getSingle();
     return result.read(sum) ?? 0;
   }

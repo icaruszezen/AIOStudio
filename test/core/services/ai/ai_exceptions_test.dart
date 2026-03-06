@@ -1,6 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:aio_studio/core/services/ai/ai_exceptions.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('AiServiceException', () {

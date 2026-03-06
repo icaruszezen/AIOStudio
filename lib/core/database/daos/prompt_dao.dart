@@ -66,8 +66,9 @@ class PromptDao extends DatabaseAccessor<AppDatabase> with _$PromptDaoMixin {
 
   Future<int> countByProject(String projectId) async {
     final count = countAll();
-    final query = selectOnly(prompts)..addColumns([count]);
-    query.where(prompts.projectId.equals(projectId));
+    final query = selectOnly(prompts)
+      ..addColumns([count])
+      ..where(prompts.projectId.equals(projectId));
     final result = await query.getSingle();
     return result.read(count) ?? 0;
   }

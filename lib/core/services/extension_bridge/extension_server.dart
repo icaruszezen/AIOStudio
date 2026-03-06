@@ -6,9 +6,6 @@ import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 
 import '../../database/app_database.dart';
-import '../../database/daos/asset_dao.dart';
-import '../../database/daos/project_dao.dart';
-import '../../database/daos/tag_dao.dart';
 import '../storage/asset_file_manager.dart';
 import 'extension_handlers.dart';
 import 'extension_middleware.dart';

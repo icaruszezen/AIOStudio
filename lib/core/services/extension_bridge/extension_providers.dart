@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
+import '../../../features/settings/providers/settings_provider.dart';
 import '../../database/app_database.dart';
 import '../../providers/database_provider.dart';
-import '../../../features/settings/providers/settings_provider.dart';
 import 'extension_server.dart';
 
 final _log = Logger(printer: PrettyPrinter(methodCount: 0));

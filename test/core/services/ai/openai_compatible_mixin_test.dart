@@ -1,9 +1,8 @@
 import 'dart:convert';
 
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:aio_studio/core/services/ai/ai_models.dart';
 import 'package:aio_studio/core/services/ai/openai_compatible_mixin.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 class _TestService with OpenAiCompatibleMixin {
   @override

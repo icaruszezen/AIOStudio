@@ -5,8 +5,8 @@ import 'dart:io';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/database/app_database.dart';
@@ -15,6 +15,7 @@ import '../../../core/providers/database_provider.dart';
 import '../../../core/services/ai/ai_models.dart';
 import '../../../core/services/ai/ai_service.dart';
 import '../../../core/services/ai/ai_service_manager.dart';
+import '../../../core/theme/app_theme.dart' show sharedPreferencesProvider;
 import '../models/chat_models.dart';
 
 // ---------------------------------------------------------------------------
@@ -445,7 +446,7 @@ class ChatNotifier extends Notifier<ChatState> {
 
   Future<Directory> _getChatDir() async {
     final appDir = await getApplicationSupportDirectory();
-    final chatDir = Directory('${appDir.path}/chat_history');
+    final chatDir = Directory(p.join(appDir.path, 'chat_history'));
     if (!await chatDir.exists()) {
       await chatDir.create(recursive: true);
     }
@@ -455,7 +456,7 @@ class ChatNotifier extends Notifier<ChatState> {
   Future<void> _saveToDisk() async {
     try {
       final dir = await _getChatDir();
-      final indexFile = File('${dir.path}/conversations.json');
+      final indexFile = File(p.join(dir.path, 'conversations.json'));
       final data = state.conversations.map((c) => c.toJson()).toList();
       await indexFile.writeAsString(jsonEncode(data));
     } catch (e) {
@@ -466,7 +467,7 @@ class ChatNotifier extends Notifier<ChatState> {
   Future<void> _loadFromDisk() async {
     try {
       final dir = await _getChatDir();
-      final indexFile = File('${dir.path}/conversations.json');
+      final indexFile = File(p.join(dir.path, 'conversations.json'));
       if (!await indexFile.exists()) return;
 
       final content = await indexFile.readAsString();
@@ -509,7 +510,7 @@ class ChatNotifier extends Notifier<ChatState> {
 
   Future<void> _restoreLastModel() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = ref.read(sharedPreferencesProvider);
       final key = prefs.getString(_prefsLastModelKey);
       if (key != null && key.contains('::')) {
         final parts = key.split('::');
@@ -523,7 +524,7 @@ class ChatNotifier extends Notifier<ChatState> {
 
   Future<void> _saveLastModel(String providerId, String modelId) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = ref.read(sharedPreferencesProvider);
       await prefs.setString(_prefsLastModelKey, '$providerId::$modelId');
     } catch (_) {}
   }

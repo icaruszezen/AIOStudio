@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:logger/logger.dart';
 
 import '../../database/app_database.dart';
-import '../../database/daos/ai_provider_config_dao.dart';
 import 'ai_service.dart';
 import 'anthropic_service.dart';
 import 'custom_service.dart';
@@ -43,6 +42,13 @@ class AiServiceManager {
             '${cfg.name} (${cfg.id}): $e');
       }
     }
+  }
+
+  void disposeAll() {
+    for (final service in _services.values) {
+      service.dispose();
+    }
+    _services.clear();
   }
 
   AiService? getService(String providerId) => _services[providerId];

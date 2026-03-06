@@ -59,7 +59,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
       builder: (context, constraints) {
         final isMobileLayout = constraints.maxWidth <= Breakpoints.tablet;
 
-        Widget page = ScaffoldPage(
+        final Widget page = ScaffoldPage(
           padding: EdgeInsets.zero,
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

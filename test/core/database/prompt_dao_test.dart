@@ -1,11 +1,10 @@
 @TestOn('vm')
 library;
 
+import 'package:aio_studio/core/database/app_database.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:aio_studio/core/database/app_database.dart';
 
 void main() {
   late AppDatabase db;
@@ -20,9 +19,9 @@ void main() {
     await db.close();
   });
 
-  int _now() => DateTime.now().millisecondsSinceEpoch;
+  int now() => DateTime.now().millisecondsSinceEpoch;
 
-  PromptsCompanion _makePrompt(
+  PromptsCompanion makePrompt(
     String id,
     String title, {
     String content = 'default content',
@@ -30,7 +29,7 @@ void main() {
     String? projectId,
     bool isFavorite = false,
   }) {
-    final ts = _now();
+    final ts = now();
     return PromptsCompanion(
       id: Value(id),
       title: Value(title),
@@ -43,8 +42,8 @@ void main() {
     );
   }
 
-  Future<void> _seedProject(String id) async {
-    final ts = _now();
+  Future<void> seedProject(String id) async {
+    final ts = now();
     await db.projectDao.insertProject(ProjectsCompanion(
       id: Value(id),
       name: Value('Project $id'),
@@ -55,15 +54,15 @@ void main() {
 
   group('PromptDao', () {
     test('insertPrompt and getAllPrompts', () async {
-      await dao.insertPrompt(_makePrompt('pr1', 'Translate'));
-      await dao.insertPrompt(_makePrompt('pr2', 'Summarize'));
+      await dao.insertPrompt(makePrompt('pr1', 'Translate'));
+      await dao.insertPrompt(makePrompt('pr2', 'Summarize'));
 
       final all = await dao.getAllPrompts();
       expect(all, hasLength(2));
     });
 
     test('getPromptById returns correct prompt', () async {
-      await dao.insertPrompt(_makePrompt('pr1', 'Test Prompt'));
+      await dao.insertPrompt(makePrompt('pr1', 'Test Prompt'));
 
       final found = await dao.getPromptById('pr1');
       expect(found, isNotNull);
@@ -73,15 +72,15 @@ void main() {
     });
 
     test('updatePrompt replaces the row', () async {
-      await dao.insertPrompt(_makePrompt('pr1', 'Old'));
+      await dao.insertPrompt(makePrompt('pr1', 'Old'));
       final original = await dao.getPromptById('pr1');
 
       final ok = await dao.updatePrompt(PromptsCompanion(
-        id: Value('pr1'),
-        title: Value('Updated'),
+        id: const Value('pr1'),
+        title: const Value('Updated'),
         content: Value(original!.content),
         createdAt: Value(original.createdAt),
-        updatedAt: Value(_now()),
+        updatedAt: Value(now()),
       ));
       expect(ok, isTrue);
 
@@ -90,15 +89,15 @@ void main() {
     });
 
     test('deletePrompt removes the row', () async {
-      await dao.insertPrompt(_makePrompt('pr1', 'Delete Me'));
+      await dao.insertPrompt(makePrompt('pr1', 'Delete Me'));
       await dao.deletePrompt('pr1');
       expect(await dao.getAllPrompts(), isEmpty);
     });
 
     test('filterByCategory returns matching prompts', () async {
-      await dao.insertPrompt(_makePrompt('pr1', 'A', category: 'writing'));
-      await dao.insertPrompt(_makePrompt('pr2', 'B', category: 'coding'));
-      await dao.insertPrompt(_makePrompt('pr3', 'C', category: 'writing'));
+      await dao.insertPrompt(makePrompt('pr1', 'A', category: 'writing'));
+      await dao.insertPrompt(makePrompt('pr2', 'B', category: 'coding'));
+      await dao.insertPrompt(makePrompt('pr3', 'C', category: 'writing'));
 
       final writing = await dao.filterByCategory('writing');
       expect(writing, hasLength(2));
@@ -108,9 +107,9 @@ void main() {
     });
 
     test('filterByProject returns project prompts', () async {
-      await _seedProject('proj1');
-      await dao.insertPrompt(_makePrompt('pr1', 'A', projectId: 'proj1'));
-      await dao.insertPrompt(_makePrompt('pr2', 'B'));
+      await seedProject('proj1');
+      await dao.insertPrompt(makePrompt('pr1', 'A', projectId: 'proj1'));
+      await dao.insertPrompt(makePrompt('pr2', 'B'));
 
       final byProject = await dao.filterByProject('proj1');
       expect(byProject, hasLength(1));
@@ -118,22 +117,22 @@ void main() {
     });
 
     test('countByProject counts correctly', () async {
-      await _seedProject('proj1');
-      await dao.insertPrompt(_makePrompt('pr1', 'A', projectId: 'proj1'));
-      await dao.insertPrompt(_makePrompt('pr2', 'B', projectId: 'proj1'));
+      await seedProject('proj1');
+      await dao.insertPrompt(makePrompt('pr1', 'A', projectId: 'proj1'));
+      await dao.insertPrompt(makePrompt('pr2', 'B', projectId: 'proj1'));
 
       expect(await dao.countByProject('proj1'), 2);
     });
 
     test('searchPrompts matches title or content', () async {
       await dao.insertPrompt(
-        _makePrompt('pr1', 'Image generator', content: 'Create an image'),
+        makePrompt('pr1', 'Image generator', content: 'Create an image'),
       );
       await dao.insertPrompt(
-        _makePrompt('pr2', 'Code review', content: 'Review this code'),
+        makePrompt('pr2', 'Code review', content: 'Review this code'),
       );
       await dao.insertPrompt(
-        _makePrompt('pr3', 'Summary', content: 'Summarize the image description'),
+        makePrompt('pr3', 'Summary', content: 'Summarize the image description'),
       );
 
       final byTitle = await dao.searchPrompts('generator');
@@ -144,7 +143,7 @@ void main() {
     });
 
     test('incrementUseCount bumps use_count by 1', () async {
-      await dao.insertPrompt(_makePrompt('pr1', 'Counter'));
+      await dao.insertPrompt(makePrompt('pr1', 'Counter'));
 
       final before = await dao.getPromptById('pr1');
       expect(before!.useCount, 0);
@@ -157,7 +156,7 @@ void main() {
     });
 
     test('toggleFavorite flips isFavorite', () async {
-      await dao.insertPrompt(_makePrompt('pr1', 'Fav'));
+      await dao.insertPrompt(makePrompt('pr1', 'Fav'));
 
       await dao.toggleFavorite('pr1');
       var p = await dao.getPromptById('pr1');
@@ -169,7 +168,7 @@ void main() {
     });
 
     test('duplicatePrompt creates a copy with (副本) suffix', () async {
-      await dao.insertPrompt(_makePrompt('pr1', 'Original', content: 'body'));
+      await dao.insertPrompt(makePrompt('pr1', 'Original', content: 'body'));
 
       final newId = await dao.duplicatePrompt('pr1');
       expect(newId, isNotEmpty);

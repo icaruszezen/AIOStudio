@@ -1,8 +1,7 @@
-import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:aio_studio/features/ai_chat/models/chat_models.dart';
 import 'package:aio_studio/features/ai_chat/widgets/chat_message_bubble.dart';
+import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 ChatMessage _userMessage({String content = 'Hello!'}) {
   return ChatMessage(

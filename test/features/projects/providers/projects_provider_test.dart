@@ -1,16 +1,15 @@
 @TestOn('vm')
 library;
 
+import 'package:aio_studio/core/database/app_database.dart';
+import 'package:aio_studio/core/providers/database_provider.dart';
+import 'package:aio_studio/core/services/storage/local_storage_service.dart';
+import 'package:aio_studio/features/projects/providers/projects_provider.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-
-import 'package:aio_studio/core/database/app_database.dart';
-import 'package:aio_studio/core/providers/database_provider.dart';
-import 'package:aio_studio/core/services/storage/local_storage_service.dart';
-import 'package:aio_studio/features/projects/providers/projects_provider.dart';
 
 class MockLocalStorageService extends Mock implements LocalStorageService {}
 
@@ -39,12 +38,12 @@ void main() {
     await db.close();
   });
 
-  Future<String> _createProject(String name) async {
+  Future<String> createProject(String name) async {
     final actions = container.read(projectActionsProvider);
     return actions.create(name: name);
   }
 
-  Future<String> _seedAsset(String projectId) async {
+  Future<String> seedAsset(String projectId) async {
     final now = DateTime.now().millisecondsSinceEpoch;
     final dao = db.assetDao;
     const id = 'asset-1';
@@ -61,7 +60,7 @@ void main() {
     return id;
   }
 
-  Future<String> _seedPrompt(String projectId) async {
+  Future<String> seedPrompt(String projectId) async {
     final now = DateTime.now().millisecondsSinceEpoch;
     const id = 'prompt-1';
     await db.promptDao.insertPrompt(PromptsCompanion(
@@ -75,7 +74,7 @@ void main() {
     return id;
   }
 
-  Future<String> _seedTask(String projectId) async {
+  Future<String> seedTask(String projectId) async {
     final now = DateTime.now().millisecondsSinceEpoch;
     const id = 'task-1';
     await db.aiTaskDao.insertTask(AiTasksCompanion(
@@ -91,7 +90,7 @@ void main() {
 
   group('ProjectActions', () {
     test('create inserts a project and returns its id', () async {
-      final id = await _createProject('My Project');
+      final id = await createProject('My Project');
 
       expect(id, isNotEmpty);
 
@@ -102,7 +101,7 @@ void main() {
     });
 
     test('update modifies project fields', () async {
-      final id = await _createProject('Original');
+      final id = await createProject('Original');
       final actions = container.read(projectActionsProvider);
 
       await actions.update(id: id, name: 'Updated', description: 'Desc');
@@ -113,7 +112,7 @@ void main() {
     });
 
     test('archive and unarchive toggle isArchived', () async {
-      final id = await _createProject('Archivable');
+      final id = await createProject('Archivable');
       final actions = container.read(projectActionsProvider);
 
       await actions.archive(id);
@@ -126,10 +125,10 @@ void main() {
     });
 
     test('delete cascades to assets, prompts, tasks, and files', () async {
-      final projectId = await _createProject('To Delete');
-      final assetId = await _seedAsset(projectId);
-      await _seedPrompt(projectId);
-      await _seedTask(projectId);
+      final projectId = await createProject('To Delete');
+      final assetId = await seedAsset(projectId);
+      await seedPrompt(projectId);
+      await seedTask(projectId);
 
       final actions = container.read(projectActionsProvider);
       await actions.delete(projectId);

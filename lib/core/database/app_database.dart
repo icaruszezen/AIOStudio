@@ -19,6 +19,13 @@ import 'tables/projects.dart';
 import 'tables/prompts.dart';
 import 'tables/tags.dart';
 
+export 'daos/ai_provider_config_dao.dart';
+export 'daos/ai_task_dao.dart';
+export 'daos/asset_dao.dart';
+export 'daos/project_dao.dart';
+export 'daos/prompt_dao.dart';
+export 'daos/tag_dao.dart';
+
 part 'app_database.g.dart';
 
 @DriftDatabase(
@@ -60,6 +67,15 @@ class AppDatabase extends _$AppDatabase {
               'CREATE INDEX idx_assets_created_at ON assets(created_at)');
           await customStatement(
               'CREATE INDEX idx_assets_is_favorite ON assets(is_favorite)');
+        },
+        onUpgrade: (m, from, to) async {
+          for (var target = from + 1; target <= to; target++) {
+            switch (target) {
+              // Future migrations go here, e.g.:
+              // case 2:
+              //   await m.addColumn(assets, assets.newColumn);
+            }
+          }
         },
       );
 }

@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:aio_studio/core/services/ai/ai_models.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   final now = DateTime(2025, 1, 1);
@@ -142,7 +141,7 @@ void main() {
 
   group('AiImageRequest', () {
     test('toJson with all optional fields', () {
-      final request = AiImageRequest(
+      const request = AiImageRequest(
         prompt: 'a cat',
         negativePrompt: 'ugly',
         model: 'dall-e-3',
@@ -171,7 +170,7 @@ void main() {
     });
 
     test('toJson omits null optional fields', () {
-      final request = AiImageRequest(
+      const request = AiImageRequest(
         prompt: 'a dog',
         model: 'dall-e-3',
       );
@@ -276,7 +275,7 @@ void main() {
 
   group('AiVideoRequest', () {
     test('toJson with all fields', () {
-      final request = AiVideoRequest(
+      const request = AiVideoRequest(
         prompt: 'a sunset',
         model: 'gen-2',
         width: 1280,
@@ -295,7 +294,7 @@ void main() {
     });
 
     test('toJson omits imageUrl when null', () {
-      final request = AiVideoRequest(
+      const request = AiVideoRequest(
         prompt: 'wave',
         model: 'gen-2',
         width: 1920,

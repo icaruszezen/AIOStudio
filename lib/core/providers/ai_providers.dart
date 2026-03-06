@@ -5,9 +5,11 @@ import '../services/ai/ai_service_manager.dart';
 import 'database_provider.dart';
 
 final aiServiceManagerProvider = Provider<AiServiceManager>((ref) {
-  return AiServiceManager(
+  final manager = AiServiceManager(
     dao: ref.watch(aiProviderConfigDaoProvider),
   );
+  ref.onDispose(manager.disposeAll);
+  return manager;
 });
 
 /// Triggers [AiServiceManager.loadServices] and exposes the ready manager.

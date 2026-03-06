@@ -7,9 +7,6 @@ import 'package:shelf_router/shelf_router.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../database/app_database.dart';
-import '../../database/daos/asset_dao.dart';
-import '../../database/daos/project_dao.dart';
-import '../../database/daos/tag_dao.dart';
 import '../storage/asset_file_manager.dart';
 
 const _appVersion = '1.0.0';
@@ -41,11 +38,11 @@ class ExtensionHandlers {
         _fileManager = fileManager;
 
   Router get router {
-    final r = Router();
-    r.get('/api/health', _health);
-    r.get('/api/projects', _listProjects);
-    r.post('/api/assets/import-from-extension', _importSingle);
-    r.post('/api/assets/batch-import', _batchImport);
+    final r = Router()
+      ..get('/api/health', _health)
+      ..get('/api/projects', _listProjects)
+      ..post('/api/assets/import-from-extension', _importSingle)
+      ..post('/api/assets/batch-import', _batchImport);
     return r;
   }
 

@@ -1,11 +1,10 @@
 @TestOn('vm')
 library;
 
+import 'package:aio_studio/core/database/app_database.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:aio_studio/core/database/app_database.dart';
 
 void main() {
   late AppDatabase db;
@@ -20,14 +19,14 @@ void main() {
     await db.close();
   });
 
-  int _now() => DateTime.now().millisecondsSinceEpoch;
+  int now() => DateTime.now().millisecondsSinceEpoch;
 
-  ProjectsCompanion _makeProject(
+  ProjectsCompanion makeProject(
     String id,
     String name, {
     bool isArchived = false,
   }) {
-    final ts = _now();
+    final ts = now();
     return ProjectsCompanion(
       id: Value(id),
       name: Value(name),
@@ -39,8 +38,8 @@ void main() {
 
   group('ProjectDao', () {
     test('insertProject and getAllProjects', () async {
-      await dao.insertProject(_makeProject('p1', 'Project One'));
-      await dao.insertProject(_makeProject('p2', 'Project Two'));
+      await dao.insertProject(makeProject('p1', 'Project One'));
+      await dao.insertProject(makeProject('p2', 'Project Two'));
 
       final all = await dao.getAllProjects();
       expect(all, hasLength(2));
@@ -48,7 +47,7 @@ void main() {
     });
 
     test('getProjectById returns correct project', () async {
-      await dao.insertProject(_makeProject('p1', 'Alpha'));
+      await dao.insertProject(makeProject('p1', 'Alpha'));
 
       final found = await dao.getProjectById('p1');
       expect(found, isNotNull);
@@ -59,17 +58,17 @@ void main() {
     });
 
     test('updateProject replaces the row', () async {
-      final ts = _now();
-      await dao.insertProject(_makeProject('p1', 'Before'));
+      final ts = now();
+      await dao.insertProject(makeProject('p1', 'Before'));
 
       final original = await dao.getProjectById('p1');
       final updated = await dao.updateProject(ProjectsCompanion(
-        id: Value('p1'),
-        name: Value('After'),
-        description: Value('desc'),
+        id: const Value('p1'),
+        name: const Value('After'),
+        description: const Value('desc'),
         createdAt: Value(original!.createdAt),
         updatedAt: Value(ts),
-        isArchived: Value(false),
+        isArchived: const Value(false),
       ));
       expect(updated, isTrue);
 
@@ -79,7 +78,7 @@ void main() {
     });
 
     test('toggleArchive flips isArchived flag', () async {
-      await dao.insertProject(_makeProject('p1', 'Active'));
+      await dao.insertProject(makeProject('p1', 'Active'));
 
       await dao.toggleArchive('p1', archived: true);
       var p = await dao.getProjectById('p1');
@@ -91,9 +90,9 @@ void main() {
     });
 
     test('searchByName finds matching projects', () async {
-      await dao.insertProject(_makeProject('p1', 'Flutter App'));
-      await dao.insertProject(_makeProject('p2', 'React App'));
-      await dao.insertProject(_makeProject('p3', 'Dart CLI'));
+      await dao.insertProject(makeProject('p1', 'Flutter App'));
+      await dao.insertProject(makeProject('p2', 'React App'));
+      await dao.insertProject(makeProject('p3', 'Dart CLI'));
 
       final results = await dao.searchByName('App');
       expect(results, hasLength(2));
@@ -104,7 +103,7 @@ void main() {
     });
 
     test('deleteProject removes the row', () async {
-      await dao.insertProject(_makeProject('p1', 'ToDelete'));
+      await dao.insertProject(makeProject('p1', 'ToDelete'));
 
       final deleted = await dao.deleteProject('p1');
       expect(deleted, 1);
@@ -116,14 +115,14 @@ void main() {
     test('watchAllProjects emits updates', () async {
       final stream = dao.watchAllProjects();
 
-      await dao.insertProject(_makeProject('p1', 'First'));
+      await dao.insertProject(makeProject('p1', 'First'));
       final firstEmit = await stream.first;
       expect(firstEmit, hasLength(1));
     });
 
     test('watchActiveProjects and watchArchivedProjects', () async {
-      await dao.insertProject(_makeProject('p1', 'Active'));
-      await dao.insertProject(_makeProject('p2', 'Archived', isArchived: true));
+      await dao.insertProject(makeProject('p1', 'Active'));
+      await dao.insertProject(makeProject('p2', 'Archived', isArchived: true));
 
       final active = await dao.watchActiveProjects().first;
       expect(active, hasLength(1));

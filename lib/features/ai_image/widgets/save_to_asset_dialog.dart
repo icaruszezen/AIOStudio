@@ -73,8 +73,8 @@ class _SaveToAssetDialogState extends ConsumerState<SaveToAssetDialog> {
                 Text('项目', style: theme.typography.bodyStrong),
                 const SizedBox(height: 6),
                 if (_projects.isEmpty)
-                  InfoBar(
-                    title: const Text('请先创建一个项目'),
+                  const InfoBar(
+                    title: Text('请先创建一个项目'),
                     severity: InfoBarSeverity.warning,
                   )
                 else

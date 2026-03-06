@@ -340,9 +340,9 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
     ImageGenNotifier notifier,
   ) {
     if (genState.isGenerating) {
-      return Row(
+      return const Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Center(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -412,8 +412,8 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
   Future<void> _pickFromPromptLibrary(BuildContext context) async {
     final prompts =
         await ref.read(promptDaoProvider).filterByCategory('image_gen');
-    if (!mounted || prompts.isEmpty) {
-      if (mounted) {
+    if (!context.mounted || prompts.isEmpty) {
+      if (context.mounted) {
         await displayInfoBar(context, builder: (ctx, close) {
           return InfoBar(
             title: const Text('暂无图片生成分类的提示词'),
@@ -425,7 +425,7 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
       return;
     }
 
-    if (!mounted) return;
+    if (!context.mounted) return;
     final selected = await showDialog<String>(
       context: context,
       builder: (ctx) => ContentDialog(

@@ -60,8 +60,9 @@ class VideoTaskPoller extends Notifier<VideoPollerState> {
 
   @override
   VideoPollerState build() {
-    ref.keepAlive();
-    ref.onDispose(_stopTimer);
+    ref
+      ..keepAlive()
+      ..onDispose(_stopTimer);
     _restorePolling();
     return const VideoPollerState();
   }

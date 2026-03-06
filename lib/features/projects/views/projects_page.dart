@@ -30,14 +30,14 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
   bool _showArchived = false;
 
   List<Project> _sortProjects(List<Project> projects) {
-    final sorted = List<Project>.from(projects);
-    sorted.sort((a, b) {
-      return switch (_sortField) {
-        _SortField.name => a.name.compareTo(b.name),
-        _SortField.createdAt => b.createdAt.compareTo(a.createdAt),
-        _SortField.updatedAt => b.updatedAt.compareTo(a.updatedAt),
-      };
-    });
+    final sorted = List<Project>.from(projects)
+      ..sort((a, b) {
+        return switch (_sortField) {
+          _SortField.name => a.name.compareTo(b.name),
+          _SortField.createdAt => b.createdAt.compareTo(a.createdAt),
+          _SortField.updatedAt => b.updatedAt.compareTo(a.updatedAt),
+        };
+      });
     return sorted;
   }
 
@@ -371,7 +371,7 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
       ),
       data: (projects) {
         if (projects.isEmpty) {
-          return EmptyState(
+          return const EmptyState(
             icon: FluentIcons.search,
             title: '未找到匹配项目',
             description: '尝试使用不同的关键词搜索',
