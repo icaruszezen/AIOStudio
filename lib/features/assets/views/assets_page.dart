@@ -1,8 +1,5 @@
-import 'dart:math' as math;
-
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -31,7 +28,7 @@ class AssetsPage extends ConsumerStatefulWidget {
 class _AssetsPageState extends ConsumerState<AssetsPage> {
   final Set<String> _selectedIds = {};
   bool _isDragging = false;
-  int? _lastSelectedIndex;
+
   bool _multiSelectMode = false;
   bool _filterExpanded = false;
 
@@ -43,7 +40,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
       if (prev != next) {
         setState(() {
           _selectedIds.clear();
-          _lastSelectedIndex = null;
+
           _multiSelectMode = false;
         });
       }
@@ -97,10 +94,8 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                         return _buildEmptyState(filter);
                       }
                       return filter.viewMode == AssetViewMode.grid
-                          ? _buildGridView(assets,
-                              enableLongPress: isMobileLayout)
-                          : _buildListView(assets,
-                              enableLongPress: isMobileLayout);
+                          ? _buildGridView(assets)
+                          : _buildListView(assets);
                     },
                   ),
                 ),
@@ -289,7 +284,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
           Button(
             onPressed: () => setState(() {
               _selectedIds.clear();
-              _lastSelectedIndex = null;
+    
             }),
             child: const Text('取消选择'),
           ),
@@ -490,7 +485,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
             icon: const Icon(FluentIcons.cancel, size: 16),
             onPressed: () => setState(() {
               _selectedIds.clear();
-              _lastSelectedIndex = null;
+    
               _multiSelectMode = false;
             }),
           ),
@@ -551,7 +546,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
   // Grid & List views
   // ---------------------------------------------------------------------------
 
-  Widget _buildGridView(List<Asset> assets, {required bool enableLongPress}) {
+  Widget _buildGridView(List<Asset> assets) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final crossAxisCount =
@@ -567,15 +562,11 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
           itemBuilder: (context, index) {
             final asset = assets[index];
             return GestureDetector(
-              onLongPress: enableLongPress
-                  ? () => _handleLongPress(asset, index)
-                  : null,
+              onLongPress: () => _handleLongPress(asset, index),
               child: AssetGridItem(
                 asset: asset,
                 isSelected: _selectedIds.contains(asset.id),
                 onTap: () => _handleItemTap(asset, index, assets),
-                onDoubleTap: () =>
-                    context.go('${AppRoutes.assets}/${asset.id}'),
                 onFavoriteToggle: () =>
                     ref.read(assetActionsProvider).toggleFavorite(asset.id),
                 onDelete: () => _confirmDeleteSingle(asset),
@@ -588,20 +579,17 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
     );
   }
 
-  Widget _buildListView(List<Asset> assets, {required bool enableLongPress}) {
+  Widget _buildListView(List<Asset> assets) {
     return ListView.builder(
       itemCount: assets.length,
       itemBuilder: (context, index) {
         final asset = assets[index];
         return GestureDetector(
-          onLongPress: enableLongPress
-              ? () => _handleLongPress(asset, index)
-              : null,
+          onLongPress: () => _handleLongPress(asset, index),
           child: AssetListItem(
             asset: asset,
             isSelected: _selectedIds.contains(asset.id),
             onTap: () => _handleItemTap(asset, index, assets),
-            onDoubleTap: () => context.go('${AppRoutes.assets}/${asset.id}'),
             onFavoriteToggle: () =>
                 ref.read(assetActionsProvider).toggleFavorite(asset.id),
             onDelete: () => _confirmDeleteSingle(asset),
@@ -729,53 +717,18 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
         } else {
           _selectedIds.add(asset.id);
         }
-        _lastSelectedIndex = index;
+
       });
       return;
     }
 
-    final isCtrlPressed =
-        HardwareKeyboard.instance.logicalKeysPressed
-            .any((k) => k == LogicalKeyboardKey.controlLeft ||
-                k == LogicalKeyboardKey.controlRight);
-    final isShiftPressed =
-        HardwareKeyboard.instance.logicalKeysPressed
-            .any((k) => k == LogicalKeyboardKey.shiftLeft ||
-                k == LogicalKeyboardKey.shiftRight);
-
-    setState(() {
-      if (isCtrlPressed) {
-        if (_selectedIds.contains(asset.id)) {
-          _selectedIds.remove(asset.id);
-        } else {
-          _selectedIds.add(asset.id);
-        }
-        _lastSelectedIndex = index;
-      } else if (isShiftPressed && _lastSelectedIndex != null) {
-        final start = math.min(_lastSelectedIndex!, index);
-        final end = math.max(_lastSelectedIndex!, index);
-        for (var i = start; i <= end; i++) {
-          _selectedIds.add(assets[i].id);
-        }
-      } else {
-        if (_selectedIds.length == 1 && _selectedIds.contains(asset.id)) {
-          _selectedIds.clear();
-          _lastSelectedIndex = null;
-        } else {
-          _selectedIds
-            ..clear()
-            ..add(asset.id);
-          _lastSelectedIndex = index;
-        }
-      }
-    });
+    context.go('${AppRoutes.assets}/${asset.id}');
   }
 
   void _handleLongPress(Asset asset, int index) {
     setState(() {
       _multiSelectMode = true;
       _selectedIds.add(asset.id);
-      _lastSelectedIndex = index;
     });
   }
 
@@ -866,7 +819,6 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
       if (!mounted) return;
       setState(() {
         _selectedIds.clear();
-        _lastSelectedIndex = null;
       });
     }
   }

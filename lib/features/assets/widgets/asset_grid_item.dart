@@ -11,7 +11,6 @@ class AssetGridItem extends StatefulWidget {
     required this.asset,
     this.isSelected = false,
     this.onTap,
-    this.onDoubleTap,
     this.onFavoriteToggle,
     this.onDelete,
     this.onRename,
@@ -20,7 +19,6 @@ class AssetGridItem extends StatefulWidget {
   final Asset asset;
   final bool isSelected;
   final VoidCallback? onTap;
-  final VoidCallback? onDoubleTap;
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onDelete;
   final VoidCallback? onRename;
@@ -45,7 +43,6 @@ class _AssetGridItemState extends State<AssetGridItem> {
 
     return GestureDetector(
       onTap: widget.onTap,
-      onDoubleTap: widget.onDoubleTap,
       onSecondaryTapUp: (details) => _showContextMenu(context, details),
       child: FlyoutTarget(
         controller: _flyoutController,

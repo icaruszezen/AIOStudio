@@ -172,6 +172,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
             height: 16,
             child: Slider(
               value: progress.clamp(0.0, 1.0),
+              max: 1.0,
               onChanged: _seek,
               style: const SliderThemeData(
                 thumbRadius: WidgetStatePropertyAll(6.0),
