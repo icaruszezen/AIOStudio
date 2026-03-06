@@ -37,7 +37,9 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(currentAssetIdProvider.notifier).set(widget.assetId);
+      if (mounted) {
+        ref.read(currentAssetIdProvider.notifier).set(widget.assetId);
+      }
     });
   }
 
@@ -45,7 +47,11 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
   void didUpdateWidget(covariant AssetDetailPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.assetId != widget.assetId) {
-      ref.read(currentAssetIdProvider.notifier).set(widget.assetId);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ref.read(currentAssetIdProvider.notifier).set(widget.assetId);
+        }
+      });
     }
   }
 
