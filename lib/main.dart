@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_kit/media_kit.dart';
@@ -8,12 +7,13 @@ import 'package:window_manager/window_manager.dart';
 import 'app.dart';
 import 'core/services/extension_bridge/extension_providers.dart';
 import 'core/theme/app_theme.dart';
+import 'core/utils/platform_utils.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
 
-  if (_isDesktop) {
+  if (PlatformUtils.isDesktop) {
     await windowManager.ensureInitialized();
 
     const windowOptions = WindowOptions(
@@ -38,7 +38,7 @@ Future<void> main() async {
     ],
   );
 
-  if (_isDesktop) {
+  if (PlatformUtils.isDesktop) {
     container.read(extensionServerProvider);
   }
 
@@ -50,8 +50,3 @@ Future<void> main() async {
   );
 }
 
-bool get _isDesktop =>
-    !kIsWeb &&
-    (defaultTargetPlatform == TargetPlatform.windows ||
-        defaultTargetPlatform == TargetPlatform.linux ||
-        defaultTargetPlatform == TargetPlatform.macOS);

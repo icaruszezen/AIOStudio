@@ -1,15 +1,9 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../core/router/app_router.dart';
-
-bool get _isDesktop =>
-    !kIsWeb &&
-    (defaultTargetPlatform == TargetPlatform.windows ||
-        defaultTargetPlatform == TargetPlatform.linux ||
-        defaultTargetPlatform == TargetPlatform.macOS);
+import '../../core/utils/platform_utils.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key, required this.child});
@@ -39,7 +33,7 @@ class _AppShellState extends State<AppShell> with WindowListener {
   @override
   void initState() {
     super.initState();
-    if (_isDesktop) {
+    if (PlatformUtils.isDesktop) {
       windowManager.addListener(this);
       windowManager.isMaximized().then((v) {
         if (mounted) setState(() => _isMaximized = v);
@@ -49,7 +43,7 @@ class _AppShellState extends State<AppShell> with WindowListener {
 
   @override
   void dispose() {
-    if (_isDesktop) windowManager.removeListener(this);
+    if (PlatformUtils.isDesktop) windowManager.removeListener(this);
     super.dispose();
   }
 
@@ -73,62 +67,77 @@ class _AppShellState extends State<AppShell> with WindowListener {
   Widget build(BuildContext context) {
     final selectedIndex = _calculateSelectedIndex(context);
 
-    return NavigationView(
-      titleBar: _buildTitleBar(context),
-      pane: NavigationPane(
-        selected: selectedIndex,
-        onChanged: (index) {
-          if (index >= 0 && index < _routes.length) {
-            context.go(_routes[index]);
-          }
-        },
-        displayMode: PaneDisplayMode.auto,
-        // Work around fluent_ui 4.14.0 bug: when header is null and the toggle
-        // button is not in the pane, paneHeaderHeight is set to -1.0, causing
-        // BoxConstraints to become invalid.
-        header: const SizedBox.shrink(),
-        items: [
-          PaneItem(
-            icon: const Icon(FluentIcons.project_management),
-            title: const Text('项目管理'),
-            body: const SizedBox.shrink(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth <= Breakpoints.tablet;
+
+        Widget content = NavigationView(
+          titleBar: PlatformUtils.isMobile
+              ? const SizedBox.shrink()
+              : _buildTitleBar(context),
+          pane: NavigationPane(
+            selected: selectedIndex,
+            onChanged: (index) {
+              if (index >= 0 && index < _routes.length) {
+                context.go(_routes[index]);
+              }
+            },
+            displayMode:
+                isNarrow ? PaneDisplayMode.minimal : PaneDisplayMode.auto,
+            // Work around fluent_ui 4.14.0 bug: when header is null and the
+            // toggle button is not in the pane, paneHeaderHeight is set to
+            // -1.0, causing BoxConstraints to become invalid.
+            header: const SizedBox.shrink(),
+            items: [
+              PaneItem(
+                icon: const Icon(FluentIcons.project_management),
+                title: const Text('项目管理'),
+                body: const SizedBox.shrink(),
+              ),
+              PaneItem(
+                icon: const Icon(FluentIcons.photo_collection),
+                title: const Text('资产库'),
+                body: const SizedBox.shrink(),
+              ),
+              PaneItemSeparator(),
+              PaneItem(
+                icon: const Icon(FluentIcons.chat),
+                title: const Text('AI 对话'),
+                body: const SizedBox.shrink(),
+              ),
+              PaneItem(
+                icon: const Icon(FluentIcons.image_search),
+                title: const Text('图片生成'),
+                body: const SizedBox.shrink(),
+              ),
+              PaneItem(
+                icon: const Icon(FluentIcons.video),
+                title: const Text('视频生成'),
+                body: const SizedBox.shrink(),
+              ),
+              PaneItem(
+                icon: const Icon(FluentIcons.text_document),
+                title: const Text('提示词库'),
+                body: const SizedBox.shrink(),
+              ),
+            ],
+            footerItems: [
+              PaneItem(
+                icon: const Icon(FluentIcons.settings),
+                title: const Text('设置'),
+                body: const SizedBox.shrink(),
+              ),
+            ],
           ),
-          PaneItem(
-            icon: const Icon(FluentIcons.photo_collection),
-            title: const Text('资产库'),
-            body: const SizedBox.shrink(),
-          ),
-          PaneItemSeparator(),
-          PaneItem(
-            icon: const Icon(FluentIcons.chat),
-            title: const Text('AI 对话'),
-            body: const SizedBox.shrink(),
-          ),
-          PaneItem(
-            icon: const Icon(FluentIcons.image_search),
-            title: const Text('图片生成'),
-            body: const SizedBox.shrink(),
-          ),
-          PaneItem(
-            icon: const Icon(FluentIcons.video),
-            title: const Text('视频生成'),
-            body: const SizedBox.shrink(),
-          ),
-          PaneItem(
-            icon: const Icon(FluentIcons.text_document),
-            title: const Text('提示词库'),
-            body: const SizedBox.shrink(),
-          ),
-        ],
-        footerItems: [
-          PaneItem(
-            icon: const Icon(FluentIcons.settings),
-            title: const Text('设置'),
-            body: const SizedBox.shrink(),
-          ),
-        ],
-      ),
-      paneBodyBuilder: (item, body) => widget.child,
+          paneBodyBuilder: (item, body) => widget.child,
+        );
+
+        if (PlatformUtils.isMobile) {
+          content = SafeArea(child: content);
+        }
+
+        return content;
+      },
     );
   }
 
@@ -155,11 +164,11 @@ class _AppShellState extends State<AppShell> with WindowListener {
       child: Row(
         children: [
           Expanded(
-            child: _isDesktop
+            child: PlatformUtils.isDesktop
                 ? DragToMoveArea(child: titleContent)
                 : titleContent,
           ),
-          if (_isDesktop) ...[
+          if (PlatformUtils.isDesktop) ...[
             _WindowButton(
               icon: WindowsIcons.chrome_minimize,
               onPressed: () async {

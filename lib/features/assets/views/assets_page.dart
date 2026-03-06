@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/utils/platform_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../../projects/providers/projects_provider.dart';
@@ -31,6 +32,8 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
   final Set<String> _selectedIds = {};
   bool _isDragging = false;
   int? _lastSelectedIndex;
+  bool _multiSelectMode = false;
+  bool _filterExpanded = false;
 
   bool get _hasSelection => _selectedIds.isNotEmpty;
 
@@ -41,6 +44,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
         setState(() {
           _selectedIds.clear();
           _lastSelectedIndex = null;
+          _multiSelectMode = false;
         });
       }
     });
@@ -51,60 +55,89 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
     final projectsAsync = ref.watch(activeProjectsProvider);
     final projects = projectsAsync.value ?? <Project>[];
 
-    return DropTarget(
-      onDragEntered: (_) => setState(() => _isDragging = true),
-      onDragExited: (_) => setState(() => _isDragging = false),
-      onDragDone: (details) {
-        setState(() => _isDragging = false);
-        final paths = details.files.map((f) => f.path).toList();
-        if (paths.isNotEmpty) {
-          _showImportDialog(initialFiles: paths);
-        }
-      },
-      child: Stack(
-        children: [
-          ScaffoldPage(
-            padding: EdgeInsets.zero,
-            content: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (_hasSelection)
-                  _buildMultiSelectBar(theme)
-                else
-                  _buildToolbar(theme, filter, projects),
-                AssetFilterBar(projects: projects),
-                const Divider(),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                    child: filteredAsync.when(
-                      loading: () =>
-                          const LoadingIndicator(message: '加载资产中...'),
-                      error: (e, _) => Center(
-                        child: InfoBar(
-                          title: const Text('加载失败'),
-                          content: Text('$e'),
-                          severity: InfoBarSeverity.error,
-                        ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobileLayout = constraints.maxWidth <= Breakpoints.tablet;
+
+        Widget page = ScaffoldPage(
+          padding: EdgeInsets.zero,
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (_hasSelection)
+                isMobileLayout
+                    ? _buildMobileMultiSelectHeader(theme)
+                    : _buildMultiSelectBar(theme)
+              else
+                isMobileLayout
+                    ? _buildMobileToolbar(theme, filter, projects)
+                    : _buildToolbar(theme, filter, projects),
+              AssetFilterBar(projects: projects),
+              const Divider(),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    isMobileLayout ? 12 : 20,
+                    12,
+                    isMobileLayout ? 12 : 20,
+                    0,
+                  ),
+                  child: filteredAsync.when(
+                    loading: () =>
+                        const LoadingIndicator(message: '加载资产中...'),
+                    error: (e, _) => Center(
+                      child: InfoBar(
+                        title: const Text('加载失败'),
+                        content: Text('$e'),
+                        severity: InfoBarSeverity.error,
                       ),
-                      data: (assets) {
-                        if (assets.isEmpty) {
-                          return _buildEmptyState(filter);
-                        }
-                        return filter.viewMode == AssetViewMode.grid
-                            ? _buildGridView(assets)
-                            : _buildListView(assets);
-                      },
                     ),
+                    data: (assets) {
+                      if (assets.isEmpty) {
+                        return _buildEmptyState(filter);
+                      }
+                      return filter.viewMode == AssetViewMode.grid
+                          ? _buildGridView(assets,
+                              enableLongPress: isMobileLayout)
+                          : _buildListView(assets,
+                              enableLongPress: isMobileLayout);
+                    },
                   ),
                 ),
+              ),
+              if (isMobileLayout && _hasSelection)
+                _buildMobileBottomActionBar(theme)
+              else
                 _buildStatusBar(theme, filteredAsync),
+            ],
+          ),
+        );
+
+        Widget result;
+        if (PlatformUtils.isDesktop) {
+          result = DropTarget(
+            onDragEntered: (_) => setState(() => _isDragging = true),
+            onDragExited: (_) => setState(() => _isDragging = false),
+            onDragDone: (details) {
+              setState(() => _isDragging = false);
+              final paths = details.files.map((f) => f.path).toList();
+              if (paths.isNotEmpty) {
+                _showImportDialog(initialFiles: paths);
+              }
+            },
+            child: Stack(
+              children: [
+                page,
+                if (_isDragging) _buildDragOverlay(theme),
               ],
             ),
-          ),
-          if (_isDragging) _buildDragOverlay(theme),
-        ],
-      ),
+          );
+        } else {
+          result = page;
+        }
+
+        return result;
+      },
     );
   }
 
@@ -317,10 +350,208 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
   }
 
   // ---------------------------------------------------------------------------
+  // Mobile toolbar
+  // ---------------------------------------------------------------------------
+
+  Widget _buildMobileToolbar(
+    FluentThemeData theme,
+    AssetFilterState filter,
+    List<Project> projects,
+  ) {
+    final notifier = ref.read(assetFilterProvider.notifier);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text('资产库', style: theme.typography.subtitle),
+              const Spacer(),
+              IconButton(
+                icon: Icon(
+                  _filterExpanded
+                      ? FluentIcons.chevron_up
+                      : FluentIcons.filter,
+                  size: 16,
+                ),
+                onPressed: () =>
+                    setState(() => _filterExpanded = !_filterExpanded),
+              ),
+              const SizedBox(width: 4),
+              ToggleSwitch(
+                checked: filter.viewMode == AssetViewMode.list,
+                onChanged: (v) => notifier.setViewMode(
+                  v ? AssetViewMode.list : AssetViewMode.grid,
+                ),
+                content: Text(
+                  filter.viewMode == AssetViewMode.grid ? '网格' : '列表',
+                  style: theme.typography.caption,
+                ),
+              ),
+              const SizedBox(width: 8),
+              FilledButton(
+                onPressed: () => _showImportDialog(),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(FluentIcons.add, size: 14),
+                    SizedBox(width: 4),
+                    Text('导入'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (_filterExpanded) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: AutoSuggestBox<String>(
+                placeholder: '搜索资产...',
+                items: const [],
+                onChanged: (text, _) => notifier.setSearchQuery(text),
+                leadingIcon: const Padding(
+                  padding: EdgeInsets.only(left: 10),
+                  child: Icon(FluentIcons.search, size: 14),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ComboBox<String?>(
+                  value: filter.typeFilter,
+                  items: const [
+                    ComboBoxItem(value: null, child: Text('全部类型')),
+                    ComboBoxItem(value: 'image', child: Text('图片')),
+                    ComboBoxItem(value: 'video', child: Text('视频')),
+                    ComboBoxItem(value: 'audio', child: Text('音频')),
+                    ComboBoxItem(value: 'text', child: Text('文本')),
+                  ],
+                  onChanged: (v) => notifier.setTypeFilter(v),
+                ),
+                ComboBox<String?>(
+                  value: filter.projectFilter,
+                  items: [
+                    const ComboBoxItem(value: null, child: Text('全部项目')),
+                    ...projects.map(
+                      (p) => ComboBoxItem(value: p.id, child: Text(p.name)),
+                    ),
+                  ],
+                  onChanged: (v) => notifier.setProjectFilter(v),
+                ),
+                ComboBox<AssetSortField>(
+                  value: filter.sortField,
+                  items: const [
+                    ComboBoxItem(
+                      value: AssetSortField.createdAt,
+                      child: Text('创建时间'),
+                    ),
+                    ComboBoxItem(
+                      value: AssetSortField.name,
+                      child: Text('名称'),
+                    ),
+                    ComboBoxItem(
+                      value: AssetSortField.fileSize,
+                      child: Text('文件大小'),
+                    ),
+                    ComboBoxItem(
+                      value: AssetSortField.type,
+                      child: Text('类型'),
+                    ),
+                  ],
+                  onChanged: (v) {
+                    if (v != null) notifier.setSortField(v);
+                  },
+                ),
+                _TagFilterButton(
+                  selectedTagIds: filter.tagFilters,
+                  onToggle: notifier.toggleTagFilter,
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileMultiSelectHeader(FluentThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      color: theme.accentColor.withValues(alpha: 0.06),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(FluentIcons.cancel, size: 16),
+            onPressed: () => setState(() {
+              _selectedIds.clear();
+              _lastSelectedIndex = null;
+              _multiSelectMode = false;
+            }),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '已选择 ${_selectedIds.length} 个',
+            style: theme.typography.bodyStrong,
+          ),
+          const Spacer(),
+          Button(
+            onPressed: _selectAll,
+            child: const Text('全选'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileBottomActionBar(FluentThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        border: Border(
+          top: BorderSide(color: theme.resources.cardStrokeColorDefault),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _MobileActionButton(
+            icon: FluentIcons.heart,
+            label: '收藏',
+            onPressed: _batchFavorite,
+          ),
+          _MobileActionButton(
+            icon: FluentIcons.move_to_folder,
+            label: '移动',
+            onPressed: _batchMoveToProject,
+          ),
+          _MobileActionButton(
+            icon: FluentIcons.tag,
+            label: '标签',
+            onPressed: _batchAddTag,
+          ),
+          _MobileActionButton(
+            icon: FluentIcons.delete,
+            label: '删除',
+            onPressed: _batchDelete,
+            isDestructive: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
   // Grid & List views
   // ---------------------------------------------------------------------------
 
-  Widget _buildGridView(List<Asset> assets) {
+  Widget _buildGridView(List<Asset> assets, {required bool enableLongPress}) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final crossAxisCount =
@@ -335,15 +566,21 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
           itemCount: assets.length,
           itemBuilder: (context, index) {
             final asset = assets[index];
-            return AssetGridItem(
-              asset: asset,
-              isSelected: _selectedIds.contains(asset.id),
-              onTap: () => _handleItemTap(asset, index, assets),
-              onDoubleTap: () => context.go('${AppRoutes.assets}/${asset.id}'),
-              onFavoriteToggle: () =>
-                  ref.read(assetActionsProvider).toggleFavorite(asset.id),
-              onDelete: () => _confirmDeleteSingle(asset),
-              onRename: () => _showRenameDialog(asset),
+            return GestureDetector(
+              onLongPress: enableLongPress
+                  ? () => _handleLongPress(asset, index)
+                  : null,
+              child: AssetGridItem(
+                asset: asset,
+                isSelected: _selectedIds.contains(asset.id),
+                onTap: () => _handleItemTap(asset, index, assets),
+                onDoubleTap: () =>
+                    context.go('${AppRoutes.assets}/${asset.id}'),
+                onFavoriteToggle: () =>
+                    ref.read(assetActionsProvider).toggleFavorite(asset.id),
+                onDelete: () => _confirmDeleteSingle(asset),
+                onRename: () => _showRenameDialog(asset),
+              ),
             );
           },
         );
@@ -351,20 +588,25 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
     );
   }
 
-  Widget _buildListView(List<Asset> assets) {
+  Widget _buildListView(List<Asset> assets, {required bool enableLongPress}) {
     return ListView.builder(
       itemCount: assets.length,
       itemBuilder: (context, index) {
         final asset = assets[index];
-        return AssetListItem(
-          asset: asset,
-          isSelected: _selectedIds.contains(asset.id),
-          onTap: () => _handleItemTap(asset, index, assets),
-          onDoubleTap: () => context.go('${AppRoutes.assets}/${asset.id}'),
-          onFavoriteToggle: () =>
-              ref.read(assetActionsProvider).toggleFavorite(asset.id),
-          onDelete: () => _confirmDeleteSingle(asset),
-          onRename: () => _showRenameDialog(asset),
+        return GestureDetector(
+          onLongPress: enableLongPress
+              ? () => _handleLongPress(asset, index)
+              : null,
+          child: AssetListItem(
+            asset: asset,
+            isSelected: _selectedIds.contains(asset.id),
+            onTap: () => _handleItemTap(asset, index, assets),
+            onDoubleTap: () => context.go('${AppRoutes.assets}/${asset.id}'),
+            onFavoriteToggle: () =>
+                ref.read(assetActionsProvider).toggleFavorite(asset.id),
+            onDelete: () => _confirmDeleteSingle(asset),
+            onRename: () => _showRenameDialog(asset),
+          ),
         );
       },
     );
@@ -479,6 +721,19 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
   // ---------------------------------------------------------------------------
 
   void _handleItemTap(Asset asset, int index, List<Asset> assets) {
+    if (_multiSelectMode) {
+      setState(() {
+        if (_selectedIds.contains(asset.id)) {
+          _selectedIds.remove(asset.id);
+          if (_selectedIds.isEmpty) _multiSelectMode = false;
+        } else {
+          _selectedIds.add(asset.id);
+        }
+        _lastSelectedIndex = index;
+      });
+      return;
+    }
+
     final isCtrlPressed =
         HardwareKeyboard.instance.logicalKeysPressed
             .any((k) => k == LogicalKeyboardKey.controlLeft ||
@@ -516,10 +771,19 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
     });
   }
 
+  void _handleLongPress(Asset asset, int index) {
+    setState(() {
+      _multiSelectMode = true;
+      _selectedIds.add(asset.id);
+      _lastSelectedIndex = index;
+    });
+  }
+
   void _selectAll() {
     final assets = ref.read(filteredAssetsProvider).value ?? <Asset>[];
     setState(() {
       _selectedIds.addAll(assets.map((a) => a.id));
+      _multiSelectMode = true;
     });
   }
 
@@ -858,6 +1122,50 @@ class _BatchTagSelector extends ConsumerWidget {
           }).toList(),
         );
       },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile bottom action button
+// ---------------------------------------------------------------------------
+
+class _MobileActionButton extends StatelessWidget {
+  const _MobileActionButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.isDestructive = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+  final bool isDestructive;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FluentTheme.of(context);
+    final color = isDestructive
+        ? Colors.red
+        : theme.resources.textFillColorPrimary;
+
+    return GestureDetector(
+      onTap: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 20, color: color),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: theme.typography.caption?.copyWith(color: color),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

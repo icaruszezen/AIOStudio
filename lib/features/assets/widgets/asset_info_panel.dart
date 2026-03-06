@@ -3,12 +3,15 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/utils/platform_utils.dart';
 import '../../../shared/utils/format_utils.dart';
 import '../../projects/providers/projects_provider.dart';
 import '../providers/assets_provider.dart';
@@ -80,11 +83,13 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
     await ref.read(assetActionsProvider).toggleFavorite(_asset.id);
   }
 
-  Future<void> _openInExplorer() async {
+  Future<void> _openOrShare() async {
     try {
-      if (Platform.isWindows) {
+      if (PlatformUtils.isMobile) {
+        await Share.shareXFiles([XFile(_asset.filePath)]);
+      } else if (defaultTargetPlatform == TargetPlatform.windows) {
         await Process.run('explorer', ['/select,', _asset.filePath]);
-      } else if (Platform.isMacOS) {
+      } else if (defaultTargetPlatform == TargetPlatform.macOS) {
         await Process.run('open', ['-R', _asset.filePath]);
       } else {
         await Process.run('xdg-open', [p.dirname(_asset.filePath)]);
@@ -93,7 +98,7 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
       if (mounted) {
         await displayInfoBar(context, builder: (_, close) {
           return InfoBar(
-            title: const Text('无法打开文件管理器'),
+            title: Text(PlatformUtils.isMobile ? '分享失败' : '无法打开文件管理器'),
             content: Text('$e'),
             severity: InfoBarSeverity.error,
             onClose: close,
@@ -316,13 +321,18 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
           runSpacing: 8,
           children: [
             Button(
-              onPressed: _openInExplorer,
-              child: const Row(
+              onPressed: _openOrShare,
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(FluentIcons.open_folder_horizontal, size: 14),
-                  SizedBox(width: 6),
-                  Text('在文件管理器中打开'),
+                  Icon(
+                    PlatformUtils.isMobile
+                        ? FluentIcons.share
+                        : FluentIcons.open_folder_horizontal,
+                    size: 14,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(PlatformUtils.isMobile ? '分享' : '在文件管理器中打开'),
                 ],
               ),
             ),

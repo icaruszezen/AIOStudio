@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/database_provider.dart';
+import '../../../core/utils/platform_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../providers/projects_provider.dart';
@@ -86,23 +87,110 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
 
-    return ScaffoldPage(
-      padding: EdgeInsets.zero,
-      content: Column(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobileLayout = constraints.maxWidth <= Breakpoints.tablet;
+
+        return ScaffoldPage(
+          padding: EdgeInsets.zero,
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              isMobileLayout
+                  ? _buildMobileToolbar(theme)
+                  : _buildToolbar(theme),
+              const Divider(),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.all(isMobileLayout ? 12 : 20),
+                  child: _searchQuery.isNotEmpty
+                      ? _buildSearchResults()
+                      : (_showArchived
+                          ? _buildArchivedList()
+                          : _buildActiveList()),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  _ViewMode get _effectiveViewMode {
+    if (PlatformUtils.isMobile) return _ViewMode.list;
+    return _viewMode;
+  }
+
+  Widget _buildMobileToolbar(FluentThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildToolbar(theme),
-          const Divider(),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: _searchQuery.isNotEmpty
-                  ? _buildSearchResults()
-                  : (_showArchived
-                      ? _buildArchivedList()
-                      : _buildActiveList()),
+          Row(
+            children: [
+              Text(
+                _showArchived ? '已归档项目' : '项目',
+                style: theme.typography.subtitle,
+              ),
+              const Spacer(),
+              if (_showArchived)
+                IconButton(
+                  icon: const Icon(FluentIcons.back, size: 16),
+                  onPressed: () => setState(() => _showArchived = false),
+                )
+              else ...[
+                IconButton(
+                  icon: const Icon(FluentIcons.archive, size: 16),
+                  onPressed: () => setState(() => _showArchived = true),
+                ),
+                const SizedBox(width: 4),
+                FilledButton(
+                  onPressed: () => ProjectCreateDialog.show(context),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(FluentIcons.add, size: 14),
+                      SizedBox(width: 4),
+                      Text('新建'),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: AutoSuggestBox<String>(
+              placeholder: '搜索项目...',
+              items: const [],
+              onChanged: (text, reason) {
+                setState(() => _searchQuery = text);
+              },
+              leadingIcon: const Padding(
+                padding: EdgeInsets.only(left: 10),
+                child: Icon(FluentIcons.search, size: 14),
+              ),
             ),
           ),
+          if (!_showArchived) ...[
+            const SizedBox(height: 8),
+            ComboBox<_SortField>(
+              value: _sortField,
+              items: const [
+                ComboBoxItem(
+                    value: _SortField.updatedAt, child: Text('更新时间')),
+                ComboBoxItem(
+                    value: _SortField.createdAt, child: Text('创建时间')),
+                ComboBoxItem(value: _SortField.name, child: Text('名称')),
+              ],
+              onChanged: (v) {
+                if (v != null) setState(() => _sortField = v);
+              },
+            ),
+          ],
         ],
       ),
     );
@@ -237,7 +325,7 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
           );
         }
         final sorted = _sortProjects(projects);
-        return _viewMode == _ViewMode.grid
+        return _effectiveViewMode == _ViewMode.grid
             ? _buildGridView(sorted)
             : _buildListView(sorted, archived: false);
       },
@@ -289,7 +377,7 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
             description: '尝试使用不同的关键词搜索',
           );
         }
-        return _viewMode == _ViewMode.grid
+        return _effectiveViewMode == _ViewMode.grid
             ? _buildGridView(projects)
             : _buildListView(projects, archived: false);
       },

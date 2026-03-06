@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/platform_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../models/chat_models.dart';
 import '../providers/chat_provider.dart';
@@ -66,6 +67,12 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       content: LayoutBuilder(
         builder: (context, constraints) {
           final totalWidth = constraints.maxWidth;
+          final isMobileLayout = totalWidth <= Breakpoints.tablet;
+
+          if (isMobileLayout) {
+            return _buildChatArea(chatState, isMobileLayout: true);
+          }
+
           final maxListWidth = totalWidth * _maxListFraction;
           final clampedListWidth =
               _listPanelWidth.clamp(_minListWidth, maxListWidth);
@@ -80,11 +87,59 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                 _buildDragHandle(totalWidth),
               ],
               Expanded(
-                child: _buildChatArea(chatState),
+                child: _buildChatArea(chatState, isMobileLayout: false),
               ),
             ],
           );
         },
+      ),
+    );
+  }
+
+  void _openMobileConversationDrawer() {
+    final theme = FluentTheme.of(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final drawerWidth = (screenWidth * 0.85).clamp(240.0, 300.0);
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Container(
+          width: drawerWidth,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            color: theme.micaBackgroundColor,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 16,
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                const Expanded(child: ConversationListPanel()),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Button(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(FluentIcons.chrome_back, size: 14),
+                        SizedBox(width: 6),
+                        Text('关闭'),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -109,11 +164,11 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     );
   }
 
-  Widget _buildChatArea(ChatState chatState) {
+  Widget _buildChatArea(ChatState chatState, {required bool isMobileLayout}) {
     final conv = chatState.currentConversation;
 
     if (conv == null) {
-      return _buildWelcome();
+      return _buildWelcome(isMobileLayout: isMobileLayout);
     }
 
     final theme = FluentTheme.of(context);
@@ -121,7 +176,9 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
     return Column(
       children: [
-        _buildTopBar(theme, conv, chatState),
+        isMobileLayout
+            ? _buildMobileTopBar(theme, conv, chatState)
+            : _buildTopBar(theme, conv, chatState),
         const Divider(),
         Expanded(child: _buildMessageList(conv, isDark)),
         const ChatInputArea(),
@@ -129,16 +186,81 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     );
   }
 
-  Widget _buildWelcome() {
-    return EmptyState(
-      icon: FluentIcons.chat,
-      title: '欢迎使用 AI 对话',
-      description: '从左侧新建对话，或选择一个已有对话开始聊天',
-      action: FilledButton(
-        onPressed: () {
-          ref.read(chatProvider.notifier).createConversation();
-        },
-        child: const Text('开始新对话'),
+  Widget _buildWelcome({required bool isMobileLayout}) {
+    return Column(
+      children: [
+        if (isMobileLayout)
+          Padding(
+            padding: const EdgeInsets.only(left: 8, top: 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: IconButton(
+                icon: const Icon(FluentIcons.global_nav_button, size: 18),
+                onPressed: _openMobileConversationDrawer,
+              ),
+            ),
+          ),
+        Expanded(
+          child: EmptyState(
+            icon: FluentIcons.chat,
+            title: '欢迎使用 AI 对话',
+            description: isMobileLayout
+                ? '点击左上角菜单新建或选择对话'
+                : '从左侧新建对话，或选择一个已有对话开始聊天',
+            action: FilledButton(
+              onPressed: () {
+                ref.read(chatProvider.notifier).createConversation();
+              },
+              child: const Text('开始新对话'),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMobileTopBar(
+    FluentThemeData theme,
+    Conversation conv,
+    ChatState chatState,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(FluentIcons.global_nav_button, size: 18),
+                onPressed: _openMobileConversationDrawer,
+              ),
+              const SizedBox(width: 4),
+              Expanded(child: _buildTitle(theme, conv)),
+              IconButton(
+                icon: Icon(
+                  FluentIcons.comment_active,
+                  size: 16,
+                  color: chatState.systemPrompt.isNotEmpty
+                      ? theme.accentColor.defaultBrushFor(theme.brightness)
+                      : null,
+                ),
+                onPressed: () =>
+                    _showSystemPromptDialog(chatState.systemPrompt),
+              ),
+              IconButton(
+                icon: const Icon(FluentIcons.clear, size: 16),
+                onPressed: conv.messages.isEmpty
+                    ? null
+                    : () => _confirmClear(conv),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const SizedBox(
+            width: double.infinity,
+            child: ModelSelector(),
+          ),
+        ],
       ),
     );
   }
@@ -152,7 +274,6 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          // Sidebar toggle
           IconButton(
             icon: Icon(
               _sidebarCollapsed
@@ -164,18 +285,10 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                 setState(() => _sidebarCollapsed = !_sidebarCollapsed),
           ),
           const SizedBox(width: 8),
-
-          // Editable title
           Expanded(child: _buildTitle(theme, conv)),
-
           const SizedBox(width: 12),
-
-          // Model selector
           const ModelSelector(),
-
           const SizedBox(width: 8),
-
-          // System prompt button
           Tooltip(
             message: '系统提示词',
             child: IconButton(
@@ -189,10 +302,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
               onPressed: () => _showSystemPromptDialog(chatState.systemPrompt),
             ),
           ),
-
           const SizedBox(width: 4),
-
-          // Clear conversation
           Tooltip(
             message: '清空对话',
             child: IconButton(

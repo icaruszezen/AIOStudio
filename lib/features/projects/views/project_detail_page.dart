@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/utils/platform_utils.dart';
 import '../../../shared/widgets/breadcrumb_navigation.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
@@ -175,7 +176,9 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
       currentIndex: _currentTabIndex,
       onChanged: (i) => setState(() => _currentTabIndex = i),
       closeButtonVisibility: CloseButtonVisibilityMode.never,
-      tabWidthBehavior: TabWidthBehavior.sizeToContent,
+      tabWidthBehavior: PlatformUtils.isMobile
+          ? TabWidthBehavior.equal
+          : TabWidthBehavior.sizeToContent,
       tabs: [
         Tab(
           text: const Text('资产'),
