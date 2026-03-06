@@ -6,6 +6,7 @@ import '../../features/assets/views/asset_detail_page.dart';
 import '../../features/assets/views/assets_page.dart';
 import '../../features/projects/views/project_detail_page.dart';
 import '../../features/projects/views/projects_page.dart';
+import '../../features/prompts/views/prompts_page.dart';
 import '../../shared/widgets/app_shell.dart';
 
 abstract final class AppRoutes {
@@ -68,8 +69,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: AppRoutes.prompts,
-            builder: (context, state) =>
-                const _PlaceholderPage(title: '提示词库'),
+            builder: (context, state) => const PromptsPage(),
           ),
           GoRoute(
             path: AppRoutes.settings,
