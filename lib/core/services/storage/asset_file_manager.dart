@@ -186,6 +186,87 @@ class AssetFileManager {
     return results;
   }
 
+  /// Imports a media asset sent from the browser extension.
+  ///
+  /// Accepts either [mediaUrl] (downloaded via HTTP) or [mediaBase64]
+  /// (decoded in-memory). Source metadata (pageUrl, pageTitle) is persisted
+  /// in the asset's [metadata] JSON field.
+  Future<Asset> importFromExtension({
+    String? mediaUrl,
+    String? mediaBase64,
+    required String mediaType,
+    required String fileName,
+    String? projectId,
+    String? name,
+    String? pageUrl,
+    String? pageTitle,
+  }) async {
+    final assetName = name ?? p.basenameWithoutExtension(fileName);
+    final ext = p.extension(fileName).isNotEmpty
+        ? p.extension(fileName)
+        : (mediaType == 'image' ? '.png' : '.mp4');
+
+    // Resolve a storage directory – use the global "unsorted" dir when no
+    // project is specified.
+    final dir = projectId != null
+        ? await _storage.getAssetDirectory(projectId)
+        : await _storage.getAssetDirectory('_unsorted');
+    final destName = '${_uuid.v4()}$ext';
+    final destPath = p.join(dir.path, destName);
+
+    int fileSize;
+
+    if (mediaUrl != null && mediaUrl.isNotEmpty) {
+      await _dio.download(mediaUrl, destPath);
+      final stat = await File(destPath).stat();
+      fileSize = stat.size;
+    } else if (mediaBase64 != null && mediaBase64.isNotEmpty) {
+      var raw = mediaBase64;
+      final commaIdx = raw.indexOf(',');
+      if (commaIdx != -1 && commaIdx < 100) {
+        raw = raw.substring(commaIdx + 1);
+      }
+      final bytes = base64Decode(raw);
+      await File(destPath).writeAsBytes(bytes);
+      fileSize = bytes.length;
+    } else {
+      throw ArgumentError('Either mediaUrl or mediaBase64 must be provided');
+    }
+
+    String? thumbPath;
+    if (mediaType == 'image') {
+      thumbPath = await _storage.generateThumbnail(destPath);
+    }
+
+    final metadataMap = <String, dynamic>{};
+    if (pageUrl != null) metadataMap['pageUrl'] = pageUrl;
+    if (pageTitle != null) metadataMap['pageTitle'] = pageTitle;
+
+    final id = _uuid.v4();
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    final companion = AssetsCompanion.insert(
+      id: id,
+      projectId: Value(projectId),
+      name: assetName,
+      type: mediaType,
+      filePath: destPath,
+      thumbnailPath: Value(thumbPath),
+      originalUrl: Value(mediaUrl),
+      sourceType: 'browser_extension',
+      fileSize: Value(fileSize),
+      metadata:
+          Value(metadataMap.isNotEmpty ? jsonEncode(metadataMap) : null),
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    await _assetDao.insertAsset(companion);
+    final asset = await _assetDao.getAssetById(id);
+    _log.d('Imported from extension: $assetName');
+    return asset!;
+  }
+
   /// Deletes an asset's file and its database record.
   Future<void> deleteAsset(String assetId) async {
     final asset = await _assetDao.getAssetById(assetId);

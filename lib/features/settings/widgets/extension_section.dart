@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/services/extension_bridge/extension_providers.dart';
 import '../providers/settings_provider.dart';
 
 class ExtensionSection extends ConsumerWidget {
@@ -11,6 +12,11 @@ class ExtensionSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = FluentTheme.of(context);
     final port = ref.watch(extensionPortProvider);
+    final actualPort = ref.watch(extensionActualPortProvider);
+    final serverState = ref.watch(extensionServerProvider);
+    final connected = ref.watch(extensionConnectionStatusProvider);
+
+    final isRunning = serverState.value == true;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,7 +33,44 @@ class ExtensionSection extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Port
+              // Server status
+              Row(
+                children: [
+                  Text('服务状态：', style: theme.typography.body),
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: serverState.isLoading
+                          ? Colors.orange
+                          : isRunning
+                              ? Colors.green
+                              : Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    serverState.isLoading
+                        ? '启动中...'
+                        : isRunning
+                            ? '运行中 (端口 $actualPort)'
+                            : '已停止',
+                    style: theme.typography.body,
+                  ),
+                ],
+              ),
+              if (serverState.hasError) ...[
+                const SizedBox(height: 8),
+                Text(
+                  '错误：${serverState.error}',
+                  style: theme.typography.body
+                      ?.copyWith(color: Colors.red),
+                ),
+              ],
+              const SizedBox(height: 16),
+
+              // Port config
               InfoLabel(
                 label: '通信端口',
                 child: SizedBox(
@@ -38,7 +81,9 @@ class ExtensionSection extends ConsumerWidget {
                     max: 65535,
                     onChanged: (val) {
                       if (val != null) {
-                        ref.read(extensionPortProvider.notifier).setPort(val);
+                        ref
+                            .read(extensionPortProvider.notifier)
+                            .setPort(val);
                       }
                     },
                     mode: SpinButtonPlacementMode.inline,
@@ -50,20 +95,20 @@ class ExtensionSection extends ConsumerWidget {
               // Connection status
               Row(
                 children: [
-                  Text('连接状态：', style: theme.typography.body),
+                  Text('扩展连接：', style: theme.typography.body),
                   Container(
                     width: 8,
                     height: 8,
-                    decoration: const BoxDecoration(
-                      color: Colors.grey,
+                    decoration: BoxDecoration(
+                      color: connected ? Colors.green : Colors.grey,
                       shape: BoxShape.circle,
                     ),
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    '未连接',
+                    connected ? '已连接' : '未连接',
                     style: theme.typography.body?.copyWith(
-                      color: Colors.grey,
+                      color: connected ? Colors.green : Colors.grey,
                     ),
                   ),
                 ],
@@ -73,21 +118,38 @@ class ExtensionSection extends ConsumerWidget {
               // Actions
               Row(
                 children: [
+                  ToggleSwitch(
+                    checked: isRunning,
+                    onChanged: serverState.isLoading
+                        ? null
+                        : (val) {
+                            if (val) {
+                              ref
+                                  .read(extensionServerProvider.notifier)
+                                  .startServer();
+                            } else {
+                              ref
+                                  .read(extensionServerProvider.notifier)
+                                  .stopServer();
+                            }
+                          },
+                    content: Text(isRunning ? '已启用' : '已停用'),
+                  ),
+                  const SizedBox(width: 16),
                   Button(
-                    onPressed: () {
-                      displayInfoBar(context, builder: (ctx, close) => InfoBar(
-                        title: const Text('功能开发中'),
-                        content: const Text('通信服务重启功能将在后续版本中提供'),
-                        severity: InfoBarSeverity.info,
-                        onClose: close,
-                      ));
-                    },
+                    onPressed: serverState.isLoading
+                        ? null
+                        : () {
+                            ref
+                                .read(extensionServerProvider.notifier)
+                                .restart();
+                          },
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(FluentIcons.refresh, size: 14),
                         SizedBox(width: 6),
-                        Text('重启通信服务'),
+                        Text('重启服务'),
                       ],
                     ),
                   ),
@@ -111,7 +173,8 @@ class ExtensionSection extends ConsumerWidget {
                   const SizedBox(width: 16),
                   HyperlinkButton(
                     onPressed: () => launchUrl(
-                      Uri.parse('https://microsoftedge.microsoft.com/addons'),
+                      Uri.parse(
+                          'https://microsoftedge.microsoft.com/addons'),
                     ),
                     child: const Text('Edge Add-ons'),
                   ),

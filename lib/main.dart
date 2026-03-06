@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'app.dart';
+import 'core/services/extension_bridge/extension_providers.dart';
 import 'core/theme/app_theme.dart';
 
 Future<void> main() async {
@@ -31,11 +32,19 @@ Future<void> main() async {
 
   final prefs = await SharedPreferences.getInstance();
 
+  final container = ProviderContainer(
+    overrides: [
+      sharedPreferencesProvider.overrideWithValue(prefs),
+    ],
+  );
+
+  if (_isDesktop) {
+    container.read(extensionServerProvider);
+  }
+
   runApp(
-    ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-      ],
+    UncontrolledProviderScope(
+      container: container,
       child: const AioStudioApp(),
     ),
   );
