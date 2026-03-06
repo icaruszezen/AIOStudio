@@ -66,6 +66,10 @@ class AiServiceManager {
       .where((s) => s.supportsImageGeneration)
       .toList(growable: false);
 
+  List<AiService> getVideoServices() => _services.values
+      .where((s) => s.supportsVideoGeneration)
+      .toList(growable: false);
+
   /// All model identifiers available for the given capability type.
   List<String> getAvailableModels(String type) {
     final services = _services.values.where((s) {

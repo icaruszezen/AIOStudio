@@ -20,6 +20,9 @@ abstract class AiService {
   /// Model identifiers for image generation only.
   List<String> get imageModels => [];
 
+  /// Model identifiers for video generation only.
+  List<String> get videoModels => [];
+
   /// Provider type tag for UI branching (e.g. 'openai', 'stability', 'custom').
   String get providerType => 'custom';
 
