@@ -36,6 +36,12 @@ class OpenAiService extends AiService with OpenAiCompatibleMixin {
   List<String> get supportedModels => _allModels;
 
   @override
+  List<String> get imageModels => _imageModels;
+
+  @override
+  String get providerType => 'openai';
+
+  @override
   bool get supportsChatCompletion => true;
 
   @override

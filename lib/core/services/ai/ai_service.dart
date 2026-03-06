@@ -17,6 +17,12 @@ abstract class AiService {
   /// Model identifiers this provider supports.
   List<String> get supportedModels;
 
+  /// Model identifiers for image generation only.
+  List<String> get imageModels => [];
+
+  /// Provider type tag for UI branching (e.g. 'openai', 'stability', 'custom').
+  String get providerType => 'custom';
+
   bool get supportsChatCompletion;
   bool get supportsImageGeneration;
   bool get supportsVideoGeneration;

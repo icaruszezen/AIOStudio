@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 class AiChatMessage {
   final String role;
   final String content;
@@ -100,6 +103,9 @@ class AiImageRequest {
   final int count;
   final String? style;
   final String? quality;
+  final double? cfgScale;
+  final int? steps;
+  final int? seed;
 
   const AiImageRequest({
     required this.prompt,
@@ -110,6 +116,9 @@ class AiImageRequest {
     this.count = 1,
     this.style,
     this.quality,
+    this.cfgScale,
+    this.steps,
+    this.seed,
   });
 
   Map<String, dynamic> toJson() => {
@@ -121,6 +130,9 @@ class AiImageRequest {
         'count': count,
         if (style != null) 'style': style,
         if (quality != null) 'quality': quality,
+        if (cfgScale != null) 'cfg_scale': cfgScale,
+        if (steps != null) 'steps': steps,
+        if (seed != null) 'seed': seed,
       };
 }
 
@@ -129,7 +141,9 @@ class AiGeneratedImage {
   final String? base64;
   final String? revisedPrompt;
 
-  const AiGeneratedImage({this.url, this.base64, this.revisedPrompt});
+  Uint8List? _cachedBytes;
+
+  AiGeneratedImage({this.url, this.base64, this.revisedPrompt});
 
   factory AiGeneratedImage.fromJson(Map<String, dynamic> json) =>
       AiGeneratedImage(
@@ -137,6 +151,12 @@ class AiGeneratedImage {
         base64: json['b64_json'] as String? ?? json['base64'] as String?,
         revisedPrompt: json['revised_prompt'] as String?,
       );
+
+  /// Lazily decoded bytes from [base64]. Safe to call repeatedly.
+  Uint8List? get bytes {
+    if (base64 == null) return null;
+    return _cachedBytes ??= base64Decode(base64!);
+  }
 
   Map<String, dynamic> toJson() => {
         if (url != null) 'url': url,

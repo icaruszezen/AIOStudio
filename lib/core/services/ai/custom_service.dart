@@ -42,6 +42,9 @@ class CustomService extends AiService with OpenAiCompatibleMixin {
   List<String> get supportedModels => _models;
 
   @override
+  List<String> get imageModels => _imageEnabled ? _models : [];
+
+  @override
   bool get supportsChatCompletion => _chatEnabled;
 
   @override

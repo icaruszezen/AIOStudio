@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/ai_chat/views/chat_page.dart';
+import '../../features/ai_image/views/image_gen_page.dart';
 import '../../features/assets/views/asset_detail_page.dart';
 import '../../features/assets/views/assets_page.dart';
 import '../../features/projects/views/project_detail_page.dart';
@@ -59,8 +60,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: AppRoutes.aiImage,
-            builder: (context, state) =>
-                const _PlaceholderPage(title: '图片生成'),
+            builder: (context, state) => const ImageGenPage(),
           ),
           GoRoute(
             path: AppRoutes.aiVideo,

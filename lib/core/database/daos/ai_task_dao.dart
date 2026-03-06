@@ -25,6 +25,14 @@ class AiTaskDao extends DatabaseAccessor<AppDatabase> with _$AiTaskDaoMixin {
   Future<int> deleteTask(String id) =>
       (delete(aiTasks)..where((t) => t.id.equals(id))).go();
 
+  Future<void> updateTaskFields(String id, AiTasksCompanion entry) =>
+      (update(aiTasks)..where((t) => t.id.equals(id))).write(entry);
+
+  Stream<List<AiTask>> watchByType(String type) => (select(aiTasks)
+        ..where((t) => t.type.equals(type))
+        ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+      .watch();
+
   Future<List<AiTask>> filterByStatus(String status) =>
       (select(aiTasks)..where((t) => t.status.equals(status))).get();
 

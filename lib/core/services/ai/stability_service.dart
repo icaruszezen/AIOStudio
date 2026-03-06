@@ -35,6 +35,12 @@ class StabilityService extends AiService {
   List<String> get supportedModels => List.unmodifiable(_models);
 
   @override
+  List<String> get imageModels => List.unmodifiable(_models);
+
+  @override
+  String get providerType => 'stability';
+
+  @override
   bool get supportsChatCompletion => false;
 
   @override
@@ -56,6 +62,9 @@ class StabilityService extends AiService {
           'negative_prompt': request.negativePrompt,
         'output_format': 'png',
         'aspect_ratio': _aspectRatio(request.width, request.height),
+        if (request.cfgScale != null) 'cfg_scale': request.cfgScale,
+        if (request.steps != null) 'steps': request.steps,
+        if (request.seed != null) 'seed': request.seed,
       });
 
       final response = await _dio.post<Map<String, dynamic>>(

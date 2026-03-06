@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -111,6 +112,57 @@ class AssetFileManager {
     await _assetDao.insertAsset(companion);
     final asset = await _assetDao.getAssetById(id);
     _log.d('Downloaded file: $name from $url');
+    return asset!;
+  }
+
+  /// Decodes a base64-encoded image and saves it as a project asset.
+  ///
+  /// Automatically strips a `data:...;base64,` prefix if present.
+  Future<Asset> saveFromBase64({
+    required String base64Data,
+    required String projectId,
+    required String name,
+    String extension = '.png',
+  }) async {
+    var raw = base64Data;
+    final commaIdx = raw.indexOf(',');
+    if (commaIdx != -1 && commaIdx < 100) {
+      raw = raw.substring(commaIdx + 1);
+    }
+
+    final dir = await _storage.getAssetDirectory(projectId);
+    final fileName = '${_uuid.v4()}$extension';
+    final destPath = p.join(dir.path, fileName);
+
+    final List<int> bytes;
+    try {
+      bytes = base64Decode(raw);
+    } catch (e) {
+      throw FormatException('Invalid base64 data: $e');
+    }
+    final file = File(destPath);
+    await file.writeAsBytes(bytes);
+
+    final thumbPath = await _storage.generateThumbnail(destPath);
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final id = _uuid.v4();
+
+    final companion = AssetsCompanion.insert(
+      id: id,
+      projectId: Value(projectId),
+      name: name,
+      type: 'image',
+      filePath: destPath,
+      thumbnailPath: Value(thumbPath),
+      sourceType: 'ai_generated',
+      fileSize: Value(bytes.length),
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    await _assetDao.insertAsset(companion);
+    final asset = await _assetDao.getAssetById(id);
+    _log.d('Saved base64 image: $name → $destPath');
     return asset!;
   }
 

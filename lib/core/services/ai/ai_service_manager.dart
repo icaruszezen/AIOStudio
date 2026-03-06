@@ -62,6 +62,10 @@ class AiServiceManager {
   List<AiService> getAllEnabledServices() =>
       List.unmodifiable(_services.values);
 
+  List<AiService> getImageServices() => _services.values
+      .where((s) => s.supportsImageGeneration)
+      .toList(growable: false);
+
   /// All model identifiers available for the given capability type.
   List<String> getAvailableModels(String type) {
     final services = _services.values.where((s) {
