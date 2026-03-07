@@ -196,7 +196,7 @@ class PromptActions {
     if (models.isEmpty) {
       throw StateError('无可用的聊天模型，请先在设置中配置 AI 服务。');
     }
-    final model = models.first;
+    final model = models.first.id;
 
     final categoryLabel = _categoryDisplayName(category);
     final systemPrompt =

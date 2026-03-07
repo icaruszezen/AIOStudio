@@ -1,6 +1,127 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+class AiModelInfo {
+  final String id;
+  final int? contextWindow;
+  final int? maxOutputTokens;
+  final String mode;
+  final List<String> inputModalities;
+  final List<String> outputModalities;
+  final bool supportsVision;
+  final bool supportsFunctionCalling;
+  final bool supportsReasoning;
+  final bool isEnabled;
+
+  const AiModelInfo({
+    required this.id,
+    this.contextWindow,
+    this.maxOutputTokens,
+    this.mode = 'chat',
+    this.inputModalities = const ['text'],
+    this.outputModalities = const ['text'],
+    this.supportsVision = false,
+    this.supportsFunctionCalling = false,
+    this.supportsReasoning = false,
+    this.isEnabled = true,
+  });
+
+  bool get isChatModel => mode == 'chat';
+  bool get isImageModel => mode == 'image_generation' ||
+      outputModalities.contains('image');
+  bool get isEmbeddingModel => mode == 'embedding';
+  bool get isAudioModel =>
+      mode == 'audio_transcription' || mode == 'audio_speech';
+
+  String get contextWindowLabel {
+    if (contextWindow == null) return '';
+    if (contextWindow! >= 1000000) {
+      return '${(contextWindow! / 1000000).toStringAsFixed(contextWindow! % 1000000 == 0 ? 0 : 1)}M';
+    }
+    return '${(contextWindow! / 1000).toStringAsFixed(0)}K';
+  }
+
+  AiModelInfo copyWith({
+    String? id,
+    int? contextWindow,
+    int? maxOutputTokens,
+    String? mode,
+    List<String>? inputModalities,
+    List<String>? outputModalities,
+    bool? supportsVision,
+    bool? supportsFunctionCalling,
+    bool? supportsReasoning,
+    bool? isEnabled,
+  }) {
+    return AiModelInfo(
+      id: id ?? this.id,
+      contextWindow: contextWindow ?? this.contextWindow,
+      maxOutputTokens: maxOutputTokens ?? this.maxOutputTokens,
+      mode: mode ?? this.mode,
+      inputModalities: inputModalities ?? this.inputModalities,
+      outputModalities: outputModalities ?? this.outputModalities,
+      supportsVision: supportsVision ?? this.supportsVision,
+      supportsFunctionCalling:
+          supportsFunctionCalling ?? this.supportsFunctionCalling,
+      supportsReasoning: supportsReasoning ?? this.supportsReasoning,
+      isEnabled: isEnabled ?? this.isEnabled,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        if (contextWindow != null) 'context_window': contextWindow,
+        if (maxOutputTokens != null) 'max_output_tokens': maxOutputTokens,
+        'mode': mode,
+        'input_modalities': inputModalities,
+        'output_modalities': outputModalities,
+        'supports_vision': supportsVision,
+        'supports_function_calling': supportsFunctionCalling,
+        'supports_reasoning': supportsReasoning,
+        'is_enabled': isEnabled,
+      };
+
+  factory AiModelInfo.fromJson(Map<String, dynamic> json) => AiModelInfo(
+        id: json['id'] as String,
+        contextWindow: json['context_window'] as int?,
+        maxOutputTokens: json['max_output_tokens'] as int?,
+        mode: json['mode'] as String? ?? 'chat',
+        inputModalities: (json['input_modalities'] as List<dynamic>?)
+                ?.cast<String>() ??
+            const ['text'],
+        outputModalities: (json['output_modalities'] as List<dynamic>?)
+                ?.cast<String>() ??
+            const ['text'],
+        supportsVision: json['supports_vision'] as bool? ?? false,
+        supportsFunctionCalling:
+            json['supports_function_calling'] as bool? ?? false,
+        supportsReasoning: json['supports_reasoning'] as bool? ?? false,
+        isEnabled: json['is_enabled'] as bool? ?? true,
+      );
+
+  /// Create from registry capability data (without an explicit id in the map).
+  factory AiModelInfo.fromCapability(
+      String modelId, Map<String, dynamic> cap) {
+    return AiModelInfo(
+      id: modelId,
+      contextWindow: cap['max_input_tokens'] as int?,
+      maxOutputTokens: cap['max_output_tokens'] as int?,
+      mode: cap['mode'] as String? ?? 'chat',
+      inputModalities: (cap['supported_modalities'] as List<dynamic>?)
+              ?.cast<String>() ??
+          const ['text'],
+      outputModalities:
+          (cap['supported_output_modalities'] as List<dynamic>?)
+                  ?.cast<String>() ??
+              const ['text'],
+      supportsVision: cap['supports_vision'] as bool? ?? false,
+      supportsFunctionCalling:
+          cap['supports_function_calling'] as bool? ?? false,
+      supportsReasoning: cap['supports_reasoning'] as bool? ?? false,
+    );
+  }
+}
+
 class AiChatMessage {
   final String role;
   final String content;

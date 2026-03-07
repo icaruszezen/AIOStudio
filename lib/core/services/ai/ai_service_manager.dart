@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:logger/logger.dart';
 
 import '../../database/app_database.dart';
+import 'ai_models.dart';
 import 'ai_service.dart';
 import 'anthropic_service.dart';
 import 'custom_service.dart';
@@ -128,23 +129,85 @@ class AiServiceManager {
               '${cfg.name}: missing baseUrl');
           return null;
         }
-        final models = (extra['models'] as List<dynamic>?)
-                ?.map((e) => e as String)
-                .toList() ??
-            [cfg.defaultModel ?? 'default'];
+        final modelInfos = _parseModelInfos(extra, cfg.defaultModel);
         return CustomService(
           providerId: cfg.id,
           providerName: cfg.name,
           baseUrl: baseUrl,
           apiKey: apiKey.isNotEmpty ? apiKey : null,
-          models: models,
-          chatEnabled: extra['chat_enabled'] as bool? ?? true,
-          imageEnabled: extra['image_enabled'] as bool? ?? false,
+          modelInfos: modelInfos,
         );
       default:
         _log.w('[AiServiceManager] Unknown provider type: ${cfg.type}');
         return null;
     }
+  }
+
+  /// All model infos available for the given capability type, with metadata.
+  List<AiModelInfo> getAvailableModelInfos(String type) {
+    final infos = <AiModelInfo>[];
+    for (final s in _services.values) {
+      if (s is CustomService) {
+        for (final m in s.modelInfos) {
+          if (!m.isEnabled) continue;
+          final matches = switch (type) {
+            'chat' => m.isChatModel,
+            'image' => m.isImageModel,
+            _ => false,
+          };
+          if (matches) infos.add(m);
+        }
+      } else {
+        final matches = switch (type) {
+          'chat' => s.supportsChatCompletion,
+          'image' => s.supportsImageGeneration,
+          'video' => s.supportsVideoGeneration,
+          _ => false,
+        };
+        if (matches) {
+          final models = type == 'image' ? s.imageModels : s.supportedModels;
+          for (final id in models) {
+            infos.add(AiModelInfo(id: id));
+          }
+        }
+      }
+    }
+    return infos;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Parsing helpers
+  // ---------------------------------------------------------------------------
+
+  /// Parses model infos from extraConfig, supporting both new
+  /// `discovered_models` format and legacy `models` string-list format.
+  static List<AiModelInfo> _parseModelInfos(
+      Map<String, dynamic> extra, String? defaultModel) {
+    // New format: discovered_models
+    final discovered = extra['discovered_models'] as List<dynamic>?;
+    if (discovered != null && discovered.isNotEmpty) {
+      return discovered
+          .map((e) => AiModelInfo.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+
+    // Legacy format: models string list + chat_enabled/image_enabled flags
+    final legacyModels = (extra['models'] as List<dynamic>?)
+        ?.map((e) => e as String)
+        .toList();
+    if (legacyModels != null && legacyModels.isNotEmpty) {
+      final chatEnabled = extra['chat_enabled'] as bool? ?? true;
+      final imageEnabled = extra['image_enabled'] as bool? ?? false;
+      return legacyModels.map((id) {
+        return AiModelInfo(
+          id: id,
+          mode: imageEnabled && !chatEnabled ? 'image_generation' : 'chat',
+        );
+      }).toList();
+    }
+
+    // Fallback: single default model
+    return [AiModelInfo(id: defaultModel ?? 'default')];
   }
 
   static Map<String, dynamic> _parseExtraConfig(String? json) {

@@ -1,0 +1,775 @@
+{
+  "gpt-4.1": {
+    "max_input_tokens": 1047576,
+    "max_output_tokens": 32768,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "gpt-4.1-mini": {
+    "max_input_tokens": 1047576,
+    "max_output_tokens": 32768,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "gpt-4.1-nano": {
+    "max_input_tokens": 1047576,
+    "max_output_tokens": 32768,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "gpt-4o": {
+    "max_input_tokens": 128000,
+    "max_output_tokens": 16384,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "gpt-4o-mini": {
+    "max_input_tokens": 128000,
+    "max_output_tokens": 16384,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "gpt-4-turbo": {
+    "max_input_tokens": 128000,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "gpt-4": {
+    "max_input_tokens": 8192,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "gpt-3.5-turbo": {
+    "max_input_tokens": 16385,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "o1": {
+    "max_input_tokens": 200000,
+    "max_output_tokens": 100000,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supports_reasoning": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "o1-mini": {
+    "max_input_tokens": 128000,
+    "max_output_tokens": 65536,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": false,
+    "supports_reasoning": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "o1-pro": {
+    "max_input_tokens": 200000,
+    "max_output_tokens": 100000,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supports_reasoning": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "o3": {
+    "max_input_tokens": 200000,
+    "max_output_tokens": 100000,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supports_reasoning": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "o3-mini": {
+    "max_input_tokens": 200000,
+    "max_output_tokens": 100000,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_reasoning": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "o4-mini": {
+    "max_input_tokens": 200000,
+    "max_output_tokens": 100000,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supports_reasoning": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "dall-e-3": {
+    "mode": "image_generation",
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["image"]
+  },
+  "dall-e-2": {
+    "mode": "image_generation",
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["image"]
+  },
+  "gpt-image-1": {
+    "mode": "image_generation",
+    "supports_vision": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["image"]
+  },
+  "claude-sonnet-4-20250514": {
+    "max_input_tokens": 1000000,
+    "max_output_tokens": 64000,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supports_reasoning": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "claude-4-opus-20250514": {
+    "max_input_tokens": 200000,
+    "max_output_tokens": 32000,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supports_reasoning": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "claude-3-7-sonnet-20250219": {
+    "max_input_tokens": 200000,
+    "max_output_tokens": 64000,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supports_reasoning": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "claude-3-5-sonnet-20241022": {
+    "max_input_tokens": 200000,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "claude-3-5-haiku-20241022": {
+    "max_input_tokens": 200000,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "claude-3-opus-20240229": {
+    "max_input_tokens": 200000,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "claude-3-haiku-20240307": {
+    "max_input_tokens": 200000,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "gemini-2.5-pro": {
+    "max_input_tokens": 1048576,
+    "max_output_tokens": 65536,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supports_reasoning": true,
+    "supported_modalities": ["text", "image", "audio", "video"],
+    "supported_output_modalities": ["text"]
+  },
+  "gemini-2.5-flash": {
+    "max_input_tokens": 1048576,
+    "max_output_tokens": 65536,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supports_reasoning": true,
+    "supported_modalities": ["text", "image", "audio", "video"],
+    "supported_output_modalities": ["text"]
+  },
+  "gemini-2.0-flash": {
+    "max_input_tokens": 1048576,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image", "audio", "video"],
+    "supported_output_modalities": ["text", "image"]
+  },
+  "gemini-1.5-pro": {
+    "max_input_tokens": 2097152,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image", "audio", "video"],
+    "supported_output_modalities": ["text"]
+  },
+  "gemini-1.5-flash": {
+    "max_input_tokens": 1048576,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image", "audio", "video"],
+    "supported_output_modalities": ["text"]
+  },
+  "deepseek-chat": {
+    "max_input_tokens": 65536,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "deepseek-reasoner": {
+    "max_input_tokens": 65536,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": false,
+    "supports_reasoning": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "deepseek-r1": {
+    "max_input_tokens": 65536,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": false,
+    "supports_reasoning": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "deepseek-v3": {
+    "max_input_tokens": 65536,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "qwen-turbo": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "qwen-plus": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "qwen-max": {
+    "max_input_tokens": 32768,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "qwen-vl-plus": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image", "video"],
+    "supported_output_modalities": ["text"]
+  },
+  "qwen-vl-max": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image", "video"],
+    "supported_output_modalities": ["text"]
+  },
+  "qwen2.5-72b-instruct": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "qwen2.5-32b-instruct": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "qwen2.5-14b-instruct": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "qwen2.5-7b-instruct": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "qwen2.5-coder-32b-instruct": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "qwq-32b": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_reasoning": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "llama-3.3-70b-instruct": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "llama-3.2-90b-vision-instruct": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "llama-3.2-11b-vision-instruct": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "llama-3.1-405b-instruct": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "llama-3.1-70b-instruct": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "llama-3.1-8b-instruct": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "llama-4-scout-17b-16e-instruct": {
+    "max_input_tokens": 1048576,
+    "max_output_tokens": 16384,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "llama-4-maverick-17b-128e-instruct": {
+    "max_input_tokens": 1048576,
+    "max_output_tokens": 16384,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "mistral-large-latest": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "mistral-medium-latest": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "mistral-small-latest": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "pixtral-large-latest": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "codestral-latest": {
+    "max_input_tokens": 32768,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "mixtral-8x7b-instruct": {
+    "max_input_tokens": 32768,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "mixtral-8x22b-instruct": {
+    "max_input_tokens": 65536,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "yi-large": {
+    "max_input_tokens": 32768,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "yi-vision": {
+    "max_input_tokens": 16384,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": false,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "glm-4": {
+    "max_input_tokens": 128000,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "glm-4v": {
+    "max_input_tokens": 2048,
+    "max_output_tokens": 1024,
+    "mode": "chat",
+    "supports_vision": true,
+    "supports_function_calling": false,
+    "supported_modalities": ["text", "image"],
+    "supported_output_modalities": ["text"]
+  },
+  "moonshot-v1-8k": {
+    "max_input_tokens": 8192,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "moonshot-v1-32k": {
+    "max_input_tokens": 32768,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "moonshot-v1-128k": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "doubao-pro-32k": {
+    "max_input_tokens": 32768,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "doubao-pro-128k": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "doubao-lite-32k": {
+    "max_input_tokens": 32768,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "ernie-4.0-turbo": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "ernie-4.0": {
+    "max_input_tokens": 8192,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "hunyuan-turbo": {
+    "max_input_tokens": 32768,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "hunyuan-pro": {
+    "max_input_tokens": 32768,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "spark-4.0-ultra": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 8192,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "command-r-plus": {
+    "max_input_tokens": 128000,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "command-r": {
+    "max_input_tokens": 128000,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "phi-4": {
+    "max_input_tokens": 16384,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": false,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "phi-3.5-mini-instruct": {
+    "max_input_tokens": 131072,
+    "max_output_tokens": 4096,
+    "mode": "chat",
+    "supports_vision": false,
+    "supports_function_calling": false,
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "stable-diffusion-xl-1024-v1-0": {
+    "mode": "image_generation",
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["image"]
+  },
+  "stable-diffusion-v1-6": {
+    "mode": "image_generation",
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["image"]
+  },
+  "stable-image-ultra": {
+    "mode": "image_generation",
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["image"]
+  },
+  "stable-image-core": {
+    "mode": "image_generation",
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["image"]
+  },
+  "flux-1-schnell": {
+    "mode": "image_generation",
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["image"]
+  },
+  "flux-1-dev": {
+    "mode": "image_generation",
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["image"]
+  },
+  "flux-1.1-pro": {
+    "mode": "image_generation",
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["image"]
+  },
+  "whisper-1": {
+    "mode": "audio_transcription",
+    "supported_modalities": ["audio"],
+    "supported_output_modalities": ["text"]
+  },
+  "tts-1": {
+    "mode": "audio_speech",
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["audio"]
+  },
+  "tts-1-hd": {
+    "mode": "audio_speech",
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["audio"]
+  },
+  "text-embedding-3-small": {
+    "max_input_tokens": 8191,
+    "mode": "embedding",
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "text-embedding-3-large": {
+    "max_input_tokens": 8191,
+    "mode": "embedding",
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  },
+  "text-embedding-ada-002": {
+    "max_input_tokens": 8191,
+    "mode": "embedding",
+    "supported_modalities": ["text"],
+    "supported_output_modalities": ["text"]
+  }
+}

@@ -1,8 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../services/ai/ai_models.dart';
 import '../services/ai/ai_service.dart';
 import '../services/ai/ai_service_manager.dart';
+import '../services/ai/model_capability_registry.dart';
+import '../services/ai/model_discovery_service.dart';
 import 'database_provider.dart';
+
+final modelCapabilityRegistryProvider = Provider<ModelCapabilityRegistry>((ref) {
+  return ModelCapabilityRegistry();
+});
+
+final modelDiscoveryServiceProvider = Provider<ModelDiscoveryService>((ref) {
+  return ModelDiscoveryService(
+    registry: ref.watch(modelCapabilityRegistryProvider),
+  );
+});
 
 final aiServiceManagerProvider = Provider<AiServiceManager>((ref) {
   final manager = AiServiceManager(
@@ -25,9 +38,9 @@ final aiServicesReadyProvider = FutureProvider<AiServiceManager>((ref) async {
 /// Available model identifiers for the given capability type
 /// ("chat", "image", "video").
 final availableModelsProvider =
-    FutureProvider.family<List<String>, String>((ref, type) async {
+    FutureProvider.family<List<AiModelInfo>, String>((ref, type) async {
   final manager = await ref.watch(aiServicesReadyProvider.future);
-  return manager.getAvailableModels(type);
+  return manager.getAvailableModelInfos(type);
 });
 
 final defaultChatServiceProvider = Provider<AiService?>((ref) {

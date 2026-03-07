@@ -12,9 +12,7 @@ import 'openai_compatible_mixin.dart';
 /// OpenAI-format REST API.
 class CustomService extends AiService with OpenAiCompatibleMixin {
   final Dio _dio;
-  final List<String> _models;
-  final bool _chatEnabled;
-  final bool _imageEnabled;
+  final List<AiModelInfo> _modelInfos;
 
   @override
   final String providerId;
@@ -27,28 +25,57 @@ class CustomService extends AiService with OpenAiCompatibleMixin {
     required this.providerName,
     required String baseUrl,
     String? apiKey,
-    required List<String> models,
-    bool chatEnabled = true,
-    bool imageEnabled = false,
-  })  : _models = List.unmodifiable(models),
-        _chatEnabled = chatEnabled,
-        _imageEnabled = imageEnabled,
+    required List<AiModelInfo> modelInfos,
+  })  : _modelInfos = List.unmodifiable(modelInfos),
         _dio = createAiDio(
           baseUrl: baseUrl,
           apiKey: apiKey,
         );
 
-  @override
-  List<String> get supportedModels => _models;
+  /// Legacy constructor for backward compatibility with plain string lists.
+  factory CustomService.fromStringModels({
+    required String providerId,
+    required String providerName,
+    required String baseUrl,
+    String? apiKey,
+    required List<String> models,
+    bool chatEnabled = true,
+    bool imageEnabled = false,
+  }) {
+    final infos = models
+        .map((m) => AiModelInfo(
+              id: m,
+              mode: imageEnabled ? 'image_generation' : 'chat',
+            ))
+        .toList();
+    return CustomService(
+      providerId: providerId,
+      providerName: providerName,
+      baseUrl: baseUrl,
+      apiKey: apiKey,
+      modelInfos: infos,
+    );
+  }
+
+  List<AiModelInfo> get modelInfos => _modelInfos;
 
   @override
-  List<String> get imageModels => _imageEnabled ? _models : [];
+  List<String> get supportedModels =>
+      _modelInfos.where((m) => m.isEnabled).map((m) => m.id).toList();
 
   @override
-  bool get supportsChatCompletion => _chatEnabled;
+  List<String> get imageModels => _modelInfos
+      .where((m) => m.isEnabled && m.isImageModel)
+      .map((m) => m.id)
+      .toList();
 
   @override
-  bool get supportsImageGeneration => _imageEnabled;
+  bool get supportsChatCompletion =>
+      _modelInfos.any((m) => m.isEnabled && m.isChatModel);
+
+  @override
+  bool get supportsImageGeneration =>
+      _modelInfos.any((m) => m.isEnabled && m.isImageModel);
 
   @override
   bool get supportsVideoGeneration => false;
@@ -93,7 +120,7 @@ class CustomService extends AiService with OpenAiCompatibleMixin {
 
   @override
   Future<AiImageResponse> generateImage(AiImageRequest request) async {
-    if (!_imageEnabled) {
+    if (!supportsImageGeneration) {
       throw UnsupportedError('$providerName 不支持图片生成');
     }
 
