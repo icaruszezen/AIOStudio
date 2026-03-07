@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/platform_utils.dart';
 import '../../../shared/widgets/breadcrumb_navigation.dart';
 import '../../../shared/widgets/empty_state.dart';
@@ -236,31 +237,31 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
                 icon: FluentIcons.image_search,
                 label: '图片',
                 value: '${stats.imageCount}',
-                accentColor: const Color(0xFF3B82F6),
+                accentColor: AppColors.imageGen(theme.brightness),
               ),
               _StatCard(
                 icon: FluentIcons.video,
                 label: '视频',
                 value: '${stats.videoCount}',
-                accentColor: const Color(0xFF8B5CF6),
+                accentColor: AppColors.videoGen(theme.brightness),
               ),
               _StatCard(
                 icon: FluentIcons.text_document,
                 label: '提示词',
                 value: '${stats.promptCount}',
-                accentColor: const Color(0xFF10B981),
+                accentColor: AppColors.success(theme.brightness),
               ),
               _StatCard(
                 icon: FluentIcons.processing,
                 label: 'AI 任务',
                 value: '${stats.aiTaskCount}',
-                accentColor: const Color(0xFFF59E0B),
+                accentColor: AppColors.warning(theme.brightness),
               ),
               _StatCard(
                 icon: FluentIcons.diagnostic,
                 label: 'Token 消耗',
                 value: _formatTokenCount(stats.totalTokenUsage),
-                accentColor: const Color(0xFFEF4444),
+                accentColor: AppColors.error(theme.brightness),
               ),
             ],
           ),

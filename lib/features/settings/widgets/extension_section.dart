@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/services/extension_bridge/extension_providers.dart';
+import '../../../core/theme/app_theme.dart';
 import '../providers/settings_provider.dart';
 
 class ExtensionSection extends ConsumerWidget {
@@ -11,6 +12,7 @@ class ExtensionSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = FluentTheme.of(context);
+    final b = theme.brightness;
     final port = ref.watch(extensionPortProvider);
     final actualPort = ref.watch(extensionActualPortProvider);
     final serverState = ref.watch(extensionServerProvider);
@@ -42,10 +44,10 @@ class ExtensionSection extends ConsumerWidget {
                     height: 8,
                     decoration: BoxDecoration(
                       color: serverState.isLoading
-                          ? Colors.orange
+                          ? AppColors.warning(b)
                           : isRunning
-                              ? Colors.green
-                              : Colors.red,
+                              ? AppColors.success(b)
+                              : AppColors.error(b),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -65,7 +67,7 @@ class ExtensionSection extends ConsumerWidget {
                 Text(
                   '错误：${serverState.error}',
                   style: theme.typography.body
-                      ?.copyWith(color: Colors.red),
+                      ?.copyWith(color: AppColors.error(b)),
                 ),
               ],
               const SizedBox(height: 16),
@@ -100,7 +102,7 @@ class ExtensionSection extends ConsumerWidget {
                     width: 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color: connected ? Colors.green : Colors.grey,
+                      color: connected ? AppColors.success(b) : AppColors.pending(b),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -108,7 +110,7 @@ class ExtensionSection extends ConsumerWidget {
                   Text(
                     connected ? '已连接' : '未连接',
                     style: theme.typography.body?.copyWith(
-                      color: connected ? Colors.green : Colors.grey,
+                      color: connected ? AppColors.success(b) : AppColors.pending(b),
                     ),
                   ),
                 ],

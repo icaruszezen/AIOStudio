@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/ai/ai_models.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../providers/image_gen_provider.dart';
@@ -120,13 +121,13 @@ class _HistoryCardState extends ConsumerState<_HistoryCard> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.red.withValues(alpha: 0.1),
+                          color: AppColors.error(theme.brightness).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           task.errorMessage!,
                           style: theme.typography.caption?.copyWith(
-                            color: Colors.red.normal,
+                            color: AppColors.error(theme.brightness),
                           ),
                         ),
                       ),
@@ -157,9 +158,9 @@ class _HistoryCardState extends ConsumerState<_HistoryCard> {
     switch (status) {
       case 'completed':
         return Icon(FluentIcons.completed_solid,
-            size: 16, color: Colors.green.normal);
+            size: 16, color: AppColors.success(theme.brightness));
       case 'failed':
-        return Icon(FluentIcons.error_badge, size: 16, color: Colors.red.normal);
+        return Icon(FluentIcons.error_badge, size: 16, color: AppColors.error(theme.brightness));
       case 'running':
         return const SizedBox(
           width: 16,

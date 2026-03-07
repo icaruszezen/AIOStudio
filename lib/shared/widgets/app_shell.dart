@@ -29,6 +29,7 @@ class _AppShellState extends State<AppShell> with WindowListener {
   ];
 
   bool _isMaximized = false;
+  bool _isPaneExpanded = true;
 
   @override
   void initState() {
@@ -71,6 +72,16 @@ class _AppShellState extends State<AppShell> with WindowListener {
       builder: (context, constraints) {
         final isNarrow = constraints.maxWidth <= Breakpoints.tablet;
 
+        final paneDisplayMode = isNarrow
+            ? PaneDisplayMode.minimal
+            : (_isPaneExpanded
+                ? PaneDisplayMode.expanded
+                : PaneDisplayMode.compact);
+
+        final paneToggle = PaneToggleButton(
+          onPressed: () => setState(() => _isPaneExpanded = !_isPaneExpanded),
+        );
+
         Widget content = NavigationView(
           titleBar: PlatformUtils.isMobile
               ? const SizedBox.shrink()
@@ -82,12 +93,11 @@ class _AppShellState extends State<AppShell> with WindowListener {
                 context.go(_routes[index]);
               }
             },
-            displayMode:
-                isNarrow ? PaneDisplayMode.minimal : PaneDisplayMode.auto,
-            // Work around fluent_ui 4.14.0 bug: when header is null and the
-            // toggle button is not in the pane, paneHeaderHeight is set to
-            // -1.0, causing BoxConstraints to become invalid.
-            header: const SizedBox.shrink(),
+            displayMode: paneDisplayMode,
+            size: const NavigationPaneSize(openWidth: 200),
+            toggleButton: paneToggle,
+            toggleButtonPosition: PaneToggleButtonPreferredPosition.pane,
+            header: _isPaneExpanded ? paneToggle : const SizedBox.shrink(),
             items: [
               PaneItem(
                 icon: const Icon(FluentIcons.project_management),

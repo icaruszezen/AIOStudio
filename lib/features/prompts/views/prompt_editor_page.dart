@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../projects/providers/projects_provider.dart';
 import '../providers/prompts_provider.dart';
 import 'prompt_optimize_dialog.dart';
@@ -280,7 +281,7 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
             child: IconButton(
               icon: Icon(
                 _isFavorite ? FluentIcons.heart_fill : FluentIcons.heart,
-                color: _isFavorite ? const Color(0xFFEF4444) : null,
+                color: _isFavorite ? AppColors.favorite : null,
                 size: 16,
               ),
               onPressed: _toggleFavorite,

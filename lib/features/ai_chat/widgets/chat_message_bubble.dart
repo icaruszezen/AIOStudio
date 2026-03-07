@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../models/chat_models.dart';
 
 class ChatMessageBubble extends StatefulWidget {
@@ -199,13 +200,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   Widget _buildErrorContent(FluentThemeData theme) {
     return Row(
       children: [
-        Icon(FluentIcons.error_badge, size: 16, color: Colors.red),
+        Icon(FluentIcons.error_badge, size: 16, color: AppColors.error(theme.brightness)),
         const SizedBox(width: 8),
         Flexible(
           child: Text(
             widget.message.error!,
             style: theme.typography.body?.copyWith(
-              color: Colors.red.defaultBrushFor(theme.brightness),
+              color: AppColors.error(theme.brightness),
             ),
           ),
         ),
@@ -246,7 +247,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
               errorBuilder: (_, __, ___) => Container(
                 width: 120,
                 height: 120,
-                color: Colors.grey[30],
+                color: FluentTheme.of(context).resources.subtleFillColorSecondary,
                 child: const Icon(FluentIcons.photo2, size: 32),
               ),
             ),
@@ -436,7 +437,7 @@ class _CopyButtonState extends State<_CopyButton> {
       icon: Icon(
         _copied ? FluentIcons.check_mark : FluentIcons.copy,
         size: 12,
-        color: _copied ? Colors.green : widget.iconColor,
+        color: _copied ? AppColors.success(FluentTheme.of(context).brightness) : widget.iconColor,
       ),
       onPressed: _doCopy,
     );

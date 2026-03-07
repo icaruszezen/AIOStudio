@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../../assets/providers/assets_provider.dart';
@@ -180,7 +181,7 @@ class _ProjectAssetsTabState extends ConsumerState<ProjectAssetsTab> {
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(Colors.red),
+              backgroundColor: WidgetStateProperty.all(AppColors.error(FluentTheme.of(context).brightness)),
             ),
             child: const Text('删除'),
           ),

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:fluent_ui/fluent_ui.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/theme/app_theme.dart';
 import 'asset_type_helpers.dart';
 
 class AssetThumbnail extends StatelessWidget {
@@ -78,14 +79,14 @@ class AssetThumbnail extends StatelessWidget {
         errorBuilder: (_, __, ___) => _buildPlaceholder(
           theme,
           FluentIcons.video,
-          const Color(0xFF8B5CF6),
+          AppColors.videoGen(theme.brightness),
         ),
       );
     } else {
       content = _buildPlaceholder(
         theme,
         FluentIcons.video,
-        const Color(0xFF8B5CF6),
+        AppColors.videoGen(theme.brightness),
       );
     }
 
@@ -135,7 +136,7 @@ class AssetThumbnail extends StatelessWidget {
     return _buildPlaceholder(
       theme,
       FluentIcons.music_in_collection,
-      const Color(0xFF10B981),
+      AppColors.audio(theme.brightness),
     );
   }
 
@@ -143,7 +144,7 @@ class AssetThumbnail extends StatelessWidget {
     return _buildPlaceholder(
       theme,
       FluentIcons.text_document,
-      const Color(0xFF3B82F6),
+      AppColors.textDoc(theme.brightness),
     );
   }
 
@@ -198,7 +199,7 @@ class AssetThumbnail extends StatelessWidget {
         child: const Icon(
           FluentIcons.heart_fill,
           size: 12,
-          color: Color(0xFFEF4444),
+          color: AppColors.favorite,
         ),
       ),
     );

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../providers/prompts_provider.dart';
@@ -254,23 +255,26 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
   Future<void> _confirmDelete(Prompt prompt) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => ContentDialog(
-        title: const Text('确认删除'),
-        content: Text('确定要删除提示词「${prompt.title}」吗？此操作不可撤销。'),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll(Colors.red),
+      builder: (ctx) {
+        final theme = FluentTheme.of(ctx);
+        return ContentDialog(
+          title: const Text('确认删除'),
+          content: Text('确定要删除提示词「${prompt.title}」吗？此操作不可撤销。'),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              style: ButtonStyle(
+                backgroundColor: WidgetStatePropertyAll(AppColors.error(theme.brightness)),
+              ),
+              child: const Text('删除'),
             ),
-            child: const Text('删除'),
-          ),
-          Button(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('取消'),
-          ),
-        ],
-      ),
+            Button(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('取消'),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed == true) {
       await ref.read(promptActionsProvider).deletePrompt(prompt.id);

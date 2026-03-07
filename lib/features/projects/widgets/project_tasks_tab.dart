@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../providers/projects_provider.dart';
@@ -54,7 +55,7 @@ class _AiTaskListItem extends StatelessWidget {
     final theme = FluentTheme.of(context);
     final createdAt = DateTime.fromMillisecondsSinceEpoch(task.createdAt);
     final dateStr = DateFormat('yyyy-MM-dd HH:mm').format(createdAt);
-    final typeColor = _typeColor(task.type);
+    final typeColor = _typeColor(task.type, theme.brightness);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
@@ -166,11 +167,11 @@ class _AiTaskListItem extends StatelessWidget {
         _ => 'AI 任务',
       };
 
-  static Color _typeColor(String type) => switch (type) {
-        'chat' => const Color(0xFF3B82F6),
-        'image_gen' => const Color(0xFF8B5CF6),
-        'video_gen' => const Color(0xFFEF4444),
-        _ => const Color(0xFFF59E0B),
+  Color _typeColor(String type, Brightness brightness) => switch (type) {
+        'chat' => AppColors.chat(brightness),
+        'image_gen' => AppColors.imageGen(brightness),
+        'video_gen' => AppColors.videoGen(brightness),
+        _ => AppColors.warning(brightness),
       };
 }
 
@@ -181,13 +182,15 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = FluentTheme.of(context);
+    final b = theme.brightness;
     final (label, color) = switch (status) {
-      'pending' => ('等待中', const Color(0xFF9CA3AF)),
-      'running' => ('进行中', const Color(0xFF3B82F6)),
-      'completed' => ('已完成', const Color(0xFF10B981)),
-      'failed' => ('失败', const Color(0xFFEF4444)),
-      'cancelled' => ('已取消', const Color(0xFF9CA3AF)),
-      _ => (status, const Color(0xFF9CA3AF)),
+      'pending' => ('等待中', AppColors.pending(b)),
+      'running' => ('进行中', AppColors.info(b)),
+      'completed' => ('已完成', AppColors.success(b)),
+      'failed' => ('失败', AppColors.error(b)),
+      'cancelled' => ('已取消', AppColors.pending(b)),
+      _ => (status, AppColors.pending(b)),
     };
 
     return Container(

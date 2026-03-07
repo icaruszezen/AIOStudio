@@ -10,6 +10,7 @@ import '../../../core/services/ai/anthropic_service.dart';
 import '../../../core/services/ai/custom_service.dart';
 import '../../../core/services/ai/openai_service.dart';
 import '../../../core/services/ai/stability_service.dart';
+import '../../../core/theme/app_theme.dart';
 
 const _providerTypes = ['openai', 'anthropic', 'stability', 'custom'];
 
@@ -347,14 +348,18 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
                         ? FluentIcons.check_mark
                         : FluentIcons.error_badge,
                     size: 14,
-                    color: _testSuccess == true ? Colors.green : Colors.red,
+                    color: _testSuccess == true
+                        ? AppColors.success(theme.brightness)
+                        : AppColors.error(theme.brightness),
                   ),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       _testResult!,
                       style: theme.typography.caption?.copyWith(
-                        color: _testSuccess == true ? Colors.green : Colors.red,
+                        color: _testSuccess == true
+                            ? AppColors.success(theme.brightness)
+                            : AppColors.error(theme.brightness),
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),

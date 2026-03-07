@@ -4,6 +4,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/format_utils.dart';
 import 'asset_context_menu.dart';
 import 'asset_type_helpers.dart';
@@ -158,7 +159,7 @@ class _AssetListItemState extends State<AssetListItem> {
                     child: Icon(
                       FluentIcons.heart_fill,
                       size: 12,
-                      color: Color(0xFFEF4444),
+                      color: AppColors.favorite,
                     ),
                   ),
               ],

@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../providers/prompts_provider.dart';
 
 class PromptOptimizeDialog extends ConsumerStatefulWidget {
@@ -111,7 +112,7 @@ class _PromptOptimizeDialogState extends ConsumerState<PromptOptimizeDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(FluentIcons.error_badge,
-                size: 48, color: Colors.red.normal),
+                size: 48, color: AppColors.error(theme.brightness)),
             const SizedBox(height: 16),
             Text(
               '优化失败',

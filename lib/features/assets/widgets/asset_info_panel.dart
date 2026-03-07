@@ -11,6 +11,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/platform_utils.dart';
 import '../../../shared/utils/format_utils.dart';
 import '../../projects/providers/projects_provider.dart';
@@ -152,7 +153,7 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
           ),
           FilledButton(
             style: ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll(Colors.red),
+              backgroundColor: WidgetStatePropertyAll(AppColors.error(FluentTheme.of(context).brightness)),
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text('删除'),
@@ -235,7 +236,7 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
                       ? FluentIcons.favorite_star_fill
                       : FluentIcons.favorite_star,
                   size: 16,
-                  color: _asset.isFavorite ? Colors.yellow : null,
+                  color: _asset.isFavorite ? AppColors.warning(theme.brightness) : null,
                 ),
               ),
             ),
@@ -352,9 +353,9 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(FluentIcons.delete, size: 14, color: Colors.red),
+                  Icon(FluentIcons.delete, size: 14, color: AppColors.error(theme.brightness)),
                   const SizedBox(width: 6),
-                  Text('删除', style: TextStyle(color: Colors.red)),
+                  Text('删除', style: TextStyle(color: AppColors.error(theme.brightness))),
                 ],
               ),
             ),

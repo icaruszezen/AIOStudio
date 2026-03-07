@@ -5,6 +5,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../providers/chat_provider.dart';
 
 class ChatInputArea extends ConsumerStatefulWidget {
@@ -159,7 +160,7 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
       return FilledButton(
         onPressed: _stop,
         style: ButtonStyle(
-          backgroundColor: WidgetStatePropertyAll(Colors.red),
+          backgroundColor: WidgetStatePropertyAll(AppColors.error(theme.brightness)),
         ),
         child: const Row(
           mainAxisSize: MainAxisSize.min,
@@ -220,7 +221,7 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
                   child: IconButton(
                     icon: Container(
                       decoration: BoxDecoration(
-                        color: Colors.red,
+                        color: AppColors.error(theme.brightness),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       padding: const EdgeInsets.all(2),

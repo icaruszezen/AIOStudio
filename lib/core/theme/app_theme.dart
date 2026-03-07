@@ -30,6 +30,76 @@ class ThemeNotifier extends Notifier<ThemeMode> {
   }
 }
 
+class AppColors {
+  AppColors._();
+
+  // -- Feature / asset-type colors --
+
+  static Color chat(Brightness b) =>
+      b == Brightness.dark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6);
+
+  static Color imageGen(Brightness b) =>
+      b == Brightness.dark ? const Color(0xFFA78BFA) : const Color(0xFF8B5CF6);
+
+  static Color videoGen(Brightness b) =>
+      b == Brightness.dark ? const Color(0xFFF87171) : const Color(0xFFEF4444);
+
+  static Color audio(Brightness b) =>
+      b == Brightness.dark ? const Color(0xFF34D399) : const Color(0xFF10B981);
+
+  static Color textDoc(Brightness b) =>
+      b == Brightness.dark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6);
+
+  static Color optimization(Brightness b) =>
+      b == Brightness.dark ? const Color(0xFF34D399) : const Color(0xFF10B981);
+
+  static Color neutral(Brightness b) =>
+      b == Brightness.dark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+
+  // -- Status colors --
+
+  static Color success(Brightness b) =>
+      b == Brightness.dark ? const Color(0xFF34D399) : const Color(0xFF10B981);
+
+  static Color error(Brightness b) =>
+      b == Brightness.dark ? const Color(0xFFF87171) : const Color(0xFFEF4444);
+
+  static Color warning(Brightness b) =>
+      b == Brightness.dark ? const Color(0xFFFBBF24) : const Color(0xFFF59E0B);
+
+  static Color info(Brightness b) =>
+      b == Brightness.dark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6);
+
+  static Color pending(Brightness b) =>
+      b == Brightness.dark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+
+  // -- Fixed semantic colors (identical in both modes) --
+
+  static const Color favorite = Color(0xFFEF4444);
+
+  // -- Overlay helpers (for content layered on images/video) --
+
+  static Color overlayDark([double alpha = 0.5]) =>
+      Colors.black.withValues(alpha: alpha);
+
+  static Color overlayLight([double alpha = 0.9]) =>
+      Colors.white.withValues(alpha: alpha);
+
+  // -- Provider icon colors (settings page) --
+
+  static Color providerOpenAI(Brightness b) =>
+      b == Brightness.dark ? const Color(0xFF34D399) : const Color(0xFF10B981);
+
+  static Color providerGoogle(Brightness b) =>
+      b == Brightness.dark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6);
+
+  static Color providerAnthropic(Brightness b) =>
+      b == Brightness.dark ? const Color(0xFFFBBF24) : const Color(0xFFF59E0B);
+
+  static Color providerCustom(Brightness b) =>
+      b == Brightness.dark ? const Color(0xFFA78BFA) : const Color(0xFF8B5CF6);
+}
+
 class AppTheme {
   AppTheme._();
 

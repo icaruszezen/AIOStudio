@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/platform_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
@@ -328,7 +329,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
           FilledButton(
             onPressed: _batchDelete,
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(Colors.red),
+              backgroundColor: WidgetStateProperty.all(AppColors.error(theme.brightness)),
             ),
             child: const Row(
               mainAxisSize: MainAxisSize.min,
@@ -778,7 +779,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(Colors.red),
+              backgroundColor: WidgetStateProperty.all(AppColors.error(FluentTheme.of(context).brightness)),
             ),
             child: const Text('删除'),
           ),
@@ -807,7 +808,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(Colors.red),
+              backgroundColor: WidgetStateProperty.all(AppColors.error(FluentTheme.of(context).brightness)),
             ),
             child: const Text('删除'),
           ),
@@ -1099,7 +1100,7 @@ class _MobileActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
     final color = isDestructive
-        ? Colors.red
+        ? AppColors.error(theme.brightness)
         : theme.resources.textFillColorPrimary;
 
     return GestureDetector(

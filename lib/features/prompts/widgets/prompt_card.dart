@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/theme/app_theme.dart';
 import 'prompt_context_menu.dart';
 
 IconData promptCategoryIcon(String? category) {
@@ -15,14 +16,13 @@ IconData promptCategoryIcon(String? category) {
 }
 
 Color promptCategoryColor(String? category, [Brightness brightness = Brightness.light]) {
-  final isDark = brightness == Brightness.dark;
   return switch (category) {
-    'text_gen' => isDark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6),
-    'image_gen' => isDark ? const Color(0xFFA78BFA) : const Color(0xFF8B5CF6),
-    'video_gen' => isDark ? const Color(0xFFF87171) : const Color(0xFFEF4444),
-    'optimization' => isDark ? const Color(0xFF34D399) : const Color(0xFF10B981),
-    'other' => isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
-    _ => isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
+    'text_gen' => AppColors.textDoc(brightness),
+    'image_gen' => AppColors.imageGen(brightness),
+    'video_gen' => AppColors.videoGen(brightness),
+    'optimization' => AppColors.optimization(brightness),
+    'other' => AppColors.neutral(brightness),
+    _ => AppColors.neutral(brightness),
   };
 }
 
@@ -154,7 +154,7 @@ class _PromptCardState extends State<PromptCard> {
                     child: Icon(
                       FluentIcons.heart_fill,
                       size: 12,
-                      color: Color(0xFFEF4444),
+                      color: AppColors.favorite,
                     ),
                   ),
               ],

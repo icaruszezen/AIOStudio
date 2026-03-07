@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/theme/app_theme.dart';
 
 void showPromptContextMenu({
   required BuildContext context,
@@ -49,8 +50,8 @@ void showPromptContextMenu({
           ),
           const MenuFlyoutSeparator(),
           MenuFlyoutItem(
-            leading: Icon(FluentIcons.delete, color: Colors.red),
-            text: Text('删除', style: TextStyle(color: Colors.red)),
+            leading: Icon(FluentIcons.delete, color: AppColors.error(FluentTheme.of(ctx).brightness)),
+            text: Text('删除', style: TextStyle(color: AppColors.error(FluentTheme.of(ctx).brightness))),
             onPressed: () {
               Flyout.of(ctx).close();
               onDelete?.call();

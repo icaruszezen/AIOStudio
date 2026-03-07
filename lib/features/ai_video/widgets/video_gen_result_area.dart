@@ -8,6 +8,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
+import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../ai_image/widgets/save_to_asset_dialog.dart';
 import '../../assets/widgets/video_player_widget.dart';
@@ -208,7 +209,7 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(FluentIcons.error_badge, size: 48, color: Colors.red.normal),
+            Icon(FluentIcons.error_badge, size: 48, color: AppColors.error(theme.brightness)),
             const SizedBox(height: 16),
             Text('生成失败', style: theme.typography.subtitle),
             const SizedBox(height: 8),

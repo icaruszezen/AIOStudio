@@ -6,6 +6,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/theme/app_theme.dart';
 import '../providers/projects_provider.dart';
 
 class ProjectCreateDialog extends ConsumerStatefulWidget {
@@ -143,7 +144,7 @@ class _ProjectCreateDialogState extends ConsumerState<ProjectCreateDialog> {
               child: Text(
                 _nameError!,
                 style: TextStyle(
-                  color: Colors.red,
+                  color: AppColors.error(theme.brightness),
                   fontSize: 12,
                 ),
               ),

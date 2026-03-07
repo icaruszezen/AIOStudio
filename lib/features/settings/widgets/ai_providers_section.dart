@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/ai_providers.dart';
 import '../../../core/providers/database_provider.dart';
+import '../../../core/theme/app_theme.dart';
 import '../views/ai_provider_dialog.dart';
 
 final _allProvidersProvider = StreamProvider<List<AiProviderConfig>>((ref) {
@@ -170,6 +171,7 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
   }
 
   Widget _buildActions(FluentThemeData theme) {
+    final errorColor = AppColors.error(theme.brightness);
     return FlyoutTarget(
       controller: _flyoutController,
       child: IconButton(
@@ -198,8 +200,8 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
                 ),
                 const MenuFlyoutSeparator(),
                 MenuFlyoutItem(
-                  leading: Icon(FluentIcons.delete, color: Colors.red),
-                  text: Text('删除', style: TextStyle(color: Colors.red)),
+                  leading: Icon(FluentIcons.delete, color: errorColor),
+                  text: Text('删除', style: TextStyle(color: errorColor)),
                   onPressed: () {
                     Navigator.of(ctx).pop();
                     _deleteProvider();
@@ -275,6 +277,7 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
   }
 
   Future<void> _deleteProvider() async {
+    final errorColor = AppColors.error(FluentTheme.of(context).brightness);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => ContentDialog(
@@ -287,7 +290,7 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
           ),
           FilledButton(
             style: ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll(Colors.red),
+              backgroundColor: WidgetStatePropertyAll(errorColor),
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text('删除'),
@@ -303,12 +306,13 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
   }
 
   static Widget _providerIcon(String type, FluentThemeData theme) {
+    final b = theme.brightness;
     final (IconData icon, Color color) = switch (type) {
-      'openai' => (FluentIcons.chat_bot, Colors.green),
-      'anthropic' => (FluentIcons.robot, Colors.orange),
-      'stability' => (FluentIcons.picture, Colors.purple),
-      'custom' => (FluentIcons.settings, Colors.teal),
-      _ => (FluentIcons.cloud, Colors.grey),
+      'openai' => (FluentIcons.chat_bot, AppColors.providerOpenAI(b)),
+      'anthropic' => (FluentIcons.robot, AppColors.providerAnthropic(b)),
+      'stability' => (FluentIcons.picture, AppColors.providerCustom(b)),
+      'custom' => (FluentIcons.settings, AppColors.providerGoogle(b)),
+      _ => (FluentIcons.cloud, AppColors.pending(b)),
     };
     return Container(
       width: 36,
@@ -354,7 +358,8 @@ class _StatusIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
-    final color = configured ? Colors.green : Colors.orange;
+    final b = theme.brightness;
+    final color = configured ? AppColors.success(b) : AppColors.warning(b);
     final label = configured ? '已配置' : '未配置';
     return Row(
       mainAxisSize: MainAxisSize.min,

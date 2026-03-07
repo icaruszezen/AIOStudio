@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/providers/database_provider.dart';
 import '../../../core/services/storage/local_storage_service.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/format_utils.dart';
 
 final _storageStatsProvider = FutureProvider<DetailedStorageStats>((ref) {
@@ -105,6 +106,10 @@ class StorageSection extends ConsumerWidget {
     WidgetRef ref,
   ) {
     final total = stats.totalSizeBytes;
+    final b = FluentTheme.of(context).brightness;
+    final imageColor = AppColors.imageGen(b);
+    final videoColor = AppColors.videoGen(b);
+    final otherColor = AppColors.pending(b);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,15 +130,18 @@ class StorageSection extends ConsumerWidget {
           videoBytes: stats.videosSizeBytes,
           otherBytes: stats.othersSizeBytes,
           totalBytes: total,
+          imageColor: imageColor,
+          videoColor: videoColor,
+          otherColor: otherColor,
         ),
         const SizedBox(height: 8),
         Row(
           children: [
-            _LegendDot(color: Colors.blue, label: '图片 ${formatFileSize(stats.imagesSizeBytes)}'),
+            _LegendDot(color: imageColor, label: '图片 ${formatFileSize(stats.imagesSizeBytes)}'),
             const SizedBox(width: 16),
-            _LegendDot(color: Colors.purple, label: '视频 ${formatFileSize(stats.videosSizeBytes)}'),
+            _LegendDot(color: videoColor, label: '视频 ${formatFileSize(stats.videosSizeBytes)}'),
             const SizedBox(width: 16),
-            _LegendDot(color: Colors.grey, label: '其他 ${formatFileSize(stats.othersSizeBytes)}'),
+            _LegendDot(color: otherColor, label: '其他 ${formatFileSize(stats.othersSizeBytes)}'),
           ],
         ),
         const SizedBox(height: 16),
@@ -215,12 +223,18 @@ class _StorageBar extends StatelessWidget {
     required this.videoBytes,
     required this.otherBytes,
     required this.totalBytes,
+    required this.imageColor,
+    required this.videoColor,
+    required this.otherColor,
   });
 
   final int imageBytes;
   final int videoBytes;
   final int otherBytes;
   final int totalBytes;
+  final Color imageColor;
+  final Color videoColor;
+  final Color otherColor;
 
   @override
   Widget build(BuildContext context) {
@@ -244,17 +258,17 @@ class _StorageBar extends StatelessWidget {
             if (imgFrac > 0)
               Flexible(
                 flex: (imgFrac * 1000).round(),
-                child: Container(color: Colors.blue),
+                child: Container(color: imageColor),
               ),
             if (vidFrac > 0)
               Flexible(
                 flex: (vidFrac * 1000).round(),
-                child: Container(color: Colors.purple),
+                child: Container(color: videoColor),
               ),
             if (otherFrac > 0)
               Flexible(
                 flex: (otherFrac * 1000).round(),
-                child: Container(color: Colors.grey),
+                child: Container(color: otherColor),
               ),
           ],
         ),

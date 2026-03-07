@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../providers/video_gen_provider.dart';
@@ -91,7 +92,7 @@ class _TaskCard extends ConsumerWidget {
     final time = DateTime.fromMillisecondsSinceEpoch(task.createdAt);
     final formattedTime = DateFormat('MM-dd HH:mm').format(time);
 
-    final statusColor = _statusColor(task.status);
+    final statusColor = _statusColor(task.status, theme.brightness);
     final statusText = _statusText(task.status, isPolling);
 
     String elapsedText = '';
@@ -117,7 +118,7 @@ class _TaskCard extends ConsumerWidget {
             // Status indicator
             Row(
               children: [
-                _buildStatusIcon(task.status, isPolling),
+                _buildStatusIcon(task.status, isPolling, theme),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -196,14 +197,14 @@ class _TaskCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatusIcon(String status, bool isPolling) {
+  Widget _buildStatusIcon(String status, bool isPolling, FluentThemeData theme) {
     switch (status) {
       case 'completed':
         return Icon(FluentIcons.completed_solid,
-            size: 14, color: Colors.green.normal);
+            size: 14, color: AppColors.success(theme.brightness));
       case 'failed':
         return Icon(FluentIcons.error_badge,
-            size: 14, color: Colors.red.normal);
+            size: 14, color: AppColors.error(theme.brightness));
       case 'running':
         return const SizedBox(
           width: 14,
@@ -211,20 +212,21 @@ class _TaskCard extends ConsumerWidget {
           child: ProgressRing(strokeWidth: 2),
         );
       default:
-        return const Icon(FluentIcons.clock, size: 14);
+        return Icon(FluentIcons.clock,
+            size: 14, color: AppColors.pending(theme.brightness));
     }
   }
 
-  Color _statusColor(String status) {
+  Color _statusColor(String status, Brightness brightness) {
     switch (status) {
       case 'completed':
-        return Colors.green.normal;
+        return AppColors.success(brightness);
       case 'failed':
-        return Colors.red.normal;
+        return AppColors.error(brightness);
       case 'running':
-        return Colors.blue.normal;
+        return AppColors.info(brightness);
       default:
-        return Colors.grey;
+        return AppColors.pending(brightness);
     }
   }
 

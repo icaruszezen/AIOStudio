@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../models/chat_models.dart';
 import '../providers/chat_provider.dart';
@@ -124,7 +125,7 @@ class _ConversationListPanelState
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll(Colors.red),
+              backgroundColor: WidgetStatePropertyAll(AppColors.error(FluentTheme.of(context).brightness)),
             ),
             child: const Text('删除'),
           ),
@@ -199,8 +200,8 @@ class _ConversationTileState extends State<_ConversationTile> {
                 ),
                 const MenuFlyoutSeparator(),
                 MenuFlyoutItem(
-                  leading: Icon(FluentIcons.delete, size: 14, color: Colors.red),
-                  text: Text('删除', style: TextStyle(color: Colors.red)),
+                  leading: Icon(FluentIcons.delete, size: 14, color: AppColors.error(theme.brightness)),
+                  text: Text('删除', style: TextStyle(color: AppColors.error(theme.brightness))),
                   onPressed: () {
                     Navigator.of(ctx).pop();
                     widget.onDelete();

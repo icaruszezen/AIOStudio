@@ -10,6 +10,7 @@ import 'package:path/path.dart' as p;
 
 import '../../../core/router/app_router.dart';
 import '../../../core/services/ai/ai_models.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../providers/image_gen_provider.dart';
@@ -51,7 +52,7 @@ class ImageGenResultArea extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(FluentIcons.error_badge, size: 48, color: Colors.red.normal),
+            Icon(FluentIcons.error_badge, size: 48, color: AppColors.error(theme.brightness)),
             const SizedBox(height: 16),
             Text('生成失败', style: theme.typography.subtitle),
             const SizedBox(height: 8),

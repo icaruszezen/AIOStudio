@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/database_provider.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/platform_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
@@ -55,7 +56,7 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(Colors.red),
+              backgroundColor: WidgetStateProperty.all(AppColors.error(FluentTheme.of(context).brightness)),
             ),
             child: const Text('删除'),
           ),
@@ -580,8 +581,8 @@ class _ContextMenuWrapperState extends State<_ContextMenuWrapper> {
                 ),
                 const MenuFlyoutSeparator(),
                 MenuFlyoutItem(
-                  leading: Icon(FluentIcons.delete, color: Colors.red),
-                  text: Text('删除', style: TextStyle(color: Colors.red)),
+                  leading: Icon(FluentIcons.delete, color: AppColors.error(FluentTheme.of(context).brightness)),
+                  text: Text('删除', style: TextStyle(color: AppColors.error(FluentTheme.of(context).brightness))),
                   onPressed: () {
                     Flyout.of(ctx).close();
                     widget.onDelete?.call();

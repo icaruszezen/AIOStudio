@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/theme/app_theme.dart';
 import '../providers/tags_provider.dart';
 
 /// Inline tag editor: shows current tags as chips with an add button.
@@ -37,7 +38,7 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
         height: 28,
         child: Center(child: ProgressRing(strokeWidth: 2)),
       ),
-      error: (e, _) => Text('$e', style: TextStyle(color: Colors.red)),
+      error: (e, _) => Text('$e', style: TextStyle(color: AppColors.error(theme.brightness))),
       data: (currentTags) {
         return Wrap(
           spacing: 6,
