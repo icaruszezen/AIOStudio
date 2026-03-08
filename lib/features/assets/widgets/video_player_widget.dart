@@ -253,7 +253,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
           ),
           child: Text(
             '${_speed}x',
-            style: const TextStyle(color: Color(0xDDFFFFFF), fontSize: 11),
+            style: const TextStyle(color: Color(0xDDFFFFFF), fontSize: 12),
           ),
         ),
       ),

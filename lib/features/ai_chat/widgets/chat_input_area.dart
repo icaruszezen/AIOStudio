@@ -133,7 +133,6 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
                 modelName,
                 style: theme.typography.caption?.copyWith(
                   color: theme.resources.textFillColorSecondary,
-                  fontSize: 11,
                 ),
               ),
             ),

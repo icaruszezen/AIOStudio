@@ -244,7 +244,6 @@ class _ConversationTileState extends State<_ConversationTile> {
                     timeStr,
                     style: theme.typography.caption?.copyWith(
                       color: theme.resources.textFillColorSecondary,
-                      fontSize: 11,
                     ),
                   ),
                 ],

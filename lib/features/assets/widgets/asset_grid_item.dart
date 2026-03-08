@@ -110,7 +110,6 @@ class _AssetGridItemState extends State<AssetGridItem> {
                           formatFileSize(widget.asset.fileSize),
                           style: theme.typography.caption?.copyWith(
                             color: theme.resources.textFillColorSecondary,
-                            fontSize: 11,
                           ),
                           maxLines: 1,
                         ),

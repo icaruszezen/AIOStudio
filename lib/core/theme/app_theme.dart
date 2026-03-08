@@ -108,6 +108,35 @@ class AppTheme {
   static AccentColor? _cachedDarkAccent;
   static FluentThemeData? _cachedDark;
 
+  static Typography _typography(Brightness brightness) {
+    const fontFamily = 'Microsoft YaHei UI';
+    const fallback = ['PingFang SC', 'Noto Sans SC', 'sans-serif'];
+
+    final color = brightness == Brightness.light
+        ? const Color(0xE4000000)
+        : Colors.white;
+
+    TextStyle base(double size, FontWeight weight, double height) => TextStyle(
+          fontFamily: fontFamily,
+          fontFamilyFallback: fallback,
+          fontSize: size,
+          fontWeight: weight,
+          height: height,
+          color: color,
+        );
+
+    return Typography.raw(
+      display: base(68, FontWeight.w600, 1.3),
+      titleLarge: base(40, FontWeight.w600, 1.3),
+      title: base(28, FontWeight.w600, 1.3),
+      subtitle: base(20, FontWeight.w600, 1.35),
+      bodyLarge: base(18, FontWeight.w400, 1.5),
+      bodyStrong: base(14, FontWeight.w600, 1.5),
+      body: base(14, FontWeight.w400, 1.5),
+      caption: base(12, FontWeight.w400, 1.45),
+    );
+  }
+
   static FluentThemeData light([AccentColor? accent]) {
     final effective = accent ?? Colors.blue;
     if (_cachedLight != null && _cachedLightAccent == effective) {
@@ -118,6 +147,7 @@ class AppTheme {
       brightness: Brightness.light,
       accentColor: effective,
       visualDensity: VisualDensity.standard,
+      typography: _typography(Brightness.light),
     );
     return _cachedLight!;
   }
@@ -132,6 +162,7 @@ class AppTheme {
       brightness: Brightness.dark,
       accentColor: effective,
       visualDensity: VisualDensity.standard,
+      typography: _typography(Brightness.dark),
     );
     return _cachedDark!;
   }

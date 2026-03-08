@@ -143,7 +143,6 @@ class _PromptCardState extends State<PromptCard> {
                       '${widget.prompt.useCount}',
                       style: theme.typography.caption?.copyWith(
                         color: theme.resources.textFillColorSecondary,
-                        fontSize: 11,
                       ),
                     ),
                   ),

@@ -289,7 +289,6 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           timeStr,
           style: theme.typography.caption?.copyWith(
             color: theme.resources.textFillColorSecondary,
-            fontSize: 11,
           ),
         ),
         if (!_isUser && tokenInfo != null) ...[
@@ -298,7 +297,6 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             '$tokenInfo tokens',
             style: theme.typography.caption?.copyWith(
               color: theme.resources.textFillColorSecondary,
-              fontSize: 11,
             ),
           ),
         ],
@@ -331,14 +329,23 @@ class _MarkdownContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final displayData = showCursor ? '$data▍' : data;
 
+    const pStyle = TextStyle(
+      fontFamily: 'Microsoft YaHei UI',
+      fontFamilyFallback: ['PingFang SC', 'Noto Sans SC', 'sans-serif'],
+      fontSize: 14,
+      height: 1.6,
+    );
+
     final config = isDarkMode
         ? MarkdownConfig.darkConfig.copy(configs: [
+            const PConfig(textStyle: pStyle),
             PreConfig.darkConfig.copy(
               wrapper: (child, code, language) => _CodeBlockWrapper(
                   code: code, language: language, child: child),
             ),
           ])
         : MarkdownConfig.defaultConfig.copy(configs: [
+            const PConfig(textStyle: pStyle),
             PreConfig(
               wrapper: (child, code, language) => _CodeBlockWrapper(
                   code: code, language: language, child: child),

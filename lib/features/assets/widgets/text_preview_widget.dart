@@ -112,7 +112,6 @@ class _TextPreviewWidgetState extends State<TextPreviewWidget> {
                     '仅显示前 $_maxLines 行',
                     style: theme.typography.caption?.copyWith(
                       color: theme.accentColor,
-                      fontSize: 11,
                     ),
                   ),
                 ),

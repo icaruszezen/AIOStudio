@@ -202,7 +202,7 @@ class _StatusBadge extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(
-          fontSize: 11,
+          fontSize: 12,
           color: color,
           fontWeight: FontWeight.w500,
         ),

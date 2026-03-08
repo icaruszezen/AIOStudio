@@ -783,7 +783,6 @@ class _Badge extends StatelessWidget {
         label,
         style: FluentTheme.of(context).typography.caption?.copyWith(
               color: color,
-              fontSize: 11,
             ),
       ),
     );
