@@ -110,7 +110,10 @@ class AnthropicService extends AiService {
           'role': m.role,
           'content': [
             for (final url in m.imageUrls!)
-              {'type': 'image', 'source': {'type': 'url', 'url': url}},
+              if (url.startsWith('data:'))
+                _parseDataUrlToAnthropicSource(url)
+              else
+                {'type': 'image', 'source': {'type': 'url', 'url': url}},
             {'type': 'text', 'text': m.content},
           ],
         });
@@ -126,6 +129,18 @@ class AnthropicService extends AiService {
       'max_tokens': request.maxTokens ?? 4096,
       'temperature': request.temperature,
       if (stream) 'stream': true,
+    };
+  }
+
+  Map<String, dynamic> _parseDataUrlToAnthropicSource(String dataUrl) {
+    // data:image/jpeg;base64,/9j/4AAQ...
+    final commaIdx = dataUrl.indexOf(',');
+    final meta = dataUrl.substring(5, commaIdx); // "image/jpeg;base64"
+    final mediaType = meta.split(';').first;
+    final b64Data = dataUrl.substring(commaIdx + 1);
+    return {
+      'type': 'image',
+      'source': {'type': 'base64', 'media_type': mediaType, 'data': b64Data},
     };
   }
 

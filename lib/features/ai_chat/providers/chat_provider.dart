@@ -271,7 +271,7 @@ class ChatNotifier extends Notifier<ChatState> {
       return;
     }
 
-    final request = _buildChatRequest(conv, service);
+    final request = await _buildChatRequest(conv, service);
     final startedAt = DateTime.now();
 
     try {
@@ -340,7 +340,8 @@ class ChatNotifier extends Notifier<ChatState> {
     return _serviceManager.getDefaultChatService();
   }
 
-  AiChatRequest _buildChatRequest(Conversation conv, AiService service) {
+  Future<AiChatRequest> _buildChatRequest(
+      Conversation conv, AiService service) async {
     final messages = <AiChatMessage>[];
 
     final sysPrompt = conv.systemPrompt ?? state.systemPrompt;
@@ -361,9 +362,20 @@ class ChatNotifier extends Notifier<ChatState> {
       if (msg.role == 'assistant' && msg.isStreaming) continue;
       if (msg.error != null && msg.content.isEmpty) continue;
 
-      final imageUrls = msg.imagePaths
-          ?.map((p) => 'file://$p')
-          .toList();
+      List<String>? imageUrls;
+      if (msg.imagePaths != null && msg.imagePaths!.isNotEmpty) {
+        imageUrls = [];
+        for (final path in msg.imagePaths!) {
+          final file = File(path);
+          if (await file.exists()) {
+            final bytes = await file.readAsBytes();
+            final b64 = base64Encode(bytes);
+            final mime = _imageMimeType(path);
+            imageUrls.add('data:$mime;base64,$b64');
+          }
+        }
+        if (imageUrls.isEmpty) imageUrls = null;
+      }
 
       messages.add(AiChatMessage(
         role: msg.role,
@@ -384,6 +396,25 @@ class ChatNotifier extends Notifier<ChatState> {
       model: modelId,
       stream: true,
     );
+  }
+
+  static String _imageMimeType(String path) {
+    final ext = p.extension(path).toLowerCase();
+    switch (ext) {
+      case '.jpg':
+      case '.jpeg':
+        return 'image/jpeg';
+      case '.png':
+        return 'image/png';
+      case '.gif':
+        return 'image/gif';
+      case '.webp':
+        return 'image/webp';
+      case '.bmp':
+        return 'image/bmp';
+      default:
+        return 'image/png';
+    }
   }
 
   void _notifyConversationsChanged() {
