@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/ai_providers.dart';
 import '../../../core/providers/database_provider.dart';
+import '../../../core/services/ai/provider_presets.dart';
 import '../../../core/theme/app_theme.dart';
 import '../views/ai_provider_dialog.dart';
 
@@ -138,7 +139,7 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          _providerIcon(config.type, theme),
+          _providerIcon(config, theme),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -148,21 +149,15 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
                 const SizedBox(height: 2),
                 Row(
                   children: [
-                    _TypeBadge(type: config.type),
+                    _TypeBadge(config: config),
                     const SizedBox(width: 8),
-                    _StatusIndicator(
-                      configured: config.apiKey != null &&
-                          config.apiKey!.isNotEmpty,
-                    ),
+                    _StatusIndicator(config: config),
                   ],
                 ),
               ],
             ),
           ),
-          ToggleSwitch(
-            checked: config.isEnabled,
-            onChanged: _toggleEnabled,
-          ),
+          ToggleSwitch(checked: config.isEnabled, onChanged: _toggleEnabled),
           const SizedBox(width: 8),
           _buildActions(theme),
         ],
@@ -217,18 +212,20 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
 
   Future<void> _toggleEnabled(bool value) async {
     final dao = ref.read(aiProviderConfigDaoProvider);
-    await dao.updateConfig(AiProviderConfigsCompanion(
-      id: Value(config.id),
-      name: Value(config.name),
-      type: Value(config.type),
-      apiKey: Value(config.apiKey),
-      baseUrl: Value(config.baseUrl),
-      defaultModel: Value(config.defaultModel),
-      isEnabled: Value(value),
-      extraConfig: Value(config.extraConfig),
-      createdAt: Value(config.createdAt),
-      updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
-    ));
+    await dao.updateConfig(
+      AiProviderConfigsCompanion(
+        id: Value(config.id),
+        name: Value(config.name),
+        type: Value(config.type),
+        apiKey: Value(config.apiKey),
+        baseUrl: Value(config.baseUrl),
+        defaultModel: Value(config.defaultModel),
+        isEnabled: Value(value),
+        extraConfig: Value(config.extraConfig),
+        createdAt: Value(config.createdAt),
+        updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
+      ),
+    );
     ref.invalidate(aiServicesReadyProvider);
   }
 
@@ -246,32 +243,41 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
       final service = manager.getService(config.id);
       if (service == null) {
         if (mounted) {
-          displayInfoBar(context, builder: (ctx, close) => InfoBar(
-            title: const Text('测试失败'),
-            content: const Text('服务未加载，请检查配置并确保已启用'),
-            severity: InfoBarSeverity.error,
-            onClose: close,
-          ));
+          displayInfoBar(
+            context,
+            builder: (ctx, close) => InfoBar(
+              title: const Text('测试失败'),
+              content: const Text('服务未加载，请检查配置并确保已启用'),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            ),
+          );
         }
         return;
       }
       await service.testConnection();
       if (mounted) {
-        displayInfoBar(context, builder: (ctx, close) => InfoBar(
-          title: const Text('连接成功'),
-          content: Text('${config.name} 连接正常'),
-          severity: InfoBarSeverity.success,
-          onClose: close,
-        ));
+        displayInfoBar(
+          context,
+          builder: (ctx, close) => InfoBar(
+            title: const Text('连接成功'),
+            content: Text('${config.name} 连接正常'),
+            severity: InfoBarSeverity.success,
+            onClose: close,
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
-        displayInfoBar(context, builder: (ctx, close) => InfoBar(
-          title: const Text('连接失败'),
-          content: Text('$e'),
-          severity: InfoBarSeverity.error,
-          onClose: close,
-        ));
+        displayInfoBar(
+          context,
+          builder: (ctx, close) => InfoBar(
+            title: const Text('连接失败'),
+            content: Text('$e'),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          ),
+        );
       }
     }
   }
@@ -305,15 +311,17 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
     }
   }
 
-  static Widget _providerIcon(String type, FluentThemeData theme) {
-    final b = theme.brightness;
-    final (IconData icon, Color color) = switch (type) {
-      'openai' => (FluentIcons.chat_bot, AppColors.providerOpenAI(b)),
-      'anthropic' => (FluentIcons.robot, AppColors.providerAnthropic(b)),
-      'stability' => (FluentIcons.picture, AppColors.providerCustom(b)),
-      'custom' => (FluentIcons.settings, AppColors.providerGoogle(b)),
-      _ => (FluentIcons.cloud, AppColors.pending(b)),
-    };
+  static Widget _providerIcon(AiProviderConfig config, FluentThemeData theme) {
+    final presetId = ProviderPresets.resolvePresetId(
+      config.type,
+      config.baseUrl,
+      config.extraConfig,
+    );
+    final preset = ProviderPresets.getById(presetId);
+    final icon = preset?.icon ?? FluentIcons.cloud;
+    final color =
+        preset?.color(theme.brightness) ?? AppColors.pending(theme.brightness);
+
     return Container(
       width: 36,
       height: 36,
@@ -327,18 +335,19 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
 }
 
 class _TypeBadge extends StatelessWidget {
-  const _TypeBadge({required this.type});
-  final String type;
+  const _TypeBadge({required this.config});
+  final AiProviderConfig config;
 
   @override
   Widget build(BuildContext context) {
-    final label = switch (type) {
-      'openai' => 'OpenAI',
-      'anthropic' => 'Anthropic',
-      'stability' => 'Stability AI',
-      'custom' => '自定义',
-      _ => type,
-    };
+    final presetId = ProviderPresets.resolvePresetId(
+      config.type,
+      config.baseUrl,
+      config.extraConfig,
+    );
+    final preset = ProviderPresets.getById(presetId);
+    final label = preset?.name ?? config.type;
+
     final theme = FluentTheme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
@@ -352,15 +361,36 @@ class _TypeBadge extends StatelessWidget {
 }
 
 class _StatusIndicator extends StatelessWidget {
-  const _StatusIndicator({required this.configured});
-  final bool configured;
+  const _StatusIndicator({required this.config});
+  final AiProviderConfig config;
 
   @override
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
     final b = theme.brightness;
+    final presetId = ProviderPresets.resolvePresetId(
+      config.type,
+      config.baseUrl,
+      config.extraConfig,
+    );
+    final preset = ProviderPresets.getById(presetId);
+    final hasApiKey = config.apiKey != null && config.apiKey!.isNotEmpty;
+    final hasBaseUrl = config.baseUrl != null && config.baseUrl!.isNotEmpty;
+    final requiresBaseUrl = config.type == 'custom';
+    final configured =
+        (!requiresBaseUrl || hasBaseUrl) &&
+        (!(preset?.requiresApiKey ?? false) || hasApiKey);
     final color = configured ? AppColors.success(b) : AppColors.warning(b);
-    final label = configured ? '已配置' : '未配置';
+    final label = switch ((
+      configured,
+      hasBaseUrl,
+      preset?.requiresApiKey ?? false,
+    )) {
+      (true, _, _) => '已配置',
+      (false, false, _) when requiresBaseUrl => '缺少地址',
+      (false, _, true) => '缺少 API Key',
+      _ => '未配置',
+    };
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
