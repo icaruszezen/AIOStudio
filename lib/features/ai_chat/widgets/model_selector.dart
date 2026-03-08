@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/providers/ai_providers.dart';
 import '../providers/chat_provider.dart';
 
 class ModelSelector extends ConsumerWidget {
@@ -9,7 +10,18 @@ class ModelSelector extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final chatState = ref.watch(chatProvider);
+    // Rebuild when services finish loading or are reloaded after provider changes.
+    final servicesAsync = ref.watch(aiServicesReadyProvider);
     final notifier = ref.read(chatProvider.notifier);
+
+    if (servicesAsync.isLoading) {
+      return const SizedBox(
+        width: 16,
+        height: 16,
+        child: ProgressRing(strokeWidth: 2),
+      );
+    }
+
     final groups = notifier.getAvailableModelGroups();
 
     if (groups.isEmpty) {

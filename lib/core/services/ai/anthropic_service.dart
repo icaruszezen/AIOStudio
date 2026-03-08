@@ -11,13 +11,14 @@ import 'ai_service.dart';
 
 class AnthropicService extends AiService {
   final Dio _dio;
+  final List<AiModelInfo>? _modelInfoOverrides;
 
   @override
   final String providerId;
 
   static final _log = Logger(printer: PrettyPrinter(methodCount: 0));
 
-  static const _models = [
+  static const _defaultModels = [
     'claude-3-opus-20240229',
     'claude-3-sonnet-20240229',
     'claude-3-haiku-20240307',
@@ -30,7 +31,9 @@ class AnthropicService extends AiService {
     required this.providerId,
     required String apiKey,
     String baseUrl = 'https://api.anthropic.com',
-  }) : _dio = createAiDio(
+    List<AiModelInfo>? modelInfos,
+  })  : _modelInfoOverrides = modelInfos,
+        _dio = createAiDio(
           baseUrl: baseUrl,
           extraHeaders: {
             'x-api-key': apiKey,
@@ -42,7 +45,12 @@ class AnthropicService extends AiService {
   String get providerName => 'Anthropic';
 
   @override
-  List<String> get supportedModels => List.unmodifiable(_models);
+  List<AiModelInfo> get modelInfos => _modelInfoOverrides ?? [];
+
+  @override
+  List<String> get supportedModels => _modelInfoOverrides != null
+      ? _modelInfoOverrides.where((m) => m.isEnabled).map((m) => m.id).toList()
+      : List.unmodifiable(_defaultModels);
 
   @override
   bool get supportsChatCompletion => true;
@@ -217,7 +225,7 @@ class AnthropicService extends AiService {
             timestamp: DateTime.now(),
           ),
         ],
-        model: _models.last,
+        model: _defaultModels.last,
         maxTokens: 1,
         stream: false,
       ));

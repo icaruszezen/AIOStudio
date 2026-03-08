@@ -7,11 +7,12 @@ import 'ai_service.dart';
 
 class StabilityService extends AiService {
   final Dio _dio;
+  final List<AiModelInfo>? _modelInfoOverrides;
 
   @override
   final String providerId;
 
-  static const _models = [
+  static const _defaultModels = [
     'sd3-large',
     'sd3-large-turbo',
     'sd3-medium',
@@ -22,7 +23,9 @@ class StabilityService extends AiService {
     required this.providerId,
     required String apiKey,
     String baseUrl = 'https://api.stability.ai',
-  }) : _dio = createAiDio(
+    List<AiModelInfo>? modelInfos,
+  })  : _modelInfoOverrides = modelInfos,
+        _dio = createAiDio(
           baseUrl: baseUrl,
           apiKey: apiKey,
           extraHeaders: {'Accept': 'application/json'},
@@ -32,10 +35,20 @@ class StabilityService extends AiService {
   String get providerName => 'Stability AI';
 
   @override
-  List<String> get supportedModels => List.unmodifiable(_models);
+  List<AiModelInfo> get modelInfos => _modelInfoOverrides ?? [];
 
   @override
-  List<String> get imageModels => List.unmodifiable(_models);
+  List<String> get supportedModels => _modelInfoOverrides != null
+      ? _modelInfoOverrides.where((m) => m.isEnabled).map((m) => m.id).toList()
+      : List.unmodifiable(_defaultModels);
+
+  @override
+  List<String> get imageModels => _modelInfoOverrides != null
+      ? _modelInfoOverrides
+          .where((m) => m.isEnabled && m.isImageModel)
+          .map((m) => m.id)
+          .toList()
+      : List.unmodifiable(_defaultModels);
 
   @override
   String get providerType => 'stability';

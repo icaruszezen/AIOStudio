@@ -57,6 +57,7 @@ class CustomService extends AiService with OpenAiCompatibleMixin {
     );
   }
 
+  @override
   List<AiModelInfo> get modelInfos => _modelInfos;
 
   @override

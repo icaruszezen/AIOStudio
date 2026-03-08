@@ -23,6 +23,10 @@ abstract class AiService {
   /// Model identifiers for video generation only.
   List<String> get videoModels => [];
 
+  /// Rich model metadata. Implementations that support user-customised model
+  /// lists should override this to return the full [AiModelInfo] objects.
+  List<AiModelInfo> get modelInfos => [];
+
   /// Provider type tag for UI branching (e.g. 'openai', 'stability', 'custom').
   String get providerType => 'custom';
 

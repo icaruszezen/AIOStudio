@@ -103,6 +103,7 @@ class AiServiceManager {
     final apiKey = cfg.apiKey ?? '';
     final baseUrl = cfg.baseUrl;
     final extra = _parseExtraConfig(cfg.extraConfig);
+    final discoveredModels = _parseDiscoveredModels(extra);
 
     switch (cfg.type) {
       case 'openai':
@@ -110,18 +111,21 @@ class AiServiceManager {
           providerId: cfg.id,
           apiKey: apiKey,
           baseUrl: baseUrl ?? 'https://api.openai.com',
+          modelInfos: discoveredModels,
         );
       case 'anthropic':
         return AnthropicService(
           providerId: cfg.id,
           apiKey: apiKey,
           baseUrl: baseUrl ?? 'https://api.anthropic.com',
+          modelInfos: discoveredModels,
         );
       case 'stability':
         return StabilityService(
           providerId: cfg.id,
           apiKey: apiKey,
           baseUrl: baseUrl ?? 'https://api.stability.ai',
+          modelInfos: discoveredModels,
         );
       case 'custom':
         if (baseUrl == null || baseUrl.isEmpty) {
@@ -147,7 +151,7 @@ class AiServiceManager {
   List<AiModelInfo> getAvailableModelInfos(String type) {
     final infos = <AiModelInfo>[];
     for (final s in _services.values) {
-      if (s is CustomService) {
+      if (s.modelInfos.isNotEmpty) {
         for (final m in s.modelInfos) {
           if (!m.isEnabled) continue;
           final matches = switch (type) {
@@ -179,8 +183,22 @@ class AiServiceManager {
   // Parsing helpers
   // ---------------------------------------------------------------------------
 
+  /// Returns the `discovered_models` list when present, or `null` so that
+  /// non-custom services fall back to their hardcoded defaults.
+  static List<AiModelInfo>? _parseDiscoveredModels(
+      Map<String, dynamic> extra) {
+    final discovered = extra['discovered_models'] as List<dynamic>?;
+    if (discovered != null && discovered.isNotEmpty) {
+      return discovered
+          .map((e) => AiModelInfo.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+    return null;
+  }
+
   /// Parses model infos from extraConfig, supporting both new
   /// `discovered_models` format and legacy `models` string-list format.
+  /// Always returns a non-empty list (used by [CustomService]).
   static List<AiModelInfo> _parseModelInfos(
       Map<String, dynamic> extra, String? defaultModel) {
     // New format: discovered_models

@@ -8,35 +8,48 @@ import 'openai_compatible_mixin.dart';
 
 class OpenAiService extends AiService with OpenAiCompatibleMixin {
   final Dio _dio;
+  final List<AiModelInfo>? _modelInfoOverrides;
 
   @override
   final String providerId;
 
-  static const _chatModels = [
+  static const _defaultChatModels = [
     'gpt-4o',
     'gpt-4o-mini',
     'gpt-4-turbo',
     'gpt-3.5-turbo',
   ];
 
-  static const _imageModels = ['dall-e-3', 'dall-e-2'];
+  static const _defaultImageModels = ['dall-e-3', 'dall-e-2'];
 
-  static const _allModels = [..._chatModels, ..._imageModels];
+  static const _defaultAllModels = [..._defaultChatModels, ..._defaultImageModels];
 
   OpenAiService({
     required this.providerId,
     required String apiKey,
     String baseUrl = 'https://api.openai.com',
-  }) : _dio = createAiDio(baseUrl: baseUrl, apiKey: apiKey);
+    List<AiModelInfo>? modelInfos,
+  })  : _modelInfoOverrides = modelInfos,
+        _dio = createAiDio(baseUrl: baseUrl, apiKey: apiKey);
 
   @override
   String get providerName => 'OpenAI';
 
   @override
-  List<String> get supportedModels => _allModels;
+  List<AiModelInfo> get modelInfos => _modelInfoOverrides ?? [];
 
   @override
-  List<String> get imageModels => _imageModels;
+  List<String> get supportedModels => _modelInfoOverrides != null
+      ? _modelInfoOverrides.where((m) => m.isEnabled).map((m) => m.id).toList()
+      : _defaultAllModels;
+
+  @override
+  List<String> get imageModels => _modelInfoOverrides != null
+      ? _modelInfoOverrides
+          .where((m) => m.isEnabled && m.isImageModel)
+          .map((m) => m.id)
+          .toList()
+      : _defaultImageModels;
 
   @override
   String get providerType => 'openai';

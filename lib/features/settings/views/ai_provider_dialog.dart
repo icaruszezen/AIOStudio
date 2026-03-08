@@ -16,6 +16,7 @@ import '../../../core/services/ai/openai_service.dart';
 import '../../../core/services/ai/provider_presets.dart';
 import '../../../core/services/ai/stability_service.dart';
 import '../../../core/theme/app_theme.dart';
+import 'model_capability_dialog.dart';
 
 class AiProviderDialog extends ConsumerStatefulWidget {
   const AiProviderDialog({super.key, this.existing});
@@ -101,6 +102,30 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
         }
       } catch (_) {}
     }
+
+    if (_discoveredModels.isEmpty) {
+      _initModelsFromPreset();
+    }
+  }
+
+  /// Populates [_discoveredModels] from the preset's default models enriched
+  /// with capability data from the registry. Called when no persisted
+  /// `discovered_models` exist yet.
+  Future<void> _initModelsFromPreset() async {
+    final preset = _selectedPreset;
+    if (preset == null || preset.defaultModels.isEmpty) return;
+
+    final registry = ref.read(modelCapabilityRegistryProvider);
+    if (!registry.isLoaded) await registry.load();
+
+    if (!mounted) return;
+    setState(() {
+      _discoveredModels = preset.defaultModels.map((id) {
+        final auto = registry.lookup(id);
+        return auto?.copyWith(isEnabled: true) ??
+            AiModelInfo(id: id, isEnabled: true);
+      }).toList();
+    });
   }
 
   @override
@@ -327,6 +352,66 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
     });
   }
 
+  Future<void> _editModelCapability(int index) async {
+    final result = await ModelCapabilityDialog.show(
+      context,
+      model: _discoveredModels[index],
+    );
+    if (result != null && mounted) {
+      setState(() => _discoveredModels[index] = result);
+    }
+  }
+
+  Future<void> _addCustomModel() async {
+    final idCtrl = TextEditingController();
+    final modelId = await showDialog<String>(
+      context: context,
+      builder: (ctx) => ContentDialog(
+        title: const Text('添加自定义模型'),
+        content: InfoLabel(
+          label: '模型 ID',
+          child: TextBox(
+            controller: idCtrl,
+            placeholder: '输入模型 ID，如 my-custom-model',
+            autofocus: true,
+          ),
+        ),
+        actions: [
+          Button(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final id = idCtrl.text.trim();
+              if (id.isNotEmpty) Navigator.of(ctx).pop(id);
+            },
+            child: const Text('添加'),
+          ),
+        ],
+      ),
+    );
+    idCtrl.dispose();
+
+    if (modelId == null || modelId.isEmpty || !mounted) return;
+
+    if (_discoveredModels.any((m) => m.id == modelId)) {
+      _showWarning('模型 "$modelId" 已存在');
+      return;
+    }
+
+    final registry = ref.read(modelCapabilityRegistryProvider);
+    if (!registry.isLoaded) await registry.load();
+    final auto = registry.lookup(modelId);
+    final newModel =
+        auto?.copyWith(isEnabled: true) ?? AiModelInfo(id: modelId);
+
+    final edited = await ModelCapabilityDialog.show(context, model: newModel);
+    if (edited != null && mounted) {
+      setState(() => _discoveredModels.add(edited));
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Submit
   // ---------------------------------------------------------------------------
@@ -372,6 +457,10 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
     if (!_hasModelSource(preset)) {
       _showWarning('请至少填写默认模型，或先获取模型列表');
       return;
+    }
+
+    if (_discoveredModels.isEmpty && preset.defaultModels.isNotEmpty) {
+      await _initModelsFromPreset();
     }
 
     setState(() => _isSubmitting = true);
@@ -441,7 +530,10 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
 
     return ContentDialog(
       title: Text(_isEditing ? '编辑服务商' : '添加服务商'),
-      constraints: const BoxConstraints(maxWidth: 720, maxHeight: 580),
+      constraints: BoxConstraints(
+        maxWidth: 720,
+        maxHeight: _isEditing ? 700 : 580,
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -620,6 +712,7 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
             ],
           ],
           if (!preset.supportsModelDiscovery &&
+              !_isEditing &&
               preset.defaultModels.isNotEmpty) ...[
             const SizedBox(height: 14),
             InfoLabel(
@@ -635,8 +728,96 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
               ),
             ),
           ],
+          if (_isEditing) ...[
+            const SizedBox(height: 20),
+            _buildModelManagementSection(theme),
+          ],
         ],
       ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Model management (inline in config step when editing)
+  // ---------------------------------------------------------------------------
+
+  Widget _buildModelManagementSection(FluentThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            const Icon(FluentIcons.list, size: 16),
+            const SizedBox(width: 8),
+            Text('可用模型', style: theme.typography.bodyStrong),
+            const Spacer(),
+            if (_selectedPreset?.supportsModelDiscovery ?? false)
+              Button(
+                onPressed: _isFetchingModels ? null : _fetchModels,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_isFetchingModels)
+                      const Padding(
+                        padding: EdgeInsets.only(right: 6),
+                        child: SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: ProgressRing(strokeWidth: 2),
+                        ),
+                      )
+                    else
+                      const Padding(
+                        padding: EdgeInsets.only(right: 6),
+                        child: Icon(FluentIcons.download, size: 12),
+                      ),
+                    Text(_isFetchingModels ? '获取中...' : '获取模型列表'),
+                  ],
+                ),
+              ),
+            const SizedBox(width: 6),
+            Button(
+              onPressed: _addCustomModel,
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(FluentIcons.add, size: 12),
+                  SizedBox(width: 6),
+                  Text('添加模型'),
+                ],
+              ),
+            ),
+          ],
+        ),
+        if (_fetchError != null) ...[
+          const SizedBox(height: 8),
+          _buildFetchError(theme),
+        ],
+        const SizedBox(height: 8),
+        if (_discoveredModels.isNotEmpty) ...[
+          _buildDiscoveredModelList(theme),
+          const SizedBox(height: 14),
+          _buildDefaultModelFromDiscovered(),
+        ] else
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: theme.resources.controlStrokeColorDefault,
+              ),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Center(
+              child: Text(
+                '暂无模型，请获取模型列表或手动添加',
+                style: theme.typography.caption?.copyWith(
+                  color: theme.resources.textFillColorSecondary,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -685,6 +866,9 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
   // ---------------------------------------------------------------------------
 
   Widget _buildVerifyStep(FluentThemeData theme) {
+    final showAddModel =
+        !_isTesting && !_isFetchingModels && _testSuccess == true;
+
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -709,6 +893,20 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
               (_selectedPreset?.supportsModelDiscovery ?? false)) ...[
             const SizedBox(height: 8),
             _buildManualFetchButton(theme),
+          ],
+          if (showAddModel && _discoveredModels.isEmpty) ...[
+            const SizedBox(height: 8),
+            Button(
+              onPressed: _addCustomModel,
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(FluentIcons.add, size: 12),
+                  SizedBox(width: 6),
+                  Text('手动添加模型'),
+                ],
+              ),
+            ),
           ],
           if (!_isTesting && _testSuccess != true && !_isFetchingModels) ...[
             const SizedBox(height: 8),
@@ -826,32 +1024,51 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
   int get _enabledCount => _discoveredModels.where((m) => m.isEnabled).length;
 
   Widget _buildDiscoveredModelList(FluentThemeData theme) {
-    return InfoLabel(
-      label: '模型列表 ($_enabledCount/${_discoveredModels.length} 已启用)',
-      child: Container(
-        constraints: const BoxConstraints(maxHeight: 220),
-        decoration: BoxDecoration(
-          border: Border.all(color: theme.resources.controlStrokeColorDefault),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: ListView.separated(
-          shrinkWrap: true,
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          itemCount: _discoveredModels.length,
-          separatorBuilder: (_, __) => const Divider(
-            style: DividerThemeData(
-              horizontalMargin: EdgeInsets.symmetric(horizontal: 12),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InfoLabel(
+          label: '模型列表 ($_enabledCount/${_discoveredModels.length} 已启用)',
+          child: Container(
+            constraints: const BoxConstraints(maxHeight: 220),
+            decoration: BoxDecoration(
+              border:
+                  Border.all(color: theme.resources.controlStrokeColorDefault),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: ListView.separated(
+              shrinkWrap: true,
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              itemCount: _discoveredModels.length,
+              separatorBuilder: (_, __) => const Divider(
+                style: DividerThemeData(
+                  horizontalMargin: EdgeInsets.symmetric(horizontal: 12),
+                ),
+              ),
+              itemBuilder: (context, index) {
+                final model = _discoveredModels[index];
+                return _ModelRow(
+                  model: model,
+                  onToggle: (v) => _toggleModel(index, v),
+                  onEdit: () => _editModelCapability(index),
+                );
+              },
             ),
           ),
-          itemBuilder: (context, index) {
-            final model = _discoveredModels[index];
-            return _ModelRow(
-              model: model,
-              onToggle: (v) => _toggleModel(index, v),
-            );
-          },
         ),
-      ),
+        const SizedBox(height: 8),
+        Button(
+          onPressed: _addCustomModel,
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(FluentIcons.add, size: 12),
+              SizedBox(width: 6),
+              Text('手动添加模型'),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -903,7 +1120,19 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('取消'),
         ),
-        FilledButton(onPressed: _goToVerify, child: const Text('下一步')),
+        if (_isEditing)
+          FilledButton(
+            onPressed: _isSubmitting ? null : _submit,
+            child: _isSubmitting
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: ProgressRing(strokeWidth: 2),
+                  )
+                : const Text('保存'),
+          )
+        else
+          FilledButton(onPressed: _goToVerify, child: const Text('下一步')),
       ],
       2 => [
         Button(
@@ -1083,10 +1312,15 @@ class _PresetCard extends StatelessWidget {
 // =============================================================================
 
 class _ModelRow extends StatelessWidget {
-  const _ModelRow({required this.model, required this.onToggle});
+  const _ModelRow({
+    required this.model,
+    required this.onToggle,
+    this.onEdit,
+  });
 
   final AiModelInfo model;
   final ValueChanged<bool> onToggle;
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -1114,7 +1348,17 @@ class _ModelRow extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
+          if (onEdit != null)
+            IconButton(
+              icon: Icon(
+                FluentIcons.edit,
+                size: 12,
+                color: theme.resources.textFillColorSecondary,
+              ),
+              onPressed: onEdit,
+            ),
+          const SizedBox(width: 4),
           ToggleSwitch(checked: model.isEnabled, onChanged: onToggle),
         ],
       ),
@@ -1131,6 +1375,9 @@ class _ModelRow extends StatelessWidget {
       'embedding' => '嵌入',
       'audio_transcription' => '语音转录',
       'audio_speech' => '语音合成',
+      'completion' => '补全',
+      'moderation' => '审核',
+      'rerank' => '重排序',
       _ => model.mode,
     };
     badges.add(_Badge(label: modeLabel, color: AppColors.info(b)));
@@ -1152,10 +1399,26 @@ class _ModelRow extends StatelessWidget {
     if (model.supportsReasoning) {
       badges.add(_Badge(label: '推理', color: AppColors.warning(b)));
     }
+    if (model.supportsResponseSchema) {
+      badges.add(_Badge(label: 'JSON', color: AppColors.providerCustom(b)));
+    }
+    if (model.supportsWebSearch) {
+      badges.add(_Badge(label: '联网', color: AppColors.chat(b)));
+    }
+    if (model.supportsAudioInput) {
+      badges.add(_Badge(label: '音频输入', color: AppColors.audio(b)));
+    }
+    if (model.supportsAudioOutput) {
+      badges.add(_Badge(label: '音频输出', color: AppColors.audio(b)));
+    }
+    if (model.supportsPromptCaching) {
+      badges.add(_Badge(label: '缓存', color: AppColors.neutral(b)));
+    }
 
     for (final mod in model.inputModalities) {
       if (mod == 'text') continue;
       if (mod == 'image' && model.supportsVision) continue;
+      if (mod == 'audio' && model.supportsAudioInput) continue;
       badges.add(
         _Badge(label: _modalityLabel(mod), color: AppColors.providerCustom(b)),
       );
@@ -1163,6 +1426,7 @@ class _ModelRow extends StatelessWidget {
 
     for (final mod in model.outputModalities) {
       if (mod == 'text') continue;
+      if (mod == 'audio' && model.supportsAudioOutput) continue;
       badges.add(
         _Badge(label: '输出${_modalityLabel(mod)}', color: AppColors.success(b)),
       );

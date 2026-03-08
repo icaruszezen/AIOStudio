@@ -11,6 +11,13 @@ class AiModelInfo {
   final bool supportsVision;
   final bool supportsFunctionCalling;
   final bool supportsReasoning;
+  final bool supportsResponseSchema;
+  final bool supportsWebSearch;
+  final bool supportsAudioInput;
+  final bool supportsAudioOutput;
+  final bool supportsParallelFunctionCalling;
+  final bool supportsPromptCaching;
+  final bool supportsSystemMessages;
   final bool isEnabled;
 
   const AiModelInfo({
@@ -23,6 +30,13 @@ class AiModelInfo {
     this.supportsVision = false,
     this.supportsFunctionCalling = false,
     this.supportsReasoning = false,
+    this.supportsResponseSchema = false,
+    this.supportsWebSearch = false,
+    this.supportsAudioInput = false,
+    this.supportsAudioOutput = false,
+    this.supportsParallelFunctionCalling = false,
+    this.supportsPromptCaching = false,
+    this.supportsSystemMessages = false,
     this.isEnabled = true,
   });
 
@@ -51,6 +65,13 @@ class AiModelInfo {
     bool? supportsVision,
     bool? supportsFunctionCalling,
     bool? supportsReasoning,
+    bool? supportsResponseSchema,
+    bool? supportsWebSearch,
+    bool? supportsAudioInput,
+    bool? supportsAudioOutput,
+    bool? supportsParallelFunctionCalling,
+    bool? supportsPromptCaching,
+    bool? supportsSystemMessages,
     bool? isEnabled,
   }) {
     return AiModelInfo(
@@ -64,6 +85,17 @@ class AiModelInfo {
       supportsFunctionCalling:
           supportsFunctionCalling ?? this.supportsFunctionCalling,
       supportsReasoning: supportsReasoning ?? this.supportsReasoning,
+      supportsResponseSchema:
+          supportsResponseSchema ?? this.supportsResponseSchema,
+      supportsWebSearch: supportsWebSearch ?? this.supportsWebSearch,
+      supportsAudioInput: supportsAudioInput ?? this.supportsAudioInput,
+      supportsAudioOutput: supportsAudioOutput ?? this.supportsAudioOutput,
+      supportsParallelFunctionCalling: supportsParallelFunctionCalling ??
+          this.supportsParallelFunctionCalling,
+      supportsPromptCaching:
+          supportsPromptCaching ?? this.supportsPromptCaching,
+      supportsSystemMessages:
+          supportsSystemMessages ?? this.supportsSystemMessages,
       isEnabled: isEnabled ?? this.isEnabled,
     );
   }
@@ -78,6 +110,13 @@ class AiModelInfo {
         'supports_vision': supportsVision,
         'supports_function_calling': supportsFunctionCalling,
         'supports_reasoning': supportsReasoning,
+        'supports_response_schema': supportsResponseSchema,
+        'supports_web_search': supportsWebSearch,
+        'supports_audio_input': supportsAudioInput,
+        'supports_audio_output': supportsAudioOutput,
+        'supports_parallel_function_calling': supportsParallelFunctionCalling,
+        'supports_prompt_caching': supportsPromptCaching,
+        'supports_system_messages': supportsSystemMessages,
         'is_enabled': isEnabled,
       };
 
@@ -96,6 +135,17 @@ class AiModelInfo {
         supportsFunctionCalling:
             json['supports_function_calling'] as bool? ?? false,
         supportsReasoning: json['supports_reasoning'] as bool? ?? false,
+        supportsResponseSchema:
+            json['supports_response_schema'] as bool? ?? false,
+        supportsWebSearch: json['supports_web_search'] as bool? ?? false,
+        supportsAudioInput: json['supports_audio_input'] as bool? ?? false,
+        supportsAudioOutput: json['supports_audio_output'] as bool? ?? false,
+        supportsParallelFunctionCalling:
+            json['supports_parallel_function_calling'] as bool? ?? false,
+        supportsPromptCaching:
+            json['supports_prompt_caching'] as bool? ?? false,
+        supportsSystemMessages:
+            json['supports_system_messages'] as bool? ?? false,
         isEnabled: json['is_enabled'] as bool? ?? true,
       );
 
@@ -118,6 +168,17 @@ class AiModelInfo {
       supportsFunctionCalling:
           cap['supports_function_calling'] as bool? ?? false,
       supportsReasoning: cap['supports_reasoning'] as bool? ?? false,
+      supportsResponseSchema:
+          cap['supports_response_schema'] as bool? ?? false,
+      supportsWebSearch: cap['supports_web_search'] as bool? ?? false,
+      supportsAudioInput: cap['supports_audio_input'] as bool? ?? false,
+      supportsAudioOutput: cap['supports_audio_output'] as bool? ?? false,
+      supportsParallelFunctionCalling:
+          cap['supports_parallel_function_calling'] as bool? ?? false,
+      supportsPromptCaching:
+          cap['supports_prompt_caching'] as bool? ?? false,
+      supportsSystemMessages:
+          cap['supports_system_messages'] as bool? ?? false,
     );
   }
 }
