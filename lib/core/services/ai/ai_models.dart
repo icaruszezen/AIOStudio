@@ -40,7 +40,7 @@ class AiModelInfo {
     this.isEnabled = true,
   });
 
-  bool get isChatModel => mode == 'chat';
+  bool get isChatModel => mode == 'chat' || mode == 'responses';
   bool get isImageModel => mode == 'image_generation' ||
       outputModalities.contains('image');
   bool get isEmbeddingModel => mode == 'embedding';
