@@ -180,10 +180,12 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _MarkdownContent(
-          data: displayContent,
-          isDarkMode: widget.isDarkMode,
-          showCursor: widget.message.isStreaming && _showCursor,
+        SelectionArea(
+          child: _MarkdownContent(
+            data: displayContent,
+            isDarkMode: widget.isDarkMode,
+            showCursor: widget.message.isStreaming && _showCursor,
+          ),
         ),
         if (_isLong)
           Padding(
@@ -203,7 +205,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         Icon(FluentIcons.error_badge, size: 16, color: AppColors.error(theme.brightness)),
         const SizedBox(width: 8),
         Flexible(
-          child: Text(
+          child: SelectableText(
             widget.message.error!,
             style: theme.typography.body?.copyWith(
               color: AppColors.error(theme.brightness),
@@ -430,8 +432,9 @@ class _CopyButton extends StatefulWidget {
 class _CopyButtonState extends State<_CopyButton> {
   bool _copied = false;
 
-  void _doCopy() {
-    Clipboard.setData(ClipboardData(text: widget.content));
+  Future<void> _doCopy() async {
+    await Clipboard.setData(ClipboardData(text: widget.content));
+    if (!mounted) return;
     setState(() => _copied = true);
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) setState(() => _copied = false);
