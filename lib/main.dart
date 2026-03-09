@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'app.dart';
@@ -18,6 +20,14 @@ Future<void> main() async {
 
   if (PlatformUtils.isDesktop) {
     await windowManager.ensureInitialized();
+
+    await Window.initialize();
+    await Window.setEffect(
+      effect: defaultTargetPlatform == TargetPlatform.linux
+          ? WindowEffect.transparent
+          : WindowEffect.acrylic,
+      color: const Color(0x00000000),
+    );
 
     const windowOptions = WindowOptions(
       size: Size(1280, 800),

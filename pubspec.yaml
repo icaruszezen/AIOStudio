@@ -17,6 +17,7 @@ dependencies:
   drift: ^2.29.0
   sqlite3_flutter_libs: ^0.5.0
   window_manager: ^0.5.1
+  flutter_acrylic: ^1.1.4
   path_provider: ^2.1.0
   file_picker: ^8.0.0
   uuid: ^4.5.0

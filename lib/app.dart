@@ -6,6 +6,7 @@ import 'core/router/app_router.dart';
 import 'core/services/extension_bridge/extension_providers.dart';
 import 'core/services/notification_service.dart';
 import 'core/theme/app_theme.dart';
+import 'core/utils/platform_utils.dart';
 import 'features/settings/providers/settings_provider.dart';
 
 class AioStudioApp extends ConsumerStatefulWidget {
@@ -65,12 +66,15 @@ class _AioStudioAppState extends ConsumerState<AioStudioApp> {
     final themeMode = ref.watch(themeNotifierProvider);
     final accentColor = ref.watch(accentColorProvider);
     final locale = ref.watch(localeProvider);
+    final windowEffect = ref.watch(windowEffectProvider);
+    final transparentTheme =
+        PlatformUtils.isDesktop && windowEffect != AppWindowEffect.none;
 
     return FluentApp.router(
       title: 'AIO Studio',
       themeMode: themeMode,
-      theme: AppTheme.light(accentColor),
-      darkTheme: AppTheme.dark(accentColor),
+      theme: AppTheme.light(accentColor, transparent: transparentTheme),
+      darkTheme: AppTheme.dark(accentColor, transparent: transparentTheme),
       locale: locale,
       supportedLocales: const [
         Locale('zh', 'CN'),

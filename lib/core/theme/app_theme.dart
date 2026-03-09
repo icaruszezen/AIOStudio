@@ -104,8 +104,10 @@ class AppTheme {
   AppTheme._();
 
   static AccentColor? _cachedLightAccent;
+  static bool? _cachedLightTransparent;
   static FluentThemeData? _cachedLight;
   static AccentColor? _cachedDarkAccent;
+  static bool? _cachedDarkTransparent;
   static FluentThemeData? _cachedDark;
 
   static Typography _typography(Brightness brightness) {
@@ -137,32 +139,48 @@ class AppTheme {
     );
   }
 
-  static FluentThemeData light([AccentColor? accent]) {
+  static FluentThemeData light(
+    AccentColor? accent, {
+    bool transparent = false,
+  }) {
     final effective = accent ?? Colors.blue;
-    if (_cachedLight != null && _cachedLightAccent == effective) {
+    if (_cachedLight != null &&
+        _cachedLightAccent == effective &&
+        _cachedLightTransparent == transparent) {
       return _cachedLight!;
     }
     _cachedLightAccent = effective;
+    _cachedLightTransparent = transparent;
     _cachedLight = FluentThemeData(
       brightness: Brightness.light,
       accentColor: effective,
       visualDensity: VisualDensity.standard,
       typography: _typography(Brightness.light),
+      scaffoldBackgroundColor: transparent ? Colors.transparent : null,
+      micaBackgroundColor: transparent ? Colors.transparent : null,
     );
     return _cachedLight!;
   }
 
-  static FluentThemeData dark([AccentColor? accent]) {
+  static FluentThemeData dark(
+    AccentColor? accent, {
+    bool transparent = false,
+  }) {
     final effective = accent ?? Colors.blue;
-    if (_cachedDark != null && _cachedDarkAccent == effective) {
+    if (_cachedDark != null &&
+        _cachedDarkAccent == effective &&
+        _cachedDarkTransparent == transparent) {
       return _cachedDark!;
     }
     _cachedDarkAccent = effective;
+    _cachedDarkTransparent = transparent;
     _cachedDark = FluentThemeData(
       brightness: Brightness.dark,
       accentColor: effective,
       visualDensity: VisualDensity.standard,
       typography: _typography(Brightness.dark),
+      scaffoldBackgroundColor: transparent ? Colors.transparent : null,
+      micaBackgroundColor: transparent ? Colors.transparent : null,
     );
     return _cachedDark!;
   }

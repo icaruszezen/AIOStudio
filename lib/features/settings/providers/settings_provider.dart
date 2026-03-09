@@ -8,6 +8,7 @@ const _localeKey = 'locale';
 const _storageDirectoryKey = 'storage_directory';
 const _autoSaveChatKey = 'auto_save_chat';
 const _extensionPortKey = 'extension_port';
+const _windowEffectKey = 'window_effect';
 
 const defaultExtensionPort = 52140;
 
@@ -123,6 +124,34 @@ class ExtensionPortNotifier extends Notifier<int> {
     state = port;
     final prefs = ref.read(sharedPreferencesProvider);
     await prefs.setInt(_extensionPortKey, port);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Window effect preference
+// ---------------------------------------------------------------------------
+
+enum AppWindowEffect { none, acrylic, mica, tabbed }
+
+final windowEffectProvider =
+    NotifierProvider<WindowEffectNotifier, AppWindowEffect>(
+        WindowEffectNotifier.new);
+
+class WindowEffectNotifier extends Notifier<AppWindowEffect> {
+  @override
+  AppWindowEffect build() {
+    final prefs = ref.watch(sharedPreferencesProvider);
+    final value = prefs.getString(_windowEffectKey);
+    return AppWindowEffect.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => AppWindowEffect.acrylic,
+    );
+  }
+
+  Future<void> setEffect(AppWindowEffect effect) async {
+    state = effect;
+    final prefs = ref.read(sharedPreferencesProvider);
+    await prefs.setString(_windowEffectKey, effect.name);
   }
 }
 
