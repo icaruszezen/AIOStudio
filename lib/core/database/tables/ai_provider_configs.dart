@@ -4,8 +4,8 @@ class AiProviderConfigs extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
   TextColumn get type => text()();
-  // TODO: encrypt before storing; migrate to flutter_secure_storage or
-  //  apply SQLCipher / column-level encryption in a future phase.
+  /// Kept for backward compatibility; new API keys are stored via
+  /// [SecureKeyService] and this column remains null.
   TextColumn get apiKey => text().nullable()();
   TextColumn get baseUrl => text().nullable()();
   TextColumn get defaultModel => text().nullable()();

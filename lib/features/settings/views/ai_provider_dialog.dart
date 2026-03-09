@@ -87,9 +87,10 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
     _shouldPersistPreset = storedPresetId != null;
 
     _nameCtrl.text = e.name;
-    _apiKeyCtrl.text = e.apiKey ?? '';
     _baseUrlCtrl.text = e.baseUrl ?? '';
     _setDefaultModel(e.defaultModel);
+
+    _loadSecureApiKey(e.id, e.apiKey);
 
     if (e.extraConfig != null) {
       try {
@@ -105,6 +106,16 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
 
     if (_discoveredModels.isEmpty) {
       _initModelsFromPreset();
+    }
+  }
+
+  Future<void> _loadSecureApiKey(String providerId, String? dbFallback) async {
+    final secureKeys = ref.read(secureKeyServiceProvider);
+    final key = await secureKeys.getApiKey(providerId);
+    if (mounted) {
+      setState(() {
+        _apiKeyCtrl.text = key ?? dbFallback ?? '';
+      });
     }
   }
 
@@ -467,16 +478,24 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
 
     try {
       final dao = ref.read(aiProviderConfigDaoProvider);
+      final secureKeys = ref.read(secureKeyServiceProvider);
       final now = DateTime.now().millisecondsSinceEpoch;
       final extraConfig = _buildExtraConfig();
 
       if (_isEditing) {
+        final id = widget.existing!.id;
+        if (apiKey.isNotEmpty) {
+          await secureKeys.saveApiKey(id, apiKey);
+        } else {
+          await secureKeys.deleteApiKey(id);
+        }
+
         await dao.updateConfig(
           AiProviderConfigsCompanion(
-            id: Value(widget.existing!.id),
+            id: Value(id),
             name: Value(name),
             type: Value(preset.serviceType),
-            apiKey: Value(apiKey.isNotEmpty ? apiKey : null),
+            apiKey: const Value(null),
             baseUrl: Value(baseUrl.isNotEmpty ? baseUrl : null),
             defaultModel: Value(_defaultModel),
             isEnabled: Value(widget.existing!.isEnabled),
@@ -486,12 +505,17 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
           ),
         );
       } else {
+        final id = const Uuid().v4();
+        if (apiKey.isNotEmpty) {
+          await secureKeys.saveApiKey(id, apiKey);
+        }
+
         await dao.insertConfig(
           AiProviderConfigsCompanion(
-            id: Value(const Uuid().v4()),
+            id: Value(id),
             name: Value(name),
             type: Value(preset.serviceType),
-            apiKey: Value(apiKey.isNotEmpty ? apiKey : null),
+            apiKey: const Value(null),
             baseUrl: Value(baseUrl.isNotEmpty ? baseUrl : null),
             defaultModel: Value(_defaultModel),
             isEnabled: const Value(true),

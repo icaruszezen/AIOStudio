@@ -4,9 +4,8 @@ import 'package:url_launcher/url_launcher.dart';
 const _appVersion = '1.0.0';
 const _appBuild = '1';
 
-// TODO: replace with actual repository URL once available
-const _repoUrl = 'https://github.com';
-const _issuesUrl = 'https://github.com';
+const _repoUrl = 'https://github.com/icaruszezen/AIOStudio';
+const _issuesUrl = 'https://github.com/icaruszezen/AIOStudio/issues';
 
 class AboutSection extends StatelessWidget {
   const AboutSection({super.key});

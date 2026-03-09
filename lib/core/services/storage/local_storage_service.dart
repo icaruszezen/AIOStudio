@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:image/image.dart' as img;
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -78,19 +80,35 @@ class LocalStorageService {
     return dest.path;
   }
 
-  /// Placeholder for thumbnail generation.
-  /// A full implementation would decode the image and resize it.
+  static const _thumbWidth = 300;
+
+  /// Decodes the image at [imagePath], resizes it to [_thumbWidth] px wide
+  /// (preserving aspect ratio), and saves the result as a JPEG thumbnail.
+  /// Falls back to copying the original if decoding fails (e.g. SVG).
   Future<String?> generateThumbnail(String imagePath) async {
     final file = File(imagePath);
     if (!await file.exists()) return null;
 
     final thumbDir = await getThumbnailDirectory();
-    final ext = p.extension(imagePath);
-    final thumbName = '${_uuid.v4()}_thumb$ext';
+    final thumbName = '${_uuid.v4()}_thumb.jpg';
     final thumbPath = p.join(thumbDir.path, thumbName);
 
-    // TODO: integrate an image processing library for real resizing
-    await file.copy(thumbPath);
+    try {
+      final Uint8List bytes = await file.readAsBytes();
+      final decoded = img.decodeImage(bytes);
+      if (decoded == null) {
+        await file.copy(thumbPath);
+        return thumbPath;
+      }
+
+      final resized = img.copyResize(decoded, width: _thumbWidth);
+      final encoded = img.encodeJpg(resized, quality: 85);
+      await File(thumbPath).writeAsBytes(encoded);
+    } catch (e) {
+      _log.w('Thumbnail generation failed, copying original: $e');
+      await file.copy(thumbPath);
+    }
+
     return thumbPath;
   }
 

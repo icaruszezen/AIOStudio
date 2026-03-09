@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'app.dart';
+import 'core/providers/database_provider.dart';
 import 'core/services/extension_bridge/extension_providers.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/platform_utils.dart';
@@ -39,6 +40,10 @@ Future<void> main() async {
       sharedPreferencesProvider.overrideWithValue(prefs),
     ],
   );
+
+  final secureKeys = container.read(secureKeyServiceProvider);
+  final dao = container.read(aiProviderConfigDaoProvider);
+  await secureKeys.migrateFromDatabase(dao);
 
   if (PlatformUtils.isDesktop) {
     container.read(extensionServerProvider);

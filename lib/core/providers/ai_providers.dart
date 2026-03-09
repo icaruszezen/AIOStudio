@@ -20,6 +20,7 @@ final modelDiscoveryServiceProvider = Provider<ModelDiscoveryService>((ref) {
 final aiServiceManagerProvider = Provider<AiServiceManager>((ref) {
   final manager = AiServiceManager(
     dao: ref.watch(aiProviderConfigDaoProvider),
+    secureKeys: ref.watch(secureKeyServiceProvider),
   );
   ref.onDispose(manager.disposeAll);
   return manager;

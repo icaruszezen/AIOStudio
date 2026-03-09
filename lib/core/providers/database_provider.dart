@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/app_database.dart';
+import '../services/secure_key_service.dart';
 import '../services/storage/asset_file_manager.dart';
 import '../services/storage/local_storage_service.dart';
 
@@ -32,6 +33,10 @@ final aiTaskDaoProvider = Provider<AiTaskDao>((ref) {
 
 final aiProviderConfigDaoProvider = Provider<AiProviderConfigDao>((ref) {
   return ref.watch(appDatabaseProvider).aiProviderConfigDao;
+});
+
+final secureKeyServiceProvider = Provider<SecureKeyService>((ref) {
+  return SecureKeyService();
 });
 
 final localStorageServiceProvider = Provider<LocalStorageService>((ref) {

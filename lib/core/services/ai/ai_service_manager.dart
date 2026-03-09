@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:logger/logger.dart';
 
 import '../../database/app_database.dart';
+import '../secure_key_service.dart';
 import 'ai_models.dart';
 import 'ai_service.dart';
 import 'anthropic_service.dart';
@@ -14,11 +15,16 @@ import 'stability_service.dart';
 /// persisted [AiProviderConfig] rows.
 class AiServiceManager {
   final AiProviderConfigDao _dao;
+  final SecureKeyService _secureKeys;
   final Map<String, AiService> _services = {};
 
   static final _log = Logger(printer: PrettyPrinter(methodCount: 0));
 
-  AiServiceManager({required AiProviderConfigDao dao}) : _dao = dao;
+  AiServiceManager({
+    required AiProviderConfigDao dao,
+    required SecureKeyService secureKeys,
+  })  : _dao = dao,
+        _secureKeys = secureKeys;
 
   /// Reads all enabled provider configs from the database and creates the
   /// corresponding service instances.  Safe to call multiple times – disposes
@@ -32,7 +38,9 @@ class AiServiceManager {
 
     for (final cfg in configs) {
       try {
-        final service = _createService(cfg);
+        final secureApiKey = await _secureKeys.getApiKey(cfg.id);
+        final apiKey = secureApiKey ?? cfg.apiKey ?? '';
+        final service = _createService(cfg, apiKey);
         if (service != null) {
           _services[cfg.id] = service;
           _log.i('[AiServiceManager] Loaded ${service.providerName} '
@@ -99,8 +107,7 @@ class AiServiceManager {
   // Factory
   // ---------------------------------------------------------------------------
 
-  AiService? _createService(AiProviderConfig cfg) {
-    final apiKey = cfg.apiKey ?? '';
+  AiService? _createService(AiProviderConfig cfg, String apiKey) {
     final baseUrl = cfg.baseUrl;
     final extra = _parseExtraConfig(cfg.extraConfig);
     final discoveredModels = _parseDiscoveredModels(extra);

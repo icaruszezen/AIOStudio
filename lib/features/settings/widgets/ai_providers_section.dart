@@ -217,7 +217,7 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
         id: Value(config.id),
         name: Value(config.name),
         type: Value(config.type),
-        apiKey: Value(config.apiKey),
+        apiKey: const Value(null),
         baseUrl: Value(config.baseUrl),
         defaultModel: Value(config.defaultModel),
         isEnabled: Value(value),
@@ -306,6 +306,8 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
     );
     if (confirmed == true) {
       final dao = ref.read(aiProviderConfigDaoProvider);
+      final secureKeys = ref.read(secureKeyServiceProvider);
+      await secureKeys.deleteApiKey(config.id);
       await dao.deleteConfig(config.id);
       ref.invalidate(aiServicesReadyProvider);
     }
@@ -360,12 +362,17 @@ class _TypeBadge extends StatelessWidget {
   }
 }
 
-class _StatusIndicator extends StatelessWidget {
+final _hasSecureApiKeyProvider =
+    FutureProvider.family<bool, String>((ref, providerId) {
+  return ref.watch(secureKeyServiceProvider).hasApiKey(providerId);
+});
+
+class _StatusIndicator extends ConsumerWidget {
   const _StatusIndicator({required this.config});
   final AiProviderConfig config;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = FluentTheme.of(context);
     final b = theme.brightness;
     final presetId = ProviderPresets.resolvePresetId(
@@ -374,7 +381,8 @@ class _StatusIndicator extends StatelessWidget {
       config.extraConfig,
     );
     final preset = ProviderPresets.getById(presetId);
-    final hasApiKey = config.apiKey != null && config.apiKey!.isNotEmpty;
+    final secureKeyAsync = ref.watch(_hasSecureApiKeyProvider(config.id));
+    final hasApiKey = secureKeyAsync.value ?? false;
     final hasBaseUrl = config.baseUrl != null && config.baseUrl!.isNotEmpty;
     final requiresBaseUrl = config.type == 'custom';
     final configured =
