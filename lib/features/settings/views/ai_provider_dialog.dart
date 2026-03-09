@@ -413,6 +413,8 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
 
     final registry = ref.read(modelCapabilityRegistryProvider);
     if (!registry.isLoaded) await registry.load();
+    if (!mounted) return;
+
     final auto = registry.lookup(modelId);
     final newModel =
         auto?.copyWith(isEnabled: true) ?? AiModelInfo(id: modelId);
@@ -472,6 +474,7 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
 
     if (_discoveredModels.isEmpty && preset.defaultModels.isNotEmpty) {
       await _initModelsFromPreset();
+      if (!mounted) return;
     }
 
     setState(() => _isSubmitting = true);
