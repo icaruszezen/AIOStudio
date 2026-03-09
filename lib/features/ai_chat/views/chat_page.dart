@@ -249,10 +249,8 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                     _showSystemPromptDialog(chatState.systemPrompt),
               ),
               IconButton(
-                icon: const Icon(FluentIcons.clear, size: 16),
-                onPressed: conv.messages.isEmpty
-                    ? null
-                    : () => _confirmClear(conv),
+                icon: const Icon(FluentIcons.delete, size: 16),
+                onPressed: () => _confirmDelete(conv),
               ),
             ],
           ),
@@ -305,12 +303,10 @@ class _ChatPageState extends ConsumerState<ChatPage> {
           ),
           const SizedBox(width: 4),
           Tooltip(
-            message: '清空对话',
+            message: '删除对话',
             child: IconButton(
-              icon: const Icon(FluentIcons.clear, size: 16),
-              onPressed: conv.messages.isEmpty
-                  ? null
-                  : () => _confirmClear(conv),
+              icon: const Icon(FluentIcons.delete, size: 16),
+              onPressed: () => _confirmDelete(conv),
             ),
           ),
         ],
@@ -420,19 +416,19 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     }
   }
 
-  Future<void> _confirmClear(Conversation conv) async {
+  Future<void> _confirmDelete(Conversation conv) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => ContentDialog(
-        title: const Text('清空对话'),
-        content: const Text('确定要清空当前对话的所有消息吗？此操作不可撤销。'),
+        title: const Text('删除对话'),
+        content: const Text('确定要删除当前对话吗？此操作不可撤销。'),
         actions: [
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ButtonStyle(
               backgroundColor: WidgetStatePropertyAll(AppColors.error(FluentTheme.of(context).brightness)),
             ),
-            child: const Text('清空'),
+            child: const Text('删除'),
           ),
           Button(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -442,7 +438,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       ),
     );
     if (confirmed == true) {
-      ref.read(chatProvider.notifier).clearConversation(conv.id);
+      ref.read(chatProvider.notifier).deleteConversation(conv.id);
     }
   }
 }

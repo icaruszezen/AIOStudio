@@ -73,6 +73,7 @@ class _ConversationListPanelState
         final conv = conversations[index];
         final isSelected = conv.id == currentId;
         return _ConversationTile(
+          key: ValueKey(conv.id),
           conversation: conv,
           isSelected: isSelected,
           onTap: () {
@@ -110,6 +111,7 @@ class _ConversationListPanelState
       ),
     );
     controller.dispose();
+    if (!mounted) return;
     if (result != null && result.isNotEmpty) {
       ref.read(chatProvider.notifier).renameConversation(conv.id, result);
     }
@@ -136,6 +138,7 @@ class _ConversationListPanelState
         ],
       ),
     );
+    if (!mounted) return;
     if (confirmed == true) {
       ref.read(chatProvider.notifier).deleteConversation(conv.id);
     }
@@ -154,6 +157,7 @@ class _ConversationTile extends StatefulWidget {
   final VoidCallback onDelete;
 
   const _ConversationTile({
+    super.key,
     required this.conversation,
     required this.isSelected,
     required this.onTap,
@@ -193,19 +197,13 @@ class _ConversationTileState extends State<_ConversationTile> {
                 MenuFlyoutItem(
                   leading: const Icon(FluentIcons.rename, size: 14),
                   text: const Text('重命名'),
-                  onPressed: () {
-                    Navigator.of(ctx).pop();
-                    widget.onRename();
-                  },
+                  onPressed: widget.onRename,
                 ),
                 const MenuFlyoutSeparator(),
                 MenuFlyoutItem(
                   leading: Icon(FluentIcons.delete, size: 14, color: AppColors.error(theme.brightness)),
                   text: Text('删除', style: TextStyle(color: AppColors.error(theme.brightness))),
-                  onPressed: () {
-                    Navigator.of(ctx).pop();
-                    widget.onDelete();
-                  },
+                  onPressed: widget.onDelete,
                 ),
               ],
             ),
