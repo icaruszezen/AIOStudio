@@ -551,7 +551,9 @@ class _ContextMenuWrapperState extends State<_ContextMenuWrapper> {
     return GestureDetector(
       onSecondaryTapUp: (details) {
         _flyoutController.showFlyout(
+          navigatorKey: Navigator.of(context, rootNavigator: true),
           position: details.globalPosition,
+          barrierDismissible: true,
           builder: (ctx) {
             return MenuFlyout(
               items: [

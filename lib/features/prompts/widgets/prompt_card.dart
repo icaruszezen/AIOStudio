@@ -168,7 +168,7 @@ class _PromptCardState extends State<PromptCard> {
     showPromptContextMenu(
       context: context,
       controller: _flyoutController,
-      position: details.localPosition,
+      position: details.globalPosition,
       prompt: widget.prompt,
       onFavoriteToggle: widget.onFavoriteToggle,
       onDelete: widget.onDelete,

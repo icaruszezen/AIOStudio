@@ -129,7 +129,7 @@ class _AssetGridItemState extends State<AssetGridItem> {
     showAssetContextMenu(
       context: context,
       controller: _flyoutController,
-      position: details.localPosition,
+      position: details.globalPosition,
       asset: widget.asset,
       onFavoriteToggle: widget.onFavoriteToggle,
       onRename: widget.onRename,

@@ -214,7 +214,7 @@ class _AssetListItemState extends State<AssetListItem> {
     showAssetContextMenu(
       context: context,
       controller: _flyoutController,
-      position: details.localPosition,
+      position: details.globalPosition,
       asset: widget.asset,
       onFavoriteToggle: widget.onFavoriteToggle,
       onRename: widget.onRename,

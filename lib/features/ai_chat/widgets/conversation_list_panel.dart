@@ -191,7 +191,9 @@ class _ConversationTileState extends State<_ConversationTile> {
         onTap: widget.onTap,
         onSecondaryTapUp: (details) {
           _flyoutController.showFlyout(
+            navigatorKey: Navigator.of(context, rootNavigator: true),
             position: details.globalPosition,
+            barrierDismissible: true,
             builder: (ctx) => MenuFlyout(
               items: [
                 MenuFlyoutItem(
