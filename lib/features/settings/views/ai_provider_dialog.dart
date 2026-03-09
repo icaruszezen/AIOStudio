@@ -617,6 +617,7 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
         const SizedBox(height: 12),
         Flexible(
           child: SingleChildScrollView(
+            padding: const EdgeInsets.only(right: 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -660,6 +661,7 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
     if (preset == null) return const SizedBox.shrink();
 
     return SingleChildScrollView(
+      padding: const EdgeInsets.only(right: 14),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -870,6 +872,7 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
         !_isTesting && !_isFetchingModels && _testSuccess == true;
 
     return SingleChildScrollView(
+      padding: const EdgeInsets.only(right: 14),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
