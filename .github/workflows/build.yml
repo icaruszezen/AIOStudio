@@ -5,15 +5,38 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 1.2.0, must match pubspec.yaml)'
+        required: false
 
 permissions:
   contents: write
 
 env:
   FLUTTER_VERSION: '3.32.0'
+  NODE_VERSION: '20'
 
 jobs:
+  # ── Version gate ──────────────────────────────────────────────
+  validate-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate version consistency
+        id: check
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          chmod +x scripts/validate_version.sh
+          ./scripts/validate_version.sh
+
+  # ── Flutter desktop & mobile builds ──────────────────────────
   build-windows:
+    needs: [validate-version]
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +60,7 @@ jobs:
           path: build/windows/x64/runner/Release/
 
   build-macos:
+    needs: [validate-version]
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -57,6 +81,7 @@ jobs:
           path: build/macos/Build/Products/Release/*.app
 
   build-linux:
+    needs: [validate-version]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -87,6 +112,7 @@ jobs:
           path: aio-studio-linux-x64.tar.gz
 
   build-android:
+    needs: [validate-version]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -112,6 +138,7 @@ jobs:
           path: build/app/outputs/flutter-apk/app-release.apk
 
   build-ios:
+    needs: [validate-version]
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -131,8 +158,45 @@ jobs:
           name: ios-release
           path: build/ios/ipa/*.ipa
 
+  # ── Browser extension build ──────────────────────────────────
+  build-extension:
+    needs: [validate-version]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+
+      - name: Install and build extension
+        working-directory: extension
+        run: |
+          npm ci
+          npm run build
+
+      - name: Package extension as zip
+        run: |
+          cd extension/dist
+          zip -r ../../aio-studio-extension.zip .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: extension-release
+          path: aio-studio-extension.zip
+
+  # ── Collect artifacts & publish GitHub Release ───────────────
   release:
-    needs: [build-windows, build-macos, build-linux, build-android, build-ios]
+    needs:
+      - validate-version
+      - build-windows
+      - build-macos
+      - build-linux
+      - build-android
+      - build-ios
+      - build-extension
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
@@ -141,18 +205,24 @@ jobs:
           path: artifacts
 
       - name: Prepare release assets
+        env:
+          VERSION: ${{ needs.validate-version.outputs.version }}
         run: |
           cd artifacts
-          zip -r ../aio-studio-windows-x64.zip windows-release/
-          zip -r ../aio-studio-macos.zip macos-release/
-          cp linux-release/aio-studio-linux-x64.tar.gz ../
-          cp android-release/app-release.apk ../aio-studio.apk
+          zip -r "../aio-studio-windows-x64-v${VERSION}.zip" windows-release/
+          zip -r "../aio-studio-macos-v${VERSION}.zip" macos-release/
+          cp "linux-release/aio-studio-linux-x64.tar.gz" "../aio-studio-linux-x64-v${VERSION}.tar.gz"
+          cp "android-release/app-release.apk" "../aio-studio-android-v${VERSION}.apk"
+          cp "extension-release/aio-studio-extension.zip" "../aio-studio-extension-v${VERSION}.zip"
 
-      - uses: softprops/action-gh-release@v2
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
+          name: AIO Studio v${{ needs.validate-version.outputs.version }}
           files: |
-            aio-studio-windows-x64.zip
-            aio-studio-macos.zip
-            aio-studio-linux-x64.tar.gz
-            aio-studio.apk
+            aio-studio-windows-x64-v${{ needs.validate-version.outputs.version }}.zip
+            aio-studio-macos-v${{ needs.validate-version.outputs.version }}.zip
+            aio-studio-linux-x64-v${{ needs.validate-version.outputs.version }}.tar.gz
+            aio-studio-android-v${{ needs.validate-version.outputs.version }}.apk
+            aio-studio-extension-v${{ needs.validate-version.outputs.version }}.zip
           generate_release_notes: true
