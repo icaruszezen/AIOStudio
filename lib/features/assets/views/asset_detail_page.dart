@@ -71,7 +71,9 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
     final prevId = ref.read(previousAssetIdProvider);
     final nextId = ref.read(nextAssetIdProvider);
 
-    if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+    if (event.logicalKey == LogicalKeyboardKey.escape) {
+      context.go(AppRoutes.assets);
+    } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
       _navigateTo(prevId);
     } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
       _navigateTo(nextId);
@@ -147,6 +149,14 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
       ),
       child: Row(
         children: [
+          Tooltip(
+            message: '返回资产库',
+            child: IconButton(
+              icon: const Icon(FluentIcons.back, size: 14),
+              onPressed: () => context.go(AppRoutes.assets),
+            ),
+          ),
+          const SizedBox(width: 4),
           Expanded(
             child: BreadcrumbNavigation(
               items: [
