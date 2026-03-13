@@ -111,7 +111,7 @@ class AboutSection extends ConsumerWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'MIT License',
+                    'AGPL-3.0 License',
                     style: theme.typography.caption?.copyWith(
                       color: theme.resources.textFillColorSecondary,
                     ),

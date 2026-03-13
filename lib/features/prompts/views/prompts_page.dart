@@ -1,4 +1,7 @@
+import 'dart:ui' show PointerDeviceKind;
+
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/gestures.dart' show PointerScrollEvent;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -24,6 +27,7 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
   double _listPanelWidth = 360.0;
   int _selectedTabIndex = 0;
   final _searchController = TextEditingController();
+  final _tabScrollController = ScrollController();
 
   static final _categoryTabs = <String?>[
     null,
@@ -33,6 +37,7 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
   @override
   void dispose() {
     _searchController.dispose();
+    _tabScrollController.dispose();
     super.dispose();
   }
 
@@ -166,27 +171,50 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
     ];
     return SizedBox(
       height: 36,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        itemCount: tabLabels.length,
-        itemBuilder: (context, index) {
-          final isSelected = _selectedTabIndex == index;
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: SizedBox(
-              height: 32,
-              child: ToggleButton(
-                checked: isSelected,
-                onChanged: (_) => _onTabChanged(index),
-                child: Text(
-                  tabLabels[index],
-                  style: const TextStyle(fontSize: 12),
-                ),
+      child: Listener(
+        onPointerSignal: (event) {
+          if (event is PointerScrollEvent &&
+              _tabScrollController.hasClients) {
+            _tabScrollController.jumpTo(
+              (_tabScrollController.offset + event.scrollDelta.dy).clamp(
+                0.0,
+                _tabScrollController.position.maxScrollExtent,
               ),
-            ),
-          );
+            );
+          }
         },
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(
+            dragDevices: {
+              PointerDeviceKind.touch,
+              PointerDeviceKind.mouse,
+            },
+            scrollbars: false,
+          ),
+          child: ListView.builder(
+            controller: _tabScrollController,
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemCount: tabLabels.length,
+            itemBuilder: (context, index) {
+              final isSelected = _selectedTabIndex == index;
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: SizedBox(
+                  height: 32,
+                  child: ToggleButton(
+                    checked: isSelected,
+                    onChanged: (_) => _onTabChanged(index),
+                    child: Text(
+                      tabLabels[index],
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }
