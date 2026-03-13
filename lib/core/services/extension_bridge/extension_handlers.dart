@@ -9,7 +9,7 @@ import 'package:uuid/uuid.dart';
 import '../../database/app_database.dart';
 import '../storage/asset_file_manager.dart';
 
-const _appVersion = '1.0.4';
+const _appVersion = '1.0.5';
 const _jsonHeaders = {'Content-Type': 'application/json'};
 
 class ExtensionHandlers {
