@@ -59,9 +59,8 @@ class AssetThumbnail extends StatelessWidget {
       color: theme.resources.subtleFillColorSecondary,
       child: Image.file(
         file,
-        fit: BoxFit.contain,
+        fit: BoxFit.cover,
         cacheWidth: 300,
-        cacheHeight: 300,
         errorBuilder: (_, __, ___) => _buildPlaceholder(
           theme,
           FluentIcons.photo2,
@@ -78,9 +77,8 @@ class AssetThumbnail extends StatelessWidget {
         color: theme.resources.subtleFillColorSecondary,
         child: Image.file(
           File(asset.thumbnailPath!),
-          fit: BoxFit.contain,
+          fit: BoxFit.cover,
           cacheWidth: 300,
-          cacheHeight: 300,
           errorBuilder: (_, __, ___) => _buildPlaceholder(
             theme,
             FluentIcons.video,
