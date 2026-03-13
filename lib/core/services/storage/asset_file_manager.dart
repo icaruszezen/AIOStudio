@@ -44,6 +44,8 @@ class AssetFileManager {
     String? thumbPath;
     if (assetType == 'image') {
       thumbPath = await _storage.generateThumbnail(filePath);
+    } else if (assetType == 'video') {
+      thumbPath = await _storage.generateVideoThumbnail(filePath);
     }
 
     final id = _uuid.v4();
@@ -88,6 +90,8 @@ class AssetFileManager {
     String? thumbPath;
     if (assetType == 'image') {
       thumbPath = await _storage.generateThumbnail(destPath);
+    } else if (assetType == 'video') {
+      thumbPath = await _storage.generateVideoThumbnail(destPath);
     }
 
     final id = _uuid.v4();
@@ -234,6 +238,8 @@ class AssetFileManager {
     String? thumbPath;
     if (mediaType == 'image') {
       thumbPath = await _storage.generateThumbnail(destPath);
+    } else if (mediaType == 'video') {
+      thumbPath = await _storage.generateVideoThumbnail(destPath);
     }
 
     final metadataMap = <String, dynamic>{};

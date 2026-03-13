@@ -173,16 +173,20 @@ class _AssetListItemState extends State<AssetListItem> {
   Widget _buildThumbnail(FluentThemeData theme) {
     const size = 36.0;
 
-    if (widget.asset.type == 'image') {
+    final bool hasThumbnail = widget.asset.type == 'image' ||
+        (widget.asset.type == 'video' && widget.asset.thumbnailPath != null);
+
+    if (hasThumbnail) {
       final path = widget.asset.thumbnailPath ?? widget.asset.filePath;
       return ClipRRect(
         borderRadius: BorderRadius.circular(4),
-        child: SizedBox(
+        child: Container(
           width: size,
           height: size,
+          color: theme.resources.subtleFillColorSecondary,
           child: Image.file(
             File(path),
-            fit: BoxFit.cover,
+            fit: BoxFit.contain,
             errorBuilder: (_, __, ___) => _iconPlaceholder(theme, size),
           ),
         ),

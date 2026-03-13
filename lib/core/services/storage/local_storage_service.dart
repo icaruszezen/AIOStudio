@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
 import 'package:logger/logger.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -122,6 +125,57 @@ class LocalStorageService {
     }
 
     return thumbPath;
+  }
+
+  /// Extracts a frame from the video at [videoPath] using media_kit and saves
+  /// it as a JPEG thumbnail. Seeks to ~10 % of total duration (clamped between
+  /// 2 s and 30 s) to skip past intros and capture a representative frame.
+  Future<String?> generateVideoThumbnail(String videoPath) async {
+    final file = File(videoPath);
+    if (!await file.exists()) return null;
+
+    final thumbDir = await getThumbnailDirectory();
+    final thumbName = '${_uuid.v4()}_vthumb.jpg';
+    final thumbPath = p.join(thumbDir.path, thumbName);
+
+    final player = Player();
+    try {
+      // VideoController must be attached for Player.screenshot() to work.
+      // ignore: unused_local_variable
+      final controller = VideoController(player);
+      await player.open(Media(videoPath), play: false);
+
+      // Wait until the video duration is known (with timeout).
+      final duration = await player.stream.duration
+          .firstWhere((d) => d > Duration.zero)
+          .timeout(const Duration(seconds: 8));
+
+      final tenPercent = (duration.inMilliseconds * 0.1).round();
+      final seekMs = tenPercent.clamp(2000, 30000).clamp(0, duration.inMilliseconds);
+      await player.seek(Duration(milliseconds: seekMs));
+
+      // Give the decoder a moment to render the seeked frame.
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+
+      final Uint8List? bytes =
+          await player.screenshot(format: 'image/jpeg');
+      if (bytes == null || bytes.isEmpty) {
+        _log.w('Video screenshot returned null for $videoPath');
+        return null;
+      }
+
+      await File(thumbPath).writeAsBytes(bytes);
+      _log.d('Generated video thumbnail: $thumbPath');
+      return thumbPath;
+    } on TimeoutException {
+      _log.w('Timed out waiting for video duration: $videoPath');
+      return null;
+    } catch (e) {
+      _log.w('Video thumbnail generation failed: $e');
+      return null;
+    } finally {
+      await player.dispose();
+    }
   }
 
   Future<void> deleteAssetFile(String filePath) async {

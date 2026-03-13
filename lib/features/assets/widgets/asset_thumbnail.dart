@@ -55,15 +55,18 @@ class AssetThumbnail extends StatelessWidget {
   Widget _buildImageThumbnail(FluentThemeData theme) {
     final path = asset.thumbnailPath ?? asset.filePath;
     final file = File(path);
-    return Image.file(
-      file,
-      fit: BoxFit.cover,
-      cacheWidth: 300,
-      cacheHeight: 300,
-      errorBuilder: (_, __, ___) => _buildPlaceholder(
-        theme,
-        FluentIcons.photo2,
-        theme.accentColor,
+    return Container(
+      color: theme.resources.subtleFillColorSecondary,
+      child: Image.file(
+        file,
+        fit: BoxFit.contain,
+        cacheWidth: 300,
+        cacheHeight: 300,
+        errorBuilder: (_, __, ___) => _buildPlaceholder(
+          theme,
+          FluentIcons.photo2,
+          theme.accentColor,
+        ),
       ),
     );
   }
@@ -71,15 +74,18 @@ class AssetThumbnail extends StatelessWidget {
   Widget _buildVideoThumbnail(FluentThemeData theme) {
     Widget content;
     if (asset.thumbnailPath != null) {
-      content = Image.file(
-        File(asset.thumbnailPath!),
-        fit: BoxFit.cover,
-        cacheWidth: 300,
-        cacheHeight: 300,
-        errorBuilder: (_, __, ___) => _buildPlaceholder(
-          theme,
-          FluentIcons.video,
-          AppColors.videoGen(theme.brightness),
+      content = Container(
+        color: theme.resources.subtleFillColorSecondary,
+        child: Image.file(
+          File(asset.thumbnailPath!),
+          fit: BoxFit.contain,
+          cacheWidth: 300,
+          cacheHeight: 300,
+          errorBuilder: (_, __, ___) => _buildPlaceholder(
+            theme,
+            FluentIcons.video,
+            AppColors.videoGen(theme.brightness),
+          ),
         ),
       );
     } else {
