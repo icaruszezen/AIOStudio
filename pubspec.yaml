@@ -1,7 +1,7 @@
 name: aio_studio
 description: "AIO Studio - 跨平台 AGI 项目与资产管理工具"
 publish_to: 'none'
-version: 1.0.4+5
+version: 1.0.5+6
 
 environment:
   sdk: ^3.10.7
@@ -72,7 +72,7 @@ msix_config:
   display_name: AIO Studio
   publisher_display_name: AIO Studio
   identity_name: com.aiostudio.app
-  msix_version: 1.0.4.0
+  msix_version: 1.0.5.0
   logo_path: assets/logo.png
 
 flutter:
