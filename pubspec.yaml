@@ -1,7 +1,7 @@
-name: aio_studio
-description: "AIO Studio - 跨平台 AGI 项目与资产管理工具"
+﻿name: aio_studio
+description: "AIO Studio - 璺ㄥ钩鍙?AGI 椤圭洰涓庤祫浜х鐞嗗伐鍏?
 publish_to: 'none'
-version: 1.0.1+2
+version: 1.0.2+3
 
 environment:
   sdk: ^3.10.7
@@ -48,9 +48,7 @@ dev_dependencies:
   msix: ^3.16.0
   flutter_launcher_icons: ^0.14.0
   flutter_native_splash: ^2.4.0
-  # riverpod_generator/riverpod_lint 与 drift_dev 的 analyzer 版本冲突，
-  # 待上游发布兼容版本后启用：
-  # riverpod_generator: ^4.0.3
+  # riverpod_generator/riverpod_lint 涓?drift_dev 鐨?analyzer 鐗堟湰鍐茬獊锛?  # 寰呬笂娓稿彂甯冨吋瀹圭増鏈悗鍚敤锛?  # riverpod_generator: ^4.0.3
   # riverpod_lint: ^3.1.3
 
 flutter_launcher_icons:
@@ -73,7 +71,7 @@ msix_config:
   display_name: AIO Studio
   publisher_display_name: AIO Studio
   identity_name: com.aiostudio.app
-  msix_version: 1.0.1.0
+  msix_version: 1.0.2.0
   logo_path: assets/logo.png
 
 flutter:
