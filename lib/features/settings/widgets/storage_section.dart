@@ -310,8 +310,9 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
 
     if (!mounted) return;
     await ref.read(storageDirectoryProvider.notifier).setDirectory(newPath);
-    ref.invalidate(_storagePathProvider);
-    ref.invalidate(_storageStatsProvider);
+    ref
+      ..invalidate(_storagePathProvider)
+      ..invalidate(_storageStatsProvider);
 
     if (mounted) {
       displayInfoBar(context, builder: (_, close) => InfoBar(
@@ -340,8 +341,9 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
 
     if (!mounted) return;
     await ref.read(storageDirectoryProvider.notifier).setDirectory(null);
-    ref.invalidate(_storagePathProvider);
-    ref.invalidate(_storageStatsProvider);
+    ref
+      ..invalidate(_storagePathProvider)
+      ..invalidate(_storageStatsProvider);
 
     if (mounted) {
       displayInfoBar(context, builder: (_, close) => InfoBar(

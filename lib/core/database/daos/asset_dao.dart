@@ -139,13 +139,13 @@ class AssetDao extends DatabaseAccessor<AppDatabase> with _$AssetDaoMixin {
   /// updated since all thumbnails are cache-managed.
   Future<void> updatePathPrefix(String oldPrefix, String newPrefix) async {
     await customStatement(
-      "UPDATE assets SET file_path = replace(file_path, ?, ?) "
+      'UPDATE assets SET file_path = replace(file_path, ?, ?) '
       "WHERE source_type != 'local_import' AND file_path LIKE ?",
       [oldPrefix, newPrefix, '$oldPrefix%'],
     );
     await customStatement(
-      "UPDATE assets SET thumbnail_path = replace(thumbnail_path, ?, ?) "
-      "WHERE thumbnail_path IS NOT NULL AND thumbnail_path LIKE ?",
+      'UPDATE assets SET thumbnail_path = replace(thumbnail_path, ?, ?) '
+      'WHERE thumbnail_path IS NOT NULL AND thumbnail_path LIKE ?',
       [oldPrefix, newPrefix, '$oldPrefix%'],
     );
   }

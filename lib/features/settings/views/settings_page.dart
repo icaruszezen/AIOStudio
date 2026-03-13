@@ -6,6 +6,7 @@ import '../widgets/about_section.dart';
 import '../widgets/ai_providers_section.dart';
 import '../widgets/appearance_section.dart';
 import '../widgets/extension_section.dart';
+import '../widgets/network_section.dart';
 import '../widgets/storage_section.dart';
 
 class SettingsPage extends ConsumerWidget {
@@ -33,6 +34,8 @@ class SettingsPage extends ConsumerWidget {
                 const SizedBox(height: 24),
                 const ExtensionSection(),
               ],
+              const SizedBox(height: 24),
+              const NetworkSection(),
               const SizedBox(height: 24),
               const AboutSection(),
               const SizedBox(height: 40),

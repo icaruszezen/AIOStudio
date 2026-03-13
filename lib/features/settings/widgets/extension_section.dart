@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/services/extension_bridge/extension_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/settings_provider.dart';
+import 'about_section.dart' show packageInfoProvider;
 
 class ExtensionSection extends ConsumerWidget {
   const ExtensionSection({super.key});
@@ -18,6 +19,8 @@ class ExtensionSection extends ConsumerWidget {
     final serverState = ref.watch(extensionServerProvider);
     final connected = ref.watch(extensionConnectionStatusProvider);
 
+    final mirror = ref.watch(githubMirrorProvider);
+    final packageInfo = ref.watch(packageInfoProvider);
     final isRunning = serverState.value == true;
 
     return Column(
@@ -165,7 +168,7 @@ class ExtensionSection extends ConsumerWidget {
               Text('扩展下载', style: theme.typography.bodyStrong),
               const SizedBox(height: 8),
               Text(
-                '从 GitHub Releases 下载编译好的浏览器扩展，解压后在浏览器扩展页面启用「开发者模式」并「加载已解压的扩展程序」。',
+                '下载编译好的浏览器扩展，解压后在浏览器扩展页面启用「开发者模式」并「加载已解压的扩展程序」。',
                 style: theme.typography.caption?.copyWith(
                   color: theme.resources.textFillColorSecondary,
                 ),
@@ -174,26 +177,30 @@ class ExtensionSection extends ConsumerWidget {
               Row(
                 children: [
                   Button(
-                    onPressed: () => launchUrl(
-                      Uri.parse(
-                        'https://github.com/icaruszezen/AIOStudio/releases/latest',
-                      ),
-                    ),
+                    onPressed: !packageInfo.hasValue
+                        ? null
+                        : () {
+                            final version = packageInfo.value!.version;
+                            final asset = extensionAssetName(version);
+                            final fileUrl =
+                                githubReleaseAssetUrl(version, asset);
+                            launchUrl(
+                              Uri.parse(resolveGithubUrl(fileUrl, mirror)),
+                            );
+                          },
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(FluentIcons.download, size: 14),
                         SizedBox(width: 6),
-                        Text('前往下载'),
+                        Text('下载扩展'),
                       ],
                     ),
                   ),
                   const SizedBox(width: 12),
                   HyperlinkButton(
                     onPressed: () => launchUrl(
-                      Uri.parse(
-                        'https://github.com/icaruszezen/AIOStudio/releases',
-                      ),
+                      Uri.parse('$githubBaseUrl/releases'),
                     ),
                     child: const Text('所有版本'),
                   ),

@@ -9,8 +9,36 @@ const _storageDirectoryKey = 'storage_directory';
 const _autoSaveChatKey = 'auto_save_chat';
 const _extensionPortKey = 'extension_port';
 const _windowEffectKey = 'window_effect';
+const _githubMirrorKey = 'github_mirror';
 
 const defaultExtensionPort = 52140;
+
+const githubBaseUrl = 'https://github.com/icaruszezen/AIOStudio';
+
+const kCustomMirrorValue = '__custom__';
+
+const githubMirrors = <String, String>{
+  '': '直连（不加速）',
+  'https://ghgo.xyz/': 'GHGO (ghgo.xyz)',
+  'https://mirror.ghproxy.com/': 'GHProxy Mirror',
+  'https://gh-proxy.com/': 'GH Proxy',
+};
+
+/// Prepend [mirrorPrefix] to accelerate file downloads from GitHub.
+/// Only use for actual file URLs, NOT for page URLs (releases page, repo page, etc.).
+String resolveGithubUrl(String fileUrl, String mirrorPrefix) {
+  if (mirrorPrefix.isEmpty) return fileUrl;
+  return '$mirrorPrefix$fileUrl';
+}
+
+/// Build the GitHub Releases asset download URL for a given [version] and [assetName].
+/// Example: `https://github.com/.../releases/download/v1.0.4/aio-studio-extension-v1.0.4.zip`
+String githubReleaseAssetUrl(String version, String assetName) {
+  return '$githubBaseUrl/releases/download/v$version/$assetName';
+}
+
+String extensionAssetName(String version) =>
+    'aio-studio-extension-v$version.zip';
 
 // ---------------------------------------------------------------------------
 // Accent Color
@@ -152,6 +180,31 @@ class WindowEffectNotifier extends Notifier<AppWindowEffect> {
     state = effect;
     final prefs = ref.read(sharedPreferencesProvider);
     await prefs.setString(_windowEffectKey, effect.name);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// GitHub mirror / acceleration
+// ---------------------------------------------------------------------------
+
+final githubMirrorProvider =
+    NotifierProvider<GithubMirrorNotifier, String>(GithubMirrorNotifier.new);
+
+class GithubMirrorNotifier extends Notifier<String> {
+  @override
+  String build() {
+    final prefs = ref.watch(sharedPreferencesProvider);
+    return prefs.getString(_githubMirrorKey) ?? '';
+  }
+
+  Future<void> setMirror(String prefix) async {
+    state = prefix;
+    final prefs = ref.read(sharedPreferencesProvider);
+    if (prefix.isEmpty) {
+      await prefs.remove(_githubMirrorKey);
+    } else {
+      await prefs.setString(_githubMirrorKey, prefix);
+    }
   }
 }
 

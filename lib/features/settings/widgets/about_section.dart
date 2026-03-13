@@ -1,18 +1,21 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-const _appVersion = '1.0.0';
-const _appBuild = '1';
+import '../providers/settings_provider.dart';
 
-const _repoUrl = 'https://github.com/icaruszezen/AIOStudio';
-const _issuesUrl = 'https://github.com/icaruszezen/AIOStudio/issues';
+final packageInfoProvider = FutureProvider<PackageInfo>((ref) {
+  return PackageInfo.fromPlatform();
+});
 
-class AboutSection extends StatelessWidget {
+class AboutSection extends ConsumerWidget {
   const AboutSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = FluentTheme.of(context);
+    final packageInfo = ref.watch(packageInfoProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,7 +49,11 @@ class AboutSection extends StatelessWidget {
                       Text('AIO Studio', style: theme.typography.subtitle),
                       const SizedBox(height: 2),
                       Text(
-                        '版本 $_appVersion (Build $_appBuild)',
+                        packageInfo.when(
+                          data: (info) => '版本 ${info.version} (Build ${info.buildNumber})',
+                          loading: () => '版本 ...',
+                          error: (_, __) => '版本 未知',
+                        ),
                         style: theme.typography.caption?.copyWith(
                           color: theme.resources.textFillColorSecondary,
                         ),
@@ -92,12 +99,14 @@ class AboutSection extends StatelessWidget {
               Row(
                 children: [
                   HyperlinkButton(
-                    onPressed: () => launchUrl(Uri.parse(_repoUrl)),
+                    onPressed: () => launchUrl(Uri.parse(githubBaseUrl)),
                     child: const Text('开源仓库'),
                   ),
                   const SizedBox(width: 12),
                   HyperlinkButton(
-                    onPressed: () => launchUrl(Uri.parse(_issuesUrl)),
+                    onPressed: () => launchUrl(
+                      Uri.parse('$githubBaseUrl/issues'),
+                    ),
                     child: const Text('反馈问题'),
                   ),
                   const SizedBox(width: 12),

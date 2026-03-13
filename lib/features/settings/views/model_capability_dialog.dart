@@ -5,6 +5,7 @@ import '../../../core/providers/ai_providers.dart';
 import '../../../core/services/ai/ai_models.dart';
 import '../../../core/services/ai/model_capability_presets.dart';
 import '../../../core/theme/app_theme.dart';
+import '../providers/settings_provider.dart';
 
 class ModelCapabilityDialog extends ConsumerStatefulWidget {
   const ModelCapabilityDialog({super.key, required this.model});
@@ -82,7 +83,8 @@ class _ModelCapabilityDialogState extends ConsumerState<ModelCapabilityDialog> {
     });
     try {
       final registry = ref.read(modelCapabilityRegistryProvider);
-      final ok = await registry.updateFromRemote();
+      final mirror = ref.read(githubMirrorProvider);
+      final ok = await registry.updateFromRemote(githubMirror: mirror);
       if (mounted) {
         setState(() {
           _isUpdatingRegistry = false;

@@ -16,12 +16,19 @@ class ModelCapabilityRegistry {
   bool _loaded = false;
 
   static const _assetPath = 'assets/model_capabilities.json';
-  static const _remoteUrls = [
+  static const _remoteBaseUrls = [
     'https://cdn.jsdelivr.net/gh/BerriAI/litellm@main/'
         'model_prices_and_context_window.json',
     'https://raw.githubusercontent.com/BerriAI/litellm/main/'
         'model_prices_and_context_window.json',
   ];
+
+  static List<String> _resolveUrls(String githubMirror) {
+    if (githubMirror.isEmpty) return _remoteBaseUrls;
+    return _remoteBaseUrls
+        .map((url) => '$githubMirror$url')
+        .toList();
+  }
 
   bool get isLoaded => _loaded;
 
@@ -98,7 +105,7 @@ class ModelCapabilityRegistry {
   ///
   /// Tries multiple mirror URLs (jsDelivr first, then GitHub raw).
   /// Only extracts the fields we care about to keep memory small.
-  Future<bool> updateFromRemote() async {
+  Future<bool> updateFromRemote({String githubMirror = ''}) async {
     lastError = null;
     final dio = Dio(BaseOptions(
       connectTimeout: const Duration(seconds: 20),
@@ -106,7 +113,7 @@ class ModelCapabilityRegistry {
     ));
 
     String? rawJson;
-    for (final url in _remoteUrls) {
+    for (final url in _resolveUrls(githubMirror)) {
       try {
         _log.i('[ModelRegistry] Trying $url');
         final resp = await dio.get<String>(url);
