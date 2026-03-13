@@ -158,7 +158,9 @@ class ProjectActions {
     });
 
     for (final asset in assets) {
-      await storage.deleteAssetFile(asset.filePath);
+      if (asset.sourceType != 'local_import') {
+        await storage.deleteAssetFile(asset.filePath);
+      }
       if (asset.thumbnailPath != null) {
         await storage.deleteAssetFile(asset.thumbnailPath!);
       }

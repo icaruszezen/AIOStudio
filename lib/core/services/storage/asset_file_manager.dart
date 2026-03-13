@@ -26,8 +26,8 @@ class AssetFileManager {
         _storage = storage,
         _dio = dio ?? Dio();
 
-  /// Imports a local file: copies it into the app's asset directory and
-  /// creates a database record.
+  /// Imports a local file by referencing its original path (no copy)
+  /// and creates a database record.
   Future<Asset> importLocalFile({
     required String filePath,
     required String projectId,
@@ -39,12 +39,11 @@ class AssetFileManager {
       throw FileSystemException('Source file not found', filePath);
     }
 
-    final destPath = await _storage.saveFile(source, projectId);
     final stat = await source.stat();
 
     String? thumbPath;
     if (assetType == 'image') {
-      thumbPath = await _storage.generateThumbnail(destPath);
+      thumbPath = await _storage.generateThumbnail(filePath);
     }
 
     final id = _uuid.v4();
@@ -55,7 +54,7 @@ class AssetFileManager {
       projectId: Value(projectId),
       name: name,
       type: assetType,
-      filePath: destPath,
+      filePath: filePath,
       thumbnailPath: Value(thumbPath),
       sourceType: 'local_import',
       fileSize: Value(stat.size),
@@ -65,7 +64,7 @@ class AssetFileManager {
 
     await _assetDao.insertAsset(companion);
     final asset = await _assetDao.getAssetById(id);
-    _log.d('Imported local file: $name → $destPath');
+    _log.d('Imported local file: $name → $filePath');
     return asset!;
   }
 
@@ -266,12 +265,17 @@ class AssetFileManager {
     return asset!;
   }
 
-  /// Deletes an asset's file and its database record.
+  /// Deletes an asset's database record and associated files.
+  /// For local imports, only the thumbnail is removed (the original file
+  /// belongs to the user). For other source types both the cached file and
+  /// thumbnail are deleted.
   Future<void> deleteAsset(String assetId) async {
     final asset = await _assetDao.getAssetById(assetId);
     if (asset == null) return;
 
-    await _storage.deleteAssetFile(asset.filePath);
+    if (asset.sourceType != 'local_import') {
+      await _storage.deleteAssetFile(asset.filePath);
+    }
     if (asset.thumbnailPath != null) {
       await _storage.deleteAssetFile(asset.thumbnailPath!);
     }

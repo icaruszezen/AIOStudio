@@ -168,10 +168,8 @@ class _AssetImportDialogState extends ConsumerState<AssetImportDialog> {
               style: theme.typography.bodyStrong,
             ),
             const SizedBox(height: 8),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 200),
+            Flexible(
               child: ListView.builder(
-                shrinkWrap: true,
                 itemCount: _files.length,
                 itemBuilder: (context, index) {
                   final file = _files[index];

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -8,6 +9,7 @@ import '../../../core/providers/database_provider.dart';
 import '../../../core/services/storage/local_storage_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/format_utils.dart';
+import '../providers/settings_provider.dart';
 
 final _storageStatsProvider = FutureProvider<DetailedStorageStats>((ref) {
   return ref.watch(localStorageServiceProvider).getDetailedStorageStats();
@@ -17,14 +19,24 @@ final _storagePathProvider = FutureProvider<String>((ref) {
   return ref.watch(localStorageServiceProvider).getStoragePath();
 });
 
-class StorageSection extends ConsumerWidget {
+class StorageSection extends ConsumerStatefulWidget {
   const StorageSection({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<StorageSection> createState() => _StorageSectionState();
+}
+
+class _StorageSectionState extends ConsumerState<StorageSection> {
+  bool _isMigrating = false;
+  int _migrationCurrent = 0;
+  int _migrationTotal = 0;
+
+  @override
+  Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
     final statsAsync = ref.watch(_storageStatsProvider);
     final pathAsync = ref.watch(_storagePathProvider);
+    final customDir = ref.watch(storageDirectoryProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,44 +53,126 @@ class StorageSection extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Storage path
-              Text('资产存储位置', style: theme.typography.bodyStrong),
+              Text('缓存目录', style: theme.typography.bodyStrong),
+              const SizedBox(height: 4),
+              Text(
+                '缩略图和下载的资产文件将保存在此目录中',
+                style: theme.typography.caption?.copyWith(
+                  color: theme.resources.textFillColorSecondary,
+                ),
+              ),
               const SizedBox(height: 8),
               pathAsync.when(
                 loading: () => const ProgressRing(),
                 error: (e, _) => Text('$e'),
-                data: (path) => Row(
+                data: (path) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: theme.resources.subtleFillColorSecondary,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    path,
+                                    style: theme.typography.caption,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (customDir != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 6),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 1,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: theme.accentColor
+                                            .withValues(alpha: 0.15),
+                                        borderRadius:
+                                            BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        '自定义',
+                                        style:
+                                            theme.typography.caption?.copyWith(
+                                          color: theme.accentColor,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
                         ),
-                        decoration: BoxDecoration(
-                          color: theme.resources.subtleFillColorSecondary,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          path,
-                          style: theme.typography.caption,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    Button(
-                      onPressed: () => _openDirectory(path),
-                      child: const Text('打开目录'),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        Button(
+                          onPressed: _isMigrating ? null : _selectDirectory,
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(FluentIcons.fabric_folder, size: 14),
+                              SizedBox(width: 6),
+                              Text('选择目录'),
+                            ],
+                          ),
+                        ),
+                        if (customDir != null)
+                          Button(
+                            onPressed: _isMigrating ? null : _resetToDefault,
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(FluentIcons.reset, size: 14),
+                                SizedBox(width: 6),
+                                Text('恢复默认'),
+                              ],
+                            ),
+                          ),
+                        Button(
+                          onPressed: () => _openDirectory(path),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(FluentIcons.open_folder_horizontal, size: 14),
+                              SizedBox(width: 6),
+                              Text('打开目录'),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
+
+              if (_isMigrating) ...[
+                const SizedBox(height: 12),
+                _buildMigrationProgress(theme),
+              ],
+
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 16),
 
-              // Storage statistics
               Text('存储统计', style: theme.typography.bodyStrong),
               const SizedBox(height: 12),
               statsAsync.when(
@@ -91,7 +185,7 @@ class StorageSection extends ConsumerWidget {
                   content: Text('$e'),
                   severity: InfoBarSeverity.error,
                 ),
-                data: (stats) => _buildStats(context, stats, ref),
+                data: (stats) => _buildStats(context, stats),
               ),
             ],
           ),
@@ -100,11 +194,35 @@ class StorageSection extends ConsumerWidget {
     );
   }
 
-  Widget _buildStats(
-    BuildContext context,
-    DetailedStorageStats stats,
-    WidgetRef ref,
-  ) {
+  Widget _buildMigrationProgress(FluentThemeData theme) {
+    final progress =
+        _migrationTotal > 0 ? _migrationCurrent / _migrationTotal : null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: ProgressRing(strokeWidth: 2),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _migrationTotal > 0
+                  ? '正在迁移... $_migrationCurrent / $_migrationTotal'
+                  : '正在准备迁移...',
+              style: theme.typography.caption,
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        ProgressBar(value: progress != null ? progress * 100 : null),
+      ],
+    );
+  }
+
+  Widget _buildStats(BuildContext context, DetailedStorageStats stats) {
     final total = stats.totalSizeBytes;
     final b = FluentTheme.of(context).brightness;
     final imageColor = AppColors.imageGen(b);
@@ -116,7 +234,7 @@ class StorageSection extends ConsumerWidget {
       children: [
         Row(
           children: [
-            _StatItem(label: '总资产数量', value: '${stats.totalFiles} 个'),
+            _StatItem(label: '总文件数量', value: '${stats.totalFiles} 个'),
             const SizedBox(width: 24),
             _StatItem(
               label: '总占用空间',
@@ -137,18 +255,27 @@ class StorageSection extends ConsumerWidget {
         const SizedBox(height: 8),
         Row(
           children: [
-            _LegendDot(color: imageColor, label: '图片 ${formatFileSize(stats.imagesSizeBytes)}'),
+            _LegendDot(
+              color: imageColor,
+              label: '图片 ${formatFileSize(stats.imagesSizeBytes)}',
+            ),
             const SizedBox(width: 16),
-            _LegendDot(color: videoColor, label: '视频 ${formatFileSize(stats.videosSizeBytes)}'),
+            _LegendDot(
+              color: videoColor,
+              label: '视频 ${formatFileSize(stats.videosSizeBytes)}',
+            ),
             const SizedBox(width: 16),
-            _LegendDot(color: otherColor, label: '其他 ${formatFileSize(stats.othersSizeBytes)}'),
+            _LegendDot(
+              color: otherColor,
+              label: '其他 ${formatFileSize(stats.othersSizeBytes)}',
+            ),
           ],
         ),
         const SizedBox(height: 16),
         Row(
           children: [
             Button(
-              onPressed: () => _clearCache(context, ref),
+              onPressed: _clearCache,
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -164,6 +291,138 @@ class StorageSection extends ConsumerWidget {
     );
   }
 
+  Future<void> _selectDirectory() async {
+    final newPath = await FilePicker.platform.getDirectoryPath(
+      dialogTitle: '选择缓存目录',
+    );
+    if (newPath == null || !mounted) return;
+
+    final oldPath = await ref.read(localStorageServiceProvider).getStoragePath();
+
+    if (newPath == oldPath) return;
+
+    final action = await _showMigrationDialog();
+    if (action == null || !mounted) return;
+
+    if (action == _MigrationAction.migrateAndSwitch) {
+      await _performMigration(oldPath, newPath);
+    }
+
+    if (!mounted) return;
+    await ref.read(storageDirectoryProvider.notifier).setDirectory(newPath);
+    ref.invalidate(_storagePathProvider);
+    ref.invalidate(_storageStatsProvider);
+
+    if (mounted) {
+      displayInfoBar(context, builder: (_, close) => InfoBar(
+        title: Text(action == _MigrationAction.migrateAndSwitch
+            ? '缓存目录已迁移并切换'
+            : '缓存目录已切换'),
+        severity: InfoBarSeverity.success,
+        onClose: close,
+      ));
+    }
+  }
+
+  Future<void> _resetToDefault() async {
+    final currentPath =
+        await ref.read(localStorageServiceProvider).getStoragePath();
+    final defaultPath = await LocalStorageService.defaultCachePath;
+
+    if (currentPath == defaultPath) return;
+
+    final action = await _showMigrationDialog();
+    if (action == null || !mounted) return;
+
+    if (action == _MigrationAction.migrateAndSwitch) {
+      await _performMigration(currentPath, defaultPath);
+    }
+
+    if (!mounted) return;
+    await ref.read(storageDirectoryProvider.notifier).setDirectory(null);
+    ref.invalidate(_storagePathProvider);
+    ref.invalidate(_storageStatsProvider);
+
+    if (mounted) {
+      displayInfoBar(context, builder: (_, close) => InfoBar(
+        title: Text(action == _MigrationAction.migrateAndSwitch
+            ? '已迁移并恢复默认目录'
+            : '已恢复默认目录'),
+        severity: InfoBarSeverity.success,
+        onClose: close,
+      ));
+    }
+  }
+
+  Future<_MigrationAction?> _showMigrationDialog() async {
+    return showDialog<_MigrationAction>(
+      context: context,
+      builder: (ctx) => ContentDialog(
+        title: const Text('更改缓存目录'),
+        content: const Text('是否将当前缓存目录中的资源迁移到新目录？\n\n'
+            '选择「迁移并切换」会将所有缓存文件（缩略图、下载的资产等）'
+            '移动到新目录，并更新数据库中的路径。\n\n'
+            '选择「仅切换」会直接切换目录，旧缓存保留在原位置。'),
+        actions: [
+          Button(
+            onPressed: () => Navigator.of(ctx).pop(null),
+            child: const Text('取消'),
+          ),
+          Button(
+            onPressed: () =>
+                Navigator.of(ctx).pop(_MigrationAction.switchOnly),
+            child: const Text('仅切换'),
+          ),
+          FilledButton(
+            onPressed: () =>
+                Navigator.of(ctx).pop(_MigrationAction.migrateAndSwitch),
+            child: const Text('迁移并切换'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _performMigration(String oldRoot, String newRoot) async {
+    setState(() {
+      _isMigrating = true;
+      _migrationCurrent = 0;
+      _migrationTotal = 0;
+    });
+
+    try {
+      final storage = ref.read(localStorageServiceProvider);
+      await storage.migrateCache(
+        oldRoot: oldRoot,
+        newRoot: newRoot,
+        onProgress: (current, total) {
+          if (mounted) {
+            setState(() {
+              _migrationCurrent = current;
+              _migrationTotal = total;
+            });
+          }
+        },
+      );
+
+      final assetDao = ref.read(assetDaoProvider);
+      await assetDao.updatePathPrefix(oldRoot, newRoot);
+    } catch (e) {
+      if (mounted) {
+        displayInfoBar(context, builder: (_, close) => InfoBar(
+          title: const Text('迁移失败'),
+          content: Text('$e'),
+          severity: InfoBarSeverity.error,
+          onClose: close,
+        ));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isMigrating = false);
+      }
+    }
+  }
+
   Future<void> _openDirectory(String path) async {
     final dir = Directory(path);
     if (!await dir.exists()) await dir.create(recursive: true);
@@ -171,21 +430,21 @@ class StorageSection extends ConsumerWidget {
     await launchUrl(uri);
   }
 
-  Future<void> _clearCache(BuildContext context, WidgetRef ref) async {
+  Future<void> _clearCache() async {
     try {
       final storage = ref.read(localStorageServiceProvider);
       await storage.clearThumbnailCache();
       ref.invalidate(_storageStatsProvider);
-      if (context.mounted) {
-        displayInfoBar(context, builder: (ctx, close) => InfoBar(
+      if (mounted) {
+        displayInfoBar(context, builder: (_, close) => InfoBar(
           title: const Text('缓存已清理'),
           severity: InfoBarSeverity.success,
           onClose: close,
         ));
       }
     } catch (e) {
-      if (context.mounted) {
-        displayInfoBar(context, builder: (ctx, close) => InfoBar(
+      if (mounted) {
+        displayInfoBar(context, builder: (_, close) => InfoBar(
           title: const Text('清理失败'),
           content: Text('$e'),
           severity: InfoBarSeverity.error,
@@ -195,6 +454,8 @@ class StorageSection extends ConsumerWidget {
     }
   }
 }
+
+enum _MigrationAction { migrateAndSwitch, switchOnly }
 
 class _StatItem extends StatelessWidget {
   const _StatItem({required this.label, required this.value});

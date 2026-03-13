@@ -42,12 +42,24 @@ const _videoExtensions = {
 };
 
 class LocalStorageService {
+  final String? cacheDirectory;
+
+  LocalStorageService({this.cacheDirectory});
+
   static final _log = Logger(printer: PrettyPrinter(methodCount: 0));
   static const _uuid = Uuid();
 
   Future<Directory> get _appDataDir async {
+    if (cacheDirectory != null) {
+      return Directory(cacheDirectory!);
+    }
     final dir = await getApplicationSupportDirectory();
     return Directory(p.join(dir.path, 'aio_data'));
+  }
+
+  static Future<String> get defaultCachePath async {
+    final dir = await getApplicationSupportDirectory();
+    return p.join(dir.path, 'aio_data');
   }
 
   Future<Directory> getAssetDirectory(String projectId) async {
@@ -192,5 +204,38 @@ class LocalStorageService {
   Future<String> getStoragePath() async {
     final root = await _appDataDir;
     return root.path;
+  }
+
+  /// Migrates all cached files from [oldRoot] to [newRoot], preserving
+  /// the relative directory structure. Calls [onProgress] after each file.
+  /// Deletes the old directory tree when finished.
+  Future<void> migrateCache({
+    required String oldRoot,
+    required String newRoot,
+    required void Function(int current, int total) onProgress,
+  }) async {
+    final oldDir = Directory(oldRoot);
+    if (!await oldDir.exists()) return;
+
+    final files = <File>[];
+    await for (final entity in oldDir.list(recursive: true)) {
+      if (entity is File) files.add(entity);
+    }
+
+    if (files.isEmpty) {
+      await oldDir.delete(recursive: true);
+      return;
+    }
+
+    for (var i = 0; i < files.length; i++) {
+      final relative = p.relative(files[i].path, from: oldRoot);
+      final newPath = p.join(newRoot, relative);
+      await Directory(p.dirname(newPath)).create(recursive: true);
+      await files[i].copy(newPath);
+      onProgress(i + 1, files.length);
+    }
+
+    await oldDir.delete(recursive: true);
+    _log.i('Migrated ${ files.length} files from $oldRoot to $newRoot');
   }
 }

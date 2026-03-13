@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/settings/providers/settings_provider.dart';
 import '../database/app_database.dart';
 import '../services/secure_key_service.dart';
 import '../services/storage/asset_file_manager.dart';
@@ -40,7 +41,8 @@ final secureKeyServiceProvider = Provider<SecureKeyService>((ref) {
 });
 
 final localStorageServiceProvider = Provider<LocalStorageService>((ref) {
-  return LocalStorageService();
+  final customDir = ref.watch(storageDirectoryProvider);
+  return LocalStorageService(cacheDirectory: customDir);
 });
 
 final assetFileManagerProvider = Provider<AssetFileManager>((ref) {
