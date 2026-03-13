@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon/app_icon.png" width="128" height="128" alt="AIO Studio">
+  <img src="assets/logo.png" width="160" alt="AIO Studio Logo">
 </p>
 
 <h1 align="center">AIO Studio</h1>

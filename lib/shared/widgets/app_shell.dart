@@ -20,11 +20,11 @@ class _AppShellState extends State<AppShell> with WindowListener {
   static const _routes = [
     AppRoutes.projects, // 0
     AppRoutes.assets, // 1
+    AppRoutes.prompts, // 2
     // -- separator (no index) --
-    AppRoutes.aiChat, // 2
-    AppRoutes.aiImage, // 3
-    AppRoutes.aiVideo, // 4
-    AppRoutes.prompts, // 5
+    AppRoutes.aiChat, // 3
+    AppRoutes.aiImage, // 4
+    AppRoutes.aiVideo, // 5
     AppRoutes.settings, // 6 (footer)
   ];
 
@@ -109,6 +109,11 @@ class _AppShellState extends State<AppShell> with WindowListener {
                 title: const Text('资产库'),
                 body: const SizedBox.shrink(),
               ),
+              PaneItem(
+                icon: const Icon(FluentIcons.text_document),
+                title: const Text('提示词库'),
+                body: const SizedBox.shrink(),
+              ),
               PaneItemSeparator(),
               PaneItem(
                 icon: const Icon(FluentIcons.chat),
@@ -123,11 +128,6 @@ class _AppShellState extends State<AppShell> with WindowListener {
               PaneItem(
                 icon: const Icon(FluentIcons.video),
                 title: const Text('视频生成'),
-                body: const SizedBox.shrink(),
-              ),
-              PaneItem(
-                icon: const Icon(FluentIcons.text_document),
-                title: const Text('提示词库'),
                 body: const SizedBox.shrink(),
               ),
             ],
@@ -159,7 +159,7 @@ class _AppShellState extends State<AppShell> with WindowListener {
       child: Row(
         children: [
           const SizedBox(width: 12),
-          Icon(FluentIcons.app_icon_default, size: 16, color: theme.accentColor),
+          Image.asset('assets/logo.png', width: 16, height: 16),
           const SizedBox(width: 8),
           Text(
             'AIO Studio',

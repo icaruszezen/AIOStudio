@@ -31,17 +31,12 @@ class AboutSection extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: theme.accentColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      FluentIcons.a_a_d_logo,
-                      size: 24,
-                      color: theme.accentColor,
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset(
+                      'assets/logo.png',
+                      width: 48,
+                      height: 48,
                     ),
                   ),
                   const SizedBox(width: 16),

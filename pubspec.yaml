@@ -56,15 +56,16 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
+  remove_alpha_ios: true
   windows:
     generate: true
   macos:
     generate: true
-  image_path: "assets/icon/app_icon.png"
+  image_path: "assets/logo.png"
 
 flutter_native_splash:
   color: "#0078D4"
-  image: "assets/icon/splash_logo.png"
+  image: "assets/logo.png"
   android: true
   ios: true
 
@@ -73,9 +74,10 @@ msix_config:
   publisher_display_name: AIO Studio
   identity_name: com.aiostudio.app
   msix_version: 1.0.0.0
-  logo_path: assets/icon/app_icon.png
+  logo_path: assets/logo.png
 
 flutter:
   uses-material-design: true
   assets:
+    - assets/logo.png
     - assets/model_capabilities.json
