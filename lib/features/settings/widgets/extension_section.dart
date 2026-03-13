@@ -164,21 +164,38 @@ class ExtensionSection extends ConsumerWidget {
               // Download links
               Text('扩展下载', style: theme.typography.bodyStrong),
               const SizedBox(height: 8),
+              Text(
+                '从 GitHub Releases 下载编译好的浏览器扩展，解压后在浏览器扩展页面启用「开发者模式」并「加载已解压的扩展程序」。',
+                style: theme.typography.caption?.copyWith(
+                  color: theme.resources.textFillColorSecondary,
+                ),
+              ),
+              const SizedBox(height: 8),
               Row(
                 children: [
-                  HyperlinkButton(
+                  Button(
                     onPressed: () => launchUrl(
-                      Uri.parse('https://chrome.google.com/webstore'),
+                      Uri.parse(
+                        'https://github.com/icaruszezen/AIOStudio/releases/latest',
+                      ),
                     ),
-                    child: const Text('Chrome Web Store'),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(FluentIcons.download, size: 14),
+                        SizedBox(width: 6),
+                        Text('前往下载'),
+                      ],
+                    ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   HyperlinkButton(
                     onPressed: () => launchUrl(
                       Uri.parse(
-                          'https://microsoftedge.microsoft.com/addons'),
+                        'https://github.com/icaruszezen/AIOStudio/releases',
+                      ),
                     ),
-                    child: const Text('Edge Add-ons'),
+                    child: const Text('所有版本'),
                   ),
                 ],
               ),
