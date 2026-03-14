@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import '../../utils/query_utils.dart';
 import '../app_database.dart';
 import '../tables/projects.dart';
 
@@ -31,21 +32,8 @@ class ProjectDao extends DatabaseAccessor<AppDatabase>
         ProjectsCompanion(isArchived: Value(archived)),
       );
 
-  Future<List<Project>> searchByName(String query) async {
-    final escaped = query
-        .replaceAll(r'\', r'\\')
-        .replaceAll('%', r'\%')
-        .replaceAll('_', r'\_');
-    final rows = await customSelect(
-      'SELECT * FROM projects WHERE name LIKE ? ESCAPE ?',
-      variables: [
-        Variable.withString('%$escaped%'),
-        Variable.withString(r'\'),
-      ],
-      readsFrom: {projects},
-    ).get();
-    return rows.map((row) => projects.map(row.data)).toList();
-  }
+  Future<List<Project>> searchByName(String query) =>
+      (select(projects)..where((t) => likeEscaped(t.name, query))).get();
 
   Stream<List<Project>> watchActiveProjects() => (select(projects)
         ..where((t) => t.isArchived.equals(false))

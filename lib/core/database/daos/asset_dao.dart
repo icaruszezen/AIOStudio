@@ -1,5 +1,7 @@
 import 'package:drift/drift.dart';
 
+import '../../utils/epoch_utils.dart';
+import '../../utils/query_utils.dart';
 import '../app_database.dart';
 import '../tables/asset_tags.dart';
 import '../tables/assets.dart';
@@ -23,8 +25,15 @@ class AssetDao extends DatabaseAccessor<AppDatabase> with _$AssetDaoMixin {
   Future<bool> updateAsset(AssetsCompanion entry) =>
       update(assets).replace(entry);
 
-  Future<int> deleteAsset(String id) =>
-      (delete(assets)..where((t) => t.id.equals(id))).go();
+  Future<void> deleteAsset(String id) => transaction(() async {
+        await customStatement(
+          'UPDATE ai_tasks SET output_asset_id = NULL '
+          'WHERE output_asset_id = ?',
+          [id],
+        );
+        await (delete(assetTags)..where((t) => t.assetId.equals(id))).go();
+        await (delete(assets)..where((t) => t.id.equals(id))).go();
+      });
 
   Future<List<Asset>> getByProject(String projectId) =>
       (select(assets)..where((t) => t.projectId.equals(projectId))).get();
@@ -35,6 +44,7 @@ class AssetDao extends DatabaseAccessor<AppDatabase> with _$AssetDaoMixin {
   Future<List<Asset>> filterByType(String type) =>
       (select(assets)..where((t) => t.type.equals(type))).get();
 
+  /// Returns assets that have **any** of the given [tagIds] (OR semantics).
   Future<List<Asset>> filterByTags(List<String> tagIds) async {
     final query = select(assets).join([
       innerJoin(assetTags, assetTags.assetId.equalsExp(assets.id)),
@@ -97,12 +107,20 @@ class AssetDao extends DatabaseAccessor<AppDatabase> with _$AssetDaoMixin {
             ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
           .watch();
 
-  Future<List<Asset>> searchByName(String query) {
-    final sanitized = query.replaceAll('%', '').replaceAll('_', '');
-    return (select(assets)..where((t) => t.name.like('%$sanitized%'))).get();
-  }
+  Future<List<Asset>> searchByName(String query) =>
+      (select(assets)..where((t) => likeEscaped(t.name, query))).get();
 
+  /// Deletes assets and their tag associations, nullifying any
+  /// `ai_tasks.outputAssetId` references first.
+  ///
+  /// **Not** wrapped in a transaction – callers must provide one.
   Future<void> batchDelete(List<String> ids) async {
+    final placeholders = List.filled(ids.length, '?').join(', ');
+    await customStatement(
+      'UPDATE ai_tasks SET output_asset_id = NULL '
+      'WHERE output_asset_id IN ($placeholders)',
+      ids,
+    );
     await (delete(assetTags)..where((t) => t.assetId.isIn(ids))).go();
     await (delete(assets)..where((t) => t.id.isIn(ids))).go();
   }
@@ -111,7 +129,7 @@ class AssetDao extends DatabaseAccessor<AppDatabase> with _$AssetDaoMixin {
       (update(assets)..where((t) => t.id.isIn(ids))).write(
         AssetsCompanion(
           projectId: Value(projectId),
-          updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
+          updatedAt: Value(epochNowMs()),
         ),
       );
 
@@ -122,7 +140,7 @@ class AssetDao extends DatabaseAccessor<AppDatabase> with _$AssetDaoMixin {
       (update(assets)..where((t) => t.id.isIn(ids))).write(
         AssetsCompanion(
           isFavorite: Value(favorite),
-          updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
+          updatedAt: Value(epochNowMs()),
         ),
       );
 

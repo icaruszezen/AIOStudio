@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../utils/epoch_utils.dart';
+import '../../utils/query_utils.dart';
 import '../app_database.dart';
 import '../tables/prompts.dart';
 
@@ -49,6 +51,9 @@ class PromptDao extends DatabaseAccessor<AppDatabase> with _$PromptDaoMixin {
   Future<int> deletePrompt(String id) =>
       (delete(prompts)..where((t) => t.id.equals(id))).go();
 
+  Future<int> deleteByProject(String projectId) =>
+      (delete(prompts)..where((t) => t.projectId.equals(projectId))).go();
+
   Future<List<Prompt>> filterByCategory(String category) =>
       (select(prompts)..where((t) => t.category.equals(category))).get();
 
@@ -73,23 +78,17 @@ class PromptDao extends DatabaseAccessor<AppDatabase> with _$PromptDaoMixin {
     return result.read(count) ?? 0;
   }
 
-  Future<List<Prompt>> searchPrompts(String query) {
-    final pattern = '%$query%';
-    return (select(prompts)
-          ..where(
-              (t) => t.title.like(pattern) | t.content.like(pattern))
-          ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
-        .get();
-  }
+  Future<List<Prompt>> searchPrompts(String query) => (select(prompts)
+        ..where(
+            (t) => likeEscaped(t.title, query) | likeEscaped(t.content, query))
+        ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
+      .get();
 
-  Stream<List<Prompt>> watchSearchPrompts(String query) {
-    final pattern = '%$query%';
-    return (select(prompts)
-          ..where(
-              (t) => t.title.like(pattern) | t.content.like(pattern))
-          ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
-        .watch();
-  }
+  Stream<List<Prompt>> watchSearchPrompts(String query) => (select(prompts)
+        ..where(
+            (t) => likeEscaped(t.title, query) | likeEscaped(t.content, query))
+        ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
+      .watch();
 
   Future<void> toggleFavorite(String id) async {
     final prompt = await getPromptById(id);
@@ -105,7 +104,7 @@ class PromptDao extends DatabaseAccessor<AppDatabase> with _$PromptDaoMixin {
   Future<String> duplicatePrompt(String id) async {
     final prompt = await getPromptById(id);
     if (prompt == null) throw StateError('Prompt $id not found');
-    final now = DateTime.now().millisecondsSinceEpoch;
+    final now = epochNowMs();
     final newId = _uuid.v4();
     await insertPrompt(PromptsCompanion(
       id: Value(newId),

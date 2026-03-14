@@ -25,6 +25,15 @@ class AiTaskDao extends DatabaseAccessor<AppDatabase> with _$AiTaskDaoMixin {
   Future<int> deleteTask(String id) =>
       (delete(aiTasks)..where((t) => t.id.equals(id))).go();
 
+  Future<int> deleteByProject(String projectId) =>
+      (delete(aiTasks)..where((t) => t.projectId.equals(projectId))).go();
+
+  /// Sets `outputAssetId` to NULL for any tasks referencing the given assets,
+  /// so the asset rows can be safely deleted without violating FK constraints.
+  Future<void> nullifyOutputAssetIds(List<String> assetIds) =>
+      (update(aiTasks)..where((t) => t.outputAssetId.isIn(assetIds)))
+          .write(AiTasksCompanion(outputAssetId: Value(null)));
+
   Future<void> updateTaskFields(String id, AiTasksCompanion entry) =>
       (update(aiTasks)..where((t) => t.id.equals(id))).write(entry);
 

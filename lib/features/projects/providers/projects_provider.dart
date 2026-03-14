@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/database_provider.dart';
+import '../../../core/utils/epoch_utils.dart';
 
 export '../../../core/providers/database_provider.dart'
     show activeProjectsProvider;
@@ -81,7 +82,7 @@ class ProjectActions {
     String? coverImagePath,
   }) async {
     final id = _uuid.v4();
-    final now = DateTime.now().millisecondsSinceEpoch;
+    final now = epochNowMs();
     await _ref.read(projectDaoProvider).insertProject(
           ProjectsCompanion.insert(
             id: id,
@@ -106,7 +107,7 @@ class ProjectActions {
     final existing = await dao.getProjectById(id);
     if (existing == null) return;
 
-    final now = DateTime.now().millisecondsSinceEpoch;
+    final now = epochNowMs();
     await dao.updateProject(
       ProjectsCompanion(
         id: Value(existing.id),
@@ -137,22 +138,14 @@ class ProjectActions {
     final storage = _ref.read(localStorageServiceProvider);
 
     final assets = await assetDao.getByProject(id);
+    final assetIds = assets.map((a) => a.id).toList();
 
     await db.transaction(() async {
-      for (final asset in assets) {
-        await assetDao.deleteAsset(asset.id);
+      await aiTaskDao.deleteByProject(id);
+      await promptDao.deleteByProject(id);
+      if (assetIds.isNotEmpty) {
+        await assetDao.batchDelete(assetIds);
       }
-
-      final prompts = await promptDao.filterByProject(id);
-      for (final prompt in prompts) {
-        await promptDao.deletePrompt(prompt.id);
-      }
-
-      final tasks = await aiTaskDao.filterByProject(id);
-      for (final task in tasks) {
-        await aiTaskDao.deleteTask(task.id);
-      }
-
       await projectDao.deleteProject(id);
     });
 

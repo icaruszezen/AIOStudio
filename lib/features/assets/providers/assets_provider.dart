@@ -97,8 +97,6 @@ class AssetActions {
   }
 
   Future<void> deleteAsset(String id) async {
-    final tagDao = _ref.read(tagDaoProvider);
-    await tagDao.removeAllTagsForAsset(id);
     await _ref.read(assetFileManagerProvider).deleteAsset(id);
   }
 
@@ -117,7 +115,8 @@ class AssetActions {
       }
     }
 
-    await dao.batchDelete(ids);
+    final db = _ref.read(appDatabaseProvider);
+    await db.transaction(() => dao.batchDelete(ids));
   }
 
   Future<void> toggleFavorite(String id) async {

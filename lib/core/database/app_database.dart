@@ -55,31 +55,58 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+        beforeOpen: (details) async {
+          await customStatement('PRAGMA foreign_keys = ON');
+        },
         onCreate: (m) async {
           await m.createAll();
-          await customStatement(
-              'CREATE INDEX idx_assets_project_id ON assets(project_id)');
-          await customStatement(
-              'CREATE INDEX idx_assets_type ON assets(type)');
-          await customStatement(
-              'CREATE INDEX idx_assets_created_at ON assets(created_at)');
-          await customStatement(
-              'CREATE INDEX idx_assets_is_favorite ON assets(is_favorite)');
+          await _createIndexesV1(customStatement);
+          await _createIndexesV2(customStatement);
         },
         onUpgrade: (m, from, to) async {
           for (var target = from + 1; target <= to; target++) {
             switch (target) {
-              // Future migrations go here, e.g.:
-              // case 2:
-              //   await m.addColumn(assets, assets.newColumn);
+              case 2:
+                await _createIndexesV2(customStatement);
             }
           }
         },
       );
+
+  static Future<void> _createIndexesV1(
+      Future<void> Function(String, [List<dynamic>?]) exec) async {
+    await exec(
+        'CREATE INDEX IF NOT EXISTS idx_assets_project_id ON assets(project_id)');
+    await exec(
+        'CREATE INDEX IF NOT EXISTS idx_assets_type ON assets(type)');
+    await exec(
+        'CREATE INDEX IF NOT EXISTS idx_assets_created_at ON assets(created_at)');
+    await exec(
+        'CREATE INDEX IF NOT EXISTS idx_assets_is_favorite ON assets(is_favorite)');
+  }
+
+  static Future<void> _createIndexesV2(
+      Future<void> Function(String, [List<dynamic>?]) exec) async {
+    await exec(
+        'CREATE INDEX IF NOT EXISTS idx_ai_tasks_project_id ON ai_tasks(project_id)');
+    await exec(
+        'CREATE INDEX IF NOT EXISTS idx_ai_tasks_status ON ai_tasks(status)');
+    await exec(
+        'CREATE INDEX IF NOT EXISTS idx_ai_tasks_created_at ON ai_tasks(created_at)');
+    await exec(
+        'CREATE INDEX IF NOT EXISTS idx_prompts_project_id ON prompts(project_id)');
+    await exec(
+        'CREATE INDEX IF NOT EXISTS idx_prompts_category ON prompts(category)');
+    await exec(
+        'CREATE INDEX IF NOT EXISTS idx_asset_tags_tag_id ON asset_tags(tag_id)');
+    await exec(
+        'CREATE UNIQUE INDEX IF NOT EXISTS idx_ai_provider_configs_name_type '
+        'ON ai_provider_configs(name, type)');
+  }
 }
 
 LazyDatabase _openConnection() {

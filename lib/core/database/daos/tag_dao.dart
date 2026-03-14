@@ -22,8 +22,10 @@ class TagDao extends DatabaseAccessor<AppDatabase> with _$TagDaoMixin {
 
   Future<bool> updateTag(TagsCompanion entry) => update(tags).replace(entry);
 
-  Future<int> deleteTag(String id) =>
-      (delete(tags)..where((t) => t.id.equals(id))).go();
+  Future<void> deleteTag(String id) => transaction(() async {
+        await (delete(assetTags)..where((t) => t.tagId.equals(id))).go();
+        await (delete(tags)..where((t) => t.id.equals(id))).go();
+      });
 
   Future<List<Tag>> getTagsForAsset(String assetId) async {
     final query = select(tags).join([
@@ -65,13 +67,16 @@ class TagDao extends DatabaseAccessor<AppDatabase> with _$TagDaoMixin {
         );
   }
 
-  Future<void> batchAddTagToAssets(List<String> assetIds, String tagId) async {
-    for (final assetId in assetIds) {
-      await into(assetTags).insertOnConflictUpdate(
-        AssetTagsCompanion.insert(assetId: assetId, tagId: tagId),
-      );
-    }
-  }
+  Future<void> batchAddTagToAssets(List<String> assetIds, String tagId) =>
+      batch((b) {
+        for (final assetId in assetIds) {
+          b.insert(
+            assetTags,
+            AssetTagsCompanion.insert(assetId: assetId, tagId: tagId),
+            onConflict: DoNothing(),
+          );
+        }
+      });
 
   Stream<List<AssetTag>> watchAllAssetTags() => select(assetTags).watch();
 
