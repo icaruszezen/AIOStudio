@@ -76,10 +76,13 @@ class ModelCapabilityRegistry {
       if (match != null) return AiModelInfo.fromCapability(modelId, match);
     }
 
-    // 4. Longest registry-key prefix that matches
+    // 4. Longest registry-key prefix that matches (with boundary check to
+    //    avoid e.g. "gpt-4" matching "gpt-4o")
     String? bestKey;
     for (final rk in _data.keys) {
       if (stripped.startsWith(rk) &&
+          (rk.length == stripped.length ||
+              _isBoundaryChar(stripped[rk.length])) &&
           (bestKey == null || rk.length > bestKey.length)) {
         bestKey = rk;
       }
@@ -247,4 +250,7 @@ class ModelCapabilityRegistry {
     }
     return result;
   }
+
+  static bool _isBoundaryChar(String ch) =>
+      ch == '-' || ch == '/' || ch == '.' || ch == ':' || ch == '@';
 }

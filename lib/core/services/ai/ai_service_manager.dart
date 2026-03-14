@@ -87,20 +87,20 @@ class AiServiceManager {
 
   /// All model identifiers available for the given capability type.
   List<String> getAvailableModels(String type) {
-    final services = _services.values.where((s) {
-      switch (type) {
-        case 'chat':
-          return s.supportsChatCompletion;
-        case 'image':
-          return s.supportsImageGeneration;
-        case 'video':
-          return s.supportsVideoGeneration;
-        default:
-          return false;
-      }
-    });
+    final services = _services.values.where((s) => switch (type) {
+          'chat' => s.supportsChatCompletion,
+          'image' => s.supportsImageGeneration,
+          'video' => s.supportsVideoGeneration,
+          _ => false,
+        });
 
-    return services.expand((s) => s.supportedModels).toList();
+    return services
+        .expand((s) => switch (type) {
+              'image' => s.imageModels,
+              'video' => s.videoModels,
+              _ => s.supportedModels,
+            })
+        .toList();
   }
 
   // ---------------------------------------------------------------------------
@@ -164,6 +164,7 @@ class AiServiceManager {
           final matches = switch (type) {
             'chat' => m.isChatModel,
             'image' => m.isImageModel,
+            'video' => m.isVideoModel,
             _ => false,
           };
           if (matches) infos.add(m);
@@ -176,7 +177,11 @@ class AiServiceManager {
           _ => false,
         };
         if (matches) {
-          final models = type == 'image' ? s.imageModels : s.supportedModels;
+          final models = switch (type) {
+            'image' => s.imageModels,
+            'video' => s.videoModels,
+            _ => s.supportedModels,
+          };
           for (final id in models) {
             infos.add(AiModelInfo(id: id));
           }

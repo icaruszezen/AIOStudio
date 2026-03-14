@@ -126,8 +126,8 @@ class StabilityService extends AiService {
     try {
       await _dio.get('/v1/engines/list');
       return true;
-    } on AiServiceException {
-      rethrow;
+    } on DioException catch (e) {
+      throw _unwrap(e);
     } catch (e) {
       throw AiServiceException(
         message: e.toString(),
@@ -156,6 +156,13 @@ class StabilityService extends AiService {
   @override
   void dispose() => _dio.close();
 
-  static Object _unwrap(DioException e) =>
-      e.error is AiServiceException ? e.error! : e;
+  static AiServiceException _unwrap(DioException e) =>
+      e.error is AiServiceException
+          ? e.error! as AiServiceException
+          : AiServiceException(
+              message: e.message ?? e.toString(),
+              userMessage: '网络请求异常',
+              statusCode: e.response?.statusCode,
+              originalError: e,
+            );
 }

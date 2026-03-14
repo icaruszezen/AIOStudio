@@ -170,8 +170,8 @@ class AnthropicService extends AiService {
     String buffer = '';
     String? currentEvent;
 
-    await for (final chunk in byteStream) {
-      buffer += utf8.decode(chunk);
+    await for (final text in utf8.decoder.bind(byteStream)) {
+      buffer += text;
       final lines = buffer.split('\n');
       buffer = lines.removeLast();
 
@@ -247,6 +247,8 @@ class AnthropicService extends AiService {
       return true;
     } on AiServiceException {
       rethrow;
+    } on DioException catch (e) {
+      throw _unwrap(e);
     } catch (e) {
       throw AiServiceException(
         message: e.toString(),
@@ -258,6 +260,13 @@ class AnthropicService extends AiService {
   @override
   void dispose() => _dio.close();
 
-  static Object _unwrap(DioException e) =>
-      e.error is AiServiceException ? e.error! : e;
+  static AiServiceException _unwrap(DioException e) =>
+      e.error is AiServiceException
+          ? e.error! as AiServiceException
+          : AiServiceException(
+              message: e.message ?? e.toString(),
+              userMessage: '网络请求异常',
+              statusCode: e.response?.statusCode,
+              originalError: e,
+            );
 }

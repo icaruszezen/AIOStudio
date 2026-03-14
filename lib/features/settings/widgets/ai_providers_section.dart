@@ -105,7 +105,7 @@ class AiProvidersSection extends ConsumerWidget {
   void _addProvider(BuildContext context, WidgetRef ref) {
     AiProviderDialog.show(context).then((saved) {
       if (saved == true) {
-        ref.invalidate(aiServicesReadyProvider);
+        reloadAiServices(ref);
       }
     });
   }
@@ -226,13 +226,13 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
         updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
       ),
     );
-    ref.invalidate(aiServicesReadyProvider);
+    reloadAiServices(ref);
   }
 
   void _editProvider() {
     AiProviderDialog.show(context, existing: config).then((saved) {
       if (saved == true) {
-        ref.invalidate(aiServicesReadyProvider);
+        reloadAiServices(ref);
       }
     });
   }
@@ -309,7 +309,7 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
       final secureKeys = ref.read(secureKeyServiceProvider);
       await secureKeys.deleteApiKey(config.id);
       await dao.deleteConfig(config.id);
-      ref.invalidate(aiServicesReadyProvider);
+      reloadAiServices(ref);
     }
   }
 

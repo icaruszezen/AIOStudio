@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
+import 'ai_exceptions.dart';
 import 'ai_models.dart';
 import 'model_capability_registry.dart';
 
@@ -37,7 +38,10 @@ class ModelDiscoveryService {
       final resp = await dio.get<Map<String, dynamic>>('/v1/models');
       final data = resp.data;
       if (data == null) {
-        throw Exception('Empty response from /v1/models');
+        throw const AiServiceException(
+          message: 'Empty response from /v1/models',
+          userMessage: '模型列表响应为空',
+        );
       }
 
       final rawList = data['data'] as List<dynamic>? ?? [];
@@ -59,7 +63,14 @@ class ModelDiscoveryService {
     } on DioException catch (e) {
       final status = e.response?.statusCode;
       final msg = e.message ?? e.toString();
-      throw Exception('Failed to fetch models (HTTP $status): $msg');
+      if (status == 401 || status == 403) {
+        throw AuthenticationError(message: msg, statusCode: status);
+      }
+      throw NetworkError(
+        message: '获取模型列表失败 (HTTP $status): $msg',
+        statusCode: status,
+        originalError: e,
+      );
     } finally {
       dio.close();
     }

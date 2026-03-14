@@ -61,8 +61,8 @@ mixin OpenAiCompatibleMixin {
 
   Stream<String> parseOpenAiSseStream(Stream<List<int>> byteStream) async* {
     String buffer = '';
-    await for (final chunk in byteStream) {
-      buffer += utf8.decode(chunk);
+    await for (final text in utf8.decoder.bind(byteStream)) {
+      buffer += text;
       final lines = buffer.split('\n');
       buffer = lines.removeLast();
 
@@ -90,6 +90,13 @@ mixin OpenAiCompatibleMixin {
     }
   }
 
-  static Object unwrapDioError(DioException e) =>
-      e.error is AiServiceException ? e.error! : e;
+  static AiServiceException unwrapDioError(DioException e) =>
+      e.error is AiServiceException
+          ? e.error! as AiServiceException
+          : AiServiceException(
+              message: e.message ?? e.toString(),
+              userMessage: '网络请求异常',
+              statusCode: e.response?.statusCode,
+              originalError: e,
+            );
 }

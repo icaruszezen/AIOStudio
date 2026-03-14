@@ -34,19 +34,20 @@ abstract class AiService {
   bool get supportsImageGeneration;
   bool get supportsVideoGeneration;
 
-  Future<AiChatResponse> chatCompletion(AiChatRequest request) =>
+  Future<AiChatResponse> chatCompletion(AiChatRequest request) async =>
       throw UnsupportedError('$providerName 不支持对话补全');
 
-  Stream<String> chatCompletionStream(AiChatRequest request) =>
-      throw UnsupportedError('$providerName 不支持流式对话');
+  Stream<String> chatCompletionStream(AiChatRequest request) async* {
+    throw UnsupportedError('$providerName 不支持流式对话');
+  }
 
-  Future<AiImageResponse> generateImage(AiImageRequest request) =>
+  Future<AiImageResponse> generateImage(AiImageRequest request) async =>
       throw UnsupportedError('$providerName 不支持图片生成');
 
-  Future<AiVideoResponse> generateVideo(AiVideoRequest request) =>
+  Future<AiVideoResponse> generateVideo(AiVideoRequest request) async =>
       throw UnsupportedError('$providerName 不支持视频生成');
 
-  Future<AiVideoResponse> checkVideoStatus(String taskId) =>
+  Future<AiVideoResponse> checkVideoStatus(String taskId) async =>
       throw UnsupportedError('$providerName 不支持视频任务查询');
 
   /// Quick connectivity check – returns `true` on success, throws

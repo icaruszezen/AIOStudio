@@ -84,7 +84,7 @@ class AiLogInterceptor extends Interceptor {
 // Retry interceptor – exponential back-off for 429 / 5xx, max 3 attempts
 // ---------------------------------------------------------------------------
 
-class AiRetryInterceptor extends Interceptor {
+class AiRetryInterceptor extends QueuedInterceptor {
   static const _maxRetries = 3;
 
   @override
@@ -109,7 +109,9 @@ class AiRetryInterceptor extends Interceptor {
           connectTimeout: options.connectTimeout,
           receiveTimeout: options.receiveTimeout,
         ));
+        retryDio.interceptors.add(AiLogInterceptor());
         final response = await retryDio.fetch(options);
+        _log.i('[AI] Retry succeeded for ${options.uri}');
         handler.resolve(response);
         return;
       } on DioException catch (e) {
@@ -118,6 +120,7 @@ class AiRetryInterceptor extends Interceptor {
       }
     }
 
+    _log.e('[AI] All $_maxRetries retries exhausted for ${options.uri}');
     handler.next(lastError);
   }
 

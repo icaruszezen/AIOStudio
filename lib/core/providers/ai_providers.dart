@@ -26,10 +26,17 @@ final aiServiceManagerProvider = Provider<AiServiceManager>((ref) {
   return manager;
 });
 
+/// Call from widget code after any AI provider config change to reload all
+/// services. Centralises the invalidation so callers don't depend on internal
+/// provider topology.
+void reloadAiServices(WidgetRef ref) {
+  ref.invalidate(aiServicesReadyProvider);
+}
+
 /// Triggers [AiServiceManager.loadServices] and exposes the ready manager.
 ///
 /// UI code should `await ref.watch(aiServicesReadyProvider.future)` before
-/// calling any AI service.
+/// calling any AI service. Call [reloadAiServices] after config changes.
 final aiServicesReadyProvider = FutureProvider<AiServiceManager>((ref) async {
   final manager = ref.watch(aiServiceManagerProvider);
   await manager.loadServices();

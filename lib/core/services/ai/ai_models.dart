@@ -40,9 +40,21 @@ class AiModelInfo {
     this.isEnabled = true,
   });
 
+  /// Equality is based solely on [id] because model identifiers are unique
+  /// within a provider. Other fields (contextWindow, mode, isEnabled, etc.)
+  /// are intentionally excluded so that enriched and bare instances of the
+  /// same model compare as equal.
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is AiModelInfo && other.id == id;
+
+  @override
+  int get hashCode => id.hashCode;
+
   bool get isChatModel => mode == 'chat' || mode == 'responses';
   bool get isImageModel => mode == 'image_generation' ||
       outputModalities.contains('image');
+  bool get isVideoModel => mode == 'video_generation';
   bool get isEmbeddingModel => mode == 'embedding';
   bool get isAudioModel =>
       mode == 'audio_transcription' || mode == 'audio_speech';

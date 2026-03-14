@@ -132,8 +132,8 @@ class OpenAiService extends AiService with OpenAiCompatibleMixin {
     try {
       await _dio.get('/v1/models');
       return true;
-    } on AiServiceException {
-      rethrow;
+    } on DioException catch (e) {
+      throw OpenAiCompatibleMixin.unwrapDioError(e);
     } catch (e) {
       throw AiServiceException(
         message: e.toString(),
