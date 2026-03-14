@@ -66,13 +66,21 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
     context.go('${AppRoutes.assets}/$assetId');
   }
 
+  void _goBack() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(AppRoutes.assets);
+    }
+  }
+
   void _onKeyEvent(KeyEvent event) {
     if (event is! KeyDownEvent) return;
     final prevId = ref.read(previousAssetIdProvider);
     final nextId = ref.read(nextAssetIdProvider);
 
     if (event.logicalKey == LogicalKeyboardKey.escape) {
-      context.go(AppRoutes.assets);
+      _goBack();
     } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
       _navigateTo(prevId);
     } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
@@ -105,7 +113,7 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
                   Text('资产不存在', style: theme.typography.subtitle),
                   const SizedBox(height: 16),
                   Button(
-                    onPressed: () => context.go(AppRoutes.assets),
+                    onPressed: _goBack,
                     child: const Text('返回资产库'),
                   ),
                 ],
@@ -153,7 +161,7 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
             message: '返回资产库',
             child: IconButton(
               icon: const Icon(FluentIcons.back, size: 14),
-              onPressed: () => context.go(AppRoutes.assets),
+              onPressed: _goBack,
             ),
           ),
           const SizedBox(width: 4),

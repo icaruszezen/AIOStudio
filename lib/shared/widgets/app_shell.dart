@@ -14,19 +14,31 @@ class AppShell extends StatefulWidget {
   State<AppShell> createState() => _AppShellState();
 }
 
+class _NavItem {
+  const _NavItem({required this.route, required this.icon, required this.title});
+  final String route;
+  final IconData icon;
+  final String title;
+}
+
 class _AppShellState extends State<AppShell> with WindowListener {
-  /// Ordered list of route paths matching the selectable PaneItem indices.
-  /// PaneItemSeparator does not occupy an index.
-  static const _routes = [
-    AppRoutes.projects, // 0
-    AppRoutes.assets, // 1
-    AppRoutes.prompts, // 2
-    // -- separator (no index) --
-    AppRoutes.aiChat, // 3
-    AppRoutes.aiImage, // 4
-    AppRoutes.aiVideo, // 5
-    AppRoutes.settings, // 6 (footer)
+  static const _topItems = [
+    _NavItem(route: AppRoutes.projects, icon: FluentIcons.project_management, title: '项目管理'),
+    _NavItem(route: AppRoutes.assets, icon: FluentIcons.photo_collection, title: '资产库'),
+    _NavItem(route: AppRoutes.prompts, icon: FluentIcons.text_document, title: '提示词库'),
   ];
+
+  static const _aiItems = [
+    _NavItem(route: AppRoutes.aiChat, icon: FluentIcons.chat, title: 'AI 对话'),
+    _NavItem(route: AppRoutes.aiImage, icon: FluentIcons.image_search, title: '图片生成'),
+    _NavItem(route: AppRoutes.aiVideo, icon: FluentIcons.video, title: '视频生成'),
+  ];
+
+  static const _footerNavItems = [
+    _NavItem(route: AppRoutes.settings, icon: FluentIcons.settings, title: '设置'),
+  ];
+
+  static final _allSelectableItems = [..._topItems, ..._aiItems, ..._footerNavItems];
 
   bool _isMaximized = false;
   bool _isPaneExpanded = true;
@@ -56,8 +68,9 @@ class _AppShellState extends State<AppShell> with WindowListener {
 
   int _calculateSelectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
-    for (var i = 0; i < _routes.length; i++) {
-      if (location == _routes[i] || location.startsWith('${_routes[i]}/')) {
+    for (var i = 0; i < _allSelectableItems.length; i++) {
+      final route = _allSelectableItems[i].route;
+      if (location == route || location.startsWith('$route/')) {
         return i;
       }
     }
@@ -89,8 +102,8 @@ class _AppShellState extends State<AppShell> with WindowListener {
           pane: NavigationPane(
             selected: selectedIndex,
             onChanged: (index) {
-              if (index >= 0 && index < _routes.length) {
-                context.go(_routes[index]);
+              if (index >= 0 && index < _allSelectableItems.length) {
+                context.go(_allSelectableItems[index].route);
               }
             },
             displayMode: paneDisplayMode,
@@ -99,44 +112,27 @@ class _AppShellState extends State<AppShell> with WindowListener {
             toggleButtonPosition: PaneToggleButtonPreferredPosition.pane,
             header: _isPaneExpanded ? paneToggle : const SizedBox.shrink(),
             items: [
-              PaneItem(
-                icon: const Icon(FluentIcons.project_management),
-                title: const Text('项目管理'),
-                body: const SizedBox.shrink(),
-              ),
-              PaneItem(
-                icon: const Icon(FluentIcons.photo_collection),
-                title: const Text('资产库'),
-                body: const SizedBox.shrink(),
-              ),
-              PaneItem(
-                icon: const Icon(FluentIcons.text_document),
-                title: const Text('提示词库'),
-                body: const SizedBox.shrink(),
-              ),
+              for (final item in _topItems)
+                PaneItem(
+                  icon: Icon(item.icon),
+                  title: Text(item.title),
+                  body: const SizedBox.shrink(),
+                ),
               PaneItemSeparator(),
-              PaneItem(
-                icon: const Icon(FluentIcons.chat),
-                title: const Text('AI 对话'),
-                body: const SizedBox.shrink(),
-              ),
-              PaneItem(
-                icon: const Icon(FluentIcons.image_search),
-                title: const Text('图片生成'),
-                body: const SizedBox.shrink(),
-              ),
-              PaneItem(
-                icon: const Icon(FluentIcons.video),
-                title: const Text('视频生成'),
-                body: const SizedBox.shrink(),
-              ),
+              for (final item in _aiItems)
+                PaneItem(
+                  icon: Icon(item.icon),
+                  title: Text(item.title),
+                  body: const SizedBox.shrink(),
+                ),
             ],
             footerItems: [
-              PaneItem(
-                icon: const Icon(FluentIcons.settings),
-                title: const Text('设置'),
-                body: const SizedBox.shrink(),
-              ),
+              for (final item in _footerNavItems)
+                PaneItem(
+                  icon: Icon(item.icon),
+                  title: Text(item.title),
+                  body: const SizedBox.shrink(),
+                ),
             ],
           ),
           paneBodyBuilder: (item, body) => widget.child,
@@ -254,9 +250,14 @@ class _WindowButtonState extends State<_WindowButton> {
       iconColor = theme.resources.textFillColorPrimary;
     }
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
+    return FocusableActionDetector(
+      mouseCursor: SystemMouseCursors.click,
+      onShowHoverHighlight: (v) => setState(() => _isHovered = v),
+      actions: {
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (_) { widget.onPressed(); return null; },
+        ),
+      },
       child: GestureDetector(
         onTap: widget.onPressed,
         child: Container(

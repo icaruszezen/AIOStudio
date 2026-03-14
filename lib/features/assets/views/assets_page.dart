@@ -723,7 +723,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
       return;
     }
 
-    context.go('${AppRoutes.assets}/${asset.id}');
+    context.push('${AppRoutes.assets}/${asset.id}');
   }
 
   void _handleLongPress(Asset asset, int index) {

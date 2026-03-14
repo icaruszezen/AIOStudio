@@ -120,7 +120,7 @@ class _ProjectAssetsTabState extends ConsumerState<ProjectAssetsTab> {
             final asset = assets[index];
             return AssetGridItem(
               asset: asset,
-              onTap: () => context.go('${AppRoutes.assets}/${asset.id}'),
+              onTap: () => context.push('${AppRoutes.assets}/${asset.id}'),
               onFavoriteToggle: () =>
                   ref.read(assetActionsProvider).toggleFavorite(asset.id),
               onDelete: () => _confirmDelete(asset),
@@ -138,7 +138,7 @@ class _ProjectAssetsTabState extends ConsumerState<ProjectAssetsTab> {
         final asset = assets[index];
         return AssetListItem(
           asset: asset,
-          onTap: () => context.go('${AppRoutes.assets}/${asset.id}'),
+          onTap: () => context.push('${AppRoutes.assets}/${asset.id}'),
           onFavoriteToggle: () =>
               ref.read(assetActionsProvider).toggleFavorite(asset.id),
           onDelete: () => _confirmDelete(asset),

@@ -12,6 +12,7 @@ import '../../features/projects/views/projects_page.dart';
 import '../../features/prompts/views/prompts_page.dart';
 import '../../features/settings/views/settings_page.dart';
 import '../../shared/widgets/app_shell.dart';
+import '../../shared/widgets/not_found_page.dart';
 
 abstract final class AppRoutes {
   static const projects = '/projects';
@@ -27,7 +28,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: NotificationService.navigatorKey,
     initialLocation: AppRoutes.projects,
+    errorBuilder: (context, state) => const NotFoundPage(),
     routes: [
+      // ShellRoute uses the default internal navigator for its children.
+      // If full-screen overlays outside the shell are needed in the future,
+      // add a dedicated navigatorKey here and parentNavigatorKey on those routes.
       ShellRoute(
         builder: (context, state, child) => AppShell(child: child),
         routes: [

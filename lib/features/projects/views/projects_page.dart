@@ -69,7 +69,7 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
   }
 
   void _onProjectTap(Project project) {
-    context.go('/projects/${project.id}');
+    context.push('/projects/${project.id}');
   }
 
   void _onEdit(Project project) {
