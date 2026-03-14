@@ -129,6 +129,14 @@ class ExtensionActualPortNotifier extends Notifier<int> {
 }
 
 // ---------------------------------------------------------------------------
+// Auth token – display in settings so the user can configure the extension
+// ---------------------------------------------------------------------------
+
+final extensionAuthTokenProvider = Provider<String>((ref) {
+  return ref.watch(extensionServerInstanceProvider).authToken;
+});
+
+// ---------------------------------------------------------------------------
 // Import event stream – UI subscribes to show notifications
 // ---------------------------------------------------------------------------
 

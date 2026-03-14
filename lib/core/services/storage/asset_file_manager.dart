@@ -18,6 +18,9 @@ class AssetFileManager {
   static final _log = Logger(printer: PrettyPrinter(methodCount: 0));
   static const _uuid = Uuid();
 
+  /// Max single-file download: 500 MB.
+  static const _maxDownloadBytes = 500 * 1024 * 1024;
+
   AssetFileManager({
     required AssetDao assetDao,
     required LocalStorageService storage,
@@ -25,6 +28,42 @@ class AssetFileManager {
   })  : _assetDao = assetDao,
         _storage = storage,
         _dio = dio ?? Dio();
+
+  /// Validates that [url] uses http or https scheme.
+  static void _validateDownloadUrl(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null || (uri.scheme != 'http' && uri.scheme != 'https')) {
+      throw ArgumentError('Only http/https URLs are allowed, got: $url');
+    }
+  }
+
+  /// Wraps [Dio.download] with a receive timeout and a size cap.
+  /// Cleans up the partial file on failure to avoid storage leaks.
+  Future<void> _safeDownload(String url, String destPath) async {
+    _validateDownloadUrl(url);
+    try {
+      await _dio.download(
+        url,
+        destPath,
+        options: Options(receiveTimeout: const Duration(minutes: 10)),
+        onReceiveProgress: (received, total) {
+          if (received > _maxDownloadBytes) {
+            throw DioException(
+              requestOptions: RequestOptions(path: url),
+              message:
+                  'Download exceeded size limit of $_maxDownloadBytes bytes',
+            );
+          }
+        },
+      );
+    } catch (e) {
+      final partial = File(destPath);
+      if (await partial.exists()) {
+        await partial.delete();
+      }
+      rethrow;
+    }
+  }
 
   /// Imports a local file by referencing its original path (no copy)
   /// and creates a database record.
@@ -67,7 +106,7 @@ class AssetFileManager {
     await _assetDao.insertAsset(companion);
     final asset = await _assetDao.getAssetById(id);
     _log.d('Imported local file: $name → $filePath');
-    return asset!;
+    return asset ?? (throw StateError('Asset not found after insert: $id'));
   }
 
   /// Downloads a file from [url] and saves it as a project asset.
@@ -82,7 +121,7 @@ class AssetFileManager {
     final fileName = '${_uuid.v4()}$ext';
     final destPath = p.join(dir.path, fileName);
 
-    await _dio.download(url, destPath);
+    await _safeDownload(url, destPath);
 
     final file = File(destPath);
     final stat = await file.stat();
@@ -114,7 +153,7 @@ class AssetFileManager {
     await _assetDao.insertAsset(companion);
     final asset = await _assetDao.getAssetById(id);
     _log.d('Downloaded file: $name from $url');
-    return asset!;
+    return asset ?? (throw StateError('Asset not found after insert: $id'));
   }
 
   /// Decodes a base64-encoded image and saves it as a project asset.
@@ -165,7 +204,7 @@ class AssetFileManager {
     await _assetDao.insertAsset(companion);
     final asset = await _assetDao.getAssetById(id);
     _log.d('Saved base64 image: $name → $destPath');
-    return asset!;
+    return asset ?? (throw StateError('Asset not found after insert: $id'));
   }
 
   /// Batch-imports multiple local files.
@@ -219,7 +258,7 @@ class AssetFileManager {
     int fileSize;
 
     if (mediaUrl != null && mediaUrl.isNotEmpty) {
-      await _dio.download(mediaUrl, destPath);
+      await _safeDownload(mediaUrl, destPath);
       final stat = await File(destPath).stat();
       fileSize = stat.size;
     } else if (mediaBase64 != null && mediaBase64.isNotEmpty) {
@@ -268,7 +307,7 @@ class AssetFileManager {
     await _assetDao.insertAsset(companion);
     final asset = await _assetDao.getAssetById(id);
     _log.d('Imported from extension: $assetName');
-    return asset!;
+    return asset ?? (throw StateError('Asset not found after insert: $id'));
   }
 
   /// Deletes an asset's database record and associated files.

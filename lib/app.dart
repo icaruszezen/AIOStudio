@@ -38,25 +38,18 @@ class _AioStudioAppState extends ConsumerState<AioStudioApp> {
       final asset = next.value;
       if (asset == null) return;
 
-      final navContext = NotificationService.navigatorKey.currentContext;
-      if (navContext == null) return;
-
       final router = ref.read(appRouterProvider);
 
-      displayInfoBar(navContext, builder: (ctx, close) {
-        return InfoBar(
-          title: Text('已从浏览器保存：${asset.name}'),
-          severity: InfoBarSeverity.success,
-          action: Button(
-            onPressed: () {
-              close();
-              router.go('/assets/${asset.id}');
-            },
-            child: const Text('查看'),
-          ),
-          onClose: close,
-        );
-      });
+      ref.read(notificationServiceProvider).show(
+        title: '已从浏览器保存：${asset.name}',
+        actionBuilder: (close) => Button(
+          onPressed: () {
+            close();
+            router.go('/assets/${asset.id}');
+          },
+          child: const Text('查看'),
+        ),
+      );
     });
   }
 

@@ -151,6 +151,15 @@ class AssetDao extends DatabaseAccessor<AppDatabase> with _$AssetDaoMixin {
     return result.read(count) ?? 0;
   }
 
+  /// Sets all `thumbnailPath` values to NULL (used after clearing the
+  /// thumbnail cache directory to avoid dangling references).
+  Future<void> clearAllThumbnailPaths() async {
+    await customStatement(
+      'UPDATE assets SET thumbnail_path = NULL '
+      'WHERE thumbnail_path IS NOT NULL',
+    );
+  }
+
   /// Replaces [oldPrefix] with [newPrefix] in cached file paths.
   /// Only touches `filePath` for non-local-import assets (downloaded /
   /// AI-generated files live in the cache dir). `thumbnailPath` is always

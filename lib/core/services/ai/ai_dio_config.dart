@@ -75,8 +75,8 @@ class AiLogInterceptor extends Interceptor {
 
   static String _maskValue(String value) {
     final raw = value.replaceFirst(RegExp(r'^Bearer\s+', caseSensitive: false), '');
-    if (raw.length <= 8) return '****';
-    return '${raw.substring(0, 8)}****';
+    if (raw.length <= 4) return '****';
+    return '${raw.substring(0, 4)}****';
   }
 }
 

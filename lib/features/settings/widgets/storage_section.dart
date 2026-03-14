@@ -436,6 +436,7 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
     try {
       final storage = ref.read(localStorageServiceProvider);
       await storage.clearThumbnailCache();
+      await ref.read(assetDaoProvider).clearAllThumbnailPaths();
       ref.invalidate(_storageStatsProvider);
       if (mounted) {
         displayInfoBar(context, builder: (_, close) => InfoBar(

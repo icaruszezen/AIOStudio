@@ -2,13 +2,38 @@ import 'package:shelf/shelf.dart';
 
 const _maxBodyBytes = 200 * 1024 * 1024; // 200 MB
 
+/// Validates a bearer token on all requests except health-check.
+Middleware tokenAuthMiddleware(String expectedToken) {
+  return (Handler innerHandler) {
+    return (Request request) async {
+      if (request.method == 'OPTIONS') return innerHandler(request);
+
+      final path = request.requestedUri.path;
+      if (path == '/api/health') return innerHandler(request);
+
+      final auth = request.headers['authorization'] ?? '';
+      final token = auth.startsWith('Bearer ')
+          ? auth.substring('Bearer '.length).trim()
+          : '';
+
+      if (token != expectedToken) {
+        return Response.forbidden(
+          '{"error":"Invalid or missing auth token"}',
+          headers: {'Content-Type': 'application/json'},
+        );
+      }
+      return innerHandler(request);
+    };
+  };
+}
+
 /// Adds CORS headers and handles OPTIONS preflight requests.
 Middleware corsMiddleware() {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers':
-        'Content-Type, X-AIO-Client, Origin, Accept',
+        'Content-Type, X-AIO-Client, Origin, Accept, Authorization',
     'Access-Control-Max-Age': '86400',
   };
 

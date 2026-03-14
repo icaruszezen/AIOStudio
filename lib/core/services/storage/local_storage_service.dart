@@ -53,6 +53,15 @@ class LocalStorageService {
 
   static final _log = Logger(printer: PrettyPrinter(methodCount: 0));
   static const _uuid = Uuid();
+  static final _safeIdPattern = RegExp(r'^[a-zA-Z0-9_\-]+$');
+
+  /// Validates that [id] contains only safe characters (alphanumeric,
+  /// underscore, hyphen) to prevent path-traversal attacks.
+  static void _validateId(String id) {
+    if (id.isEmpty || !_safeIdPattern.hasMatch(id)) {
+      throw ArgumentError('Invalid id (must be alphanumeric/hyphen/underscore): $id');
+    }
+  }
 
   Future<Directory> get _appDataDir async {
     if (cacheDirectory != null) {
@@ -68,6 +77,7 @@ class LocalStorageService {
   }
 
   Future<Directory> getAssetDirectory(String projectId) async {
+    _validateId(projectId);
     final root = await _appDataDir;
     final dir = Directory(p.join(root.path, 'assets', projectId));
     if (!await dir.exists()) {
@@ -99,12 +109,23 @@ class LocalStorageService {
 
   static const _thumbWidth = 300;
 
+  /// Skip thumbnail generation for files larger than 50 MB to avoid OOM.
+  static const _maxThumbnailSourceBytes = 50 * 1024 * 1024;
+
   /// Decodes the image at [imagePath], resizes it to [_thumbWidth] px wide
   /// (preserving aspect ratio), and saves the result as a JPEG thumbnail.
   /// Falls back to copying the original if decoding fails (e.g. SVG).
+  /// Returns null without processing when the source exceeds 50 MB.
   Future<String?> generateThumbnail(String imagePath) async {
     final file = File(imagePath);
     if (!await file.exists()) return null;
+
+    final stat = await file.stat();
+    if (stat.size > _maxThumbnailSourceBytes) {
+      _log.w('Skipping thumbnail for oversized file '
+          '(${stat.size} bytes): $imagePath');
+      return null;
+    }
 
     final thumbDir = await getThumbnailDirectory();
     final thumbName = '${_uuid.v4()}_thumb.jpg';
@@ -181,6 +202,13 @@ class LocalStorageService {
   }
 
   Future<void> deleteAssetFile(String filePath) async {
+    final root = await _appDataDir;
+    final canonicalRoot = p.canonicalize(root.path);
+    final canonicalFile = p.canonicalize(filePath);
+    if (!p.isWithin(canonicalRoot, canonicalFile)) {
+      _log.w('Blocked attempt to delete file outside data directory: $filePath');
+      return;
+    }
     final file = File(filePath);
     if (await file.exists()) {
       await file.delete();

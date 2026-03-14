@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:logger/logger.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf_io;
+import 'package:uuid/uuid.dart';
 
 import '../../database/app_database.dart';
 import '../storage/asset_file_manager.dart';
@@ -19,6 +20,10 @@ class ExtensionServer {
       StreamController<Asset>.broadcast();
 
   static final _log = Logger(printer: PrettyPrinter(methodCount: 0));
+
+  /// Random token generated once per server instance, required in the
+  /// `Authorization: Bearer <token>` header for all non-health requests.
+  final String authToken = const Uuid().v4();
 
   bool get isRunning => _server != null;
   int? get actualPort => _server?.port;
@@ -52,6 +57,7 @@ class ExtensionServer {
     final pipeline = const shelf.Pipeline()
         .addMiddleware(corsMiddleware())
         .addMiddleware(originCheckMiddleware())
+        .addMiddleware(tokenAuthMiddleware(authToken))
         .addMiddleware(requestSizeLimitMiddleware())
         .addMiddleware(rateLimitMiddleware())
         .addMiddleware(shelf.logRequests())
