@@ -4,6 +4,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/format_utils.dart';
 
 class VideoPlayerWidget extends StatefulWidget {
@@ -154,13 +155,13 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
             : 0.0;
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.bottomCenter,
           end: Alignment.topCenter,
           colors: [
-            Color(0xCC000000),
-            Color(0x00000000),
+            AppColors.overlayDark(0.8),
+            Colors.transparent,
           ],
         ),
       ),
@@ -190,7 +191,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
               const SizedBox(width: 8),
               Text(
                 '${formatDuration(_position)} / ${formatDuration(_duration)}',
-                style: const TextStyle(color: Color(0xDDFFFFFF), fontSize: 12),
+                style: const TextStyle(color: AppColors.textOnMedia, fontSize: 12),
               ),
               const Spacer(),
               _controlButton(
@@ -249,11 +250,11 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: const Color(0x55FFFFFF)),
+            border: Border.all(color: AppColors.borderOnMedia),
           ),
           child: Text(
             '${_speed}x',
-            style: const TextStyle(color: Color(0xDDFFFFFF), fontSize: 12),
+            style: const TextStyle(color: AppColors.textOnMedia, fontSize: 12),
           ),
         ),
       ),
@@ -263,7 +264,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   Widget _controlButton(IconData icon, VoidCallback onPressed) {
     return GestureDetector(
       onTap: onPressed,
-      child: Icon(icon, size: 16, color: const Color(0xDDFFFFFF)),
+      child: Icon(icon, size: 16, color: AppColors.textOnMedia),
     );
   }
 

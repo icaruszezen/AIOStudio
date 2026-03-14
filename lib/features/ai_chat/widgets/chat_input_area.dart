@@ -227,7 +227,7 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
                       child: const Icon(
                         FluentIcons.cancel,
                         size: 10,
-                        color: Colors.white,
+                        color: AppColors.onAccent,
                       ),
                     ),
                     onPressed: () => _removeImage(index),

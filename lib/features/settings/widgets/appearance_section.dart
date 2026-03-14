@@ -122,7 +122,7 @@ class _AccentColorSelector extends ConsumerWidget {
                     ? const Icon(
                         FluentIcons.check_mark,
                         size: 16,
-                        color: Colors.white,
+                        color: AppColors.onAccent,
                       )
                     : null,
               ),

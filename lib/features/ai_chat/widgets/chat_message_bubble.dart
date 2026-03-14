@@ -111,7 +111,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         isAi ? FluentIcons.robot : FluentIcons.contact,
         size: 16,
         color: isAi
-            ? Colors.white
+            ? AppColors.onAccent
             : theme.resources.textFillColorPrimary,
       ),
     );
@@ -162,7 +162,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   Widget _buildUserContent(FluentThemeData theme) {
     return SelectableText(
       widget.message.content,
-      style: theme.typography.body?.copyWith(color: Colors.white),
+      style: theme.typography.body?.copyWith(color: AppColors.onAccent),
     );
   }
 
@@ -330,24 +330,21 @@ class _MarkdownContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final displayData = showCursor ? '$data▍' : data;
+    final theme = FluentTheme.of(context);
 
-    const pStyle = TextStyle(
-      fontFamily: 'Microsoft YaHei UI',
-      fontFamilyFallback: ['PingFang SC', 'Noto Sans SC', 'sans-serif'],
-      fontSize: 14,
-      height: 1.6,
-    );
+    final pStyle = theme.typography.body?.copyWith(height: 1.6) ??
+        const TextStyle(fontSize: 14, height: 1.6);
 
     final config = isDarkMode
         ? MarkdownConfig.darkConfig.copy(configs: [
-            const PConfig(textStyle: pStyle),
+            PConfig(textStyle: pStyle),
             PreConfig.darkConfig.copy(
               wrapper: (child, code, language) => _CodeBlockWrapper(
                   code: code, language: language, child: child),
             ),
           ])
         : MarkdownConfig.defaultConfig.copy(configs: [
-            const PConfig(textStyle: pStyle),
+            PConfig(textStyle: pStyle),
             PreConfig(
               wrapper: (child, code, language) => _CodeBlockWrapper(
                   code: code, language: language, child: child),

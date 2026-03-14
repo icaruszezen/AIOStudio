@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:fluent_ui/fluent_ui.dart';
 
+import '../../../core/theme/design_tokens.dart';
+
 class TextPreviewWidget extends StatefulWidget {
   const TextPreviewWidget({super.key, required this.filePath});
 
@@ -125,7 +127,8 @@ class _TextPreviewWidgetState extends State<TextPreviewWidget> {
             child: SelectableText(
               _content ?? '',
               style: theme.typography.body?.copyWith(
-                fontFamily: 'Consolas',
+                fontFamily: DesignTokens.monoFontFamily,
+                fontFamilyFallback: DesignTokens.monoFontFallback,
                 fontSize: 13,
                 height: 1.5,
               ),

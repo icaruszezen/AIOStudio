@@ -1,7 +1,11 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/theme/app_theme.dart' show sharedPreferencesProvider;
+import '../../../core/utils/platform_utils.dart';
 
 export '../../../core/providers/app_config_provider.dart'
     show
@@ -116,6 +120,37 @@ class AutoSaveChatNotifier extends Notifier<bool> {
 
 enum AppWindowEffect { none, acrylic, mica, tabbed }
 
+/// Maps [AppWindowEffect] to [WindowEffect] from flutter_acrylic,
+/// with platform-specific degradation (macOS: no mica/tabbed; Linux: transparent only).
+WindowEffect resolveWindowEffect(AppWindowEffect effect) {
+  if (!PlatformUtils.isDesktop) return WindowEffect.disabled;
+  if (defaultTargetPlatform == TargetPlatform.linux) {
+    return effect == AppWindowEffect.none
+        ? WindowEffect.disabled
+        : WindowEffect.transparent;
+  }
+  return switch (effect) {
+    AppWindowEffect.none => WindowEffect.disabled,
+    AppWindowEffect.acrylic => WindowEffect.acrylic,
+    AppWindowEffect.mica => defaultTargetPlatform == TargetPlatform.windows
+        ? WindowEffect.mica
+        : WindowEffect.acrylic,
+    AppWindowEffect.tabbed => defaultTargetPlatform == TargetPlatform.windows
+        ? WindowEffect.tabbed
+        : WindowEffect.acrylic,
+  };
+}
+
+/// Read the persisted window effect from [prefs] without Riverpod.
+/// Used in [main] before the provider container is created.
+AppWindowEffect readSavedWindowEffect(SharedPreferences prefs) {
+  final value = prefs.getString(_windowEffectKey);
+  return AppWindowEffect.values.firstWhere(
+    (e) => e.name == value,
+    orElse: () => AppWindowEffect.acrylic,
+  );
+}
+
 final windowEffectProvider =
     NotifierProvider<WindowEffectNotifier, AppWindowEffect>(
         WindowEffectNotifier.new);
@@ -135,6 +170,12 @@ class WindowEffectNotifier extends Notifier<AppWindowEffect> {
     state = effect;
     final prefs = ref.read(sharedPreferencesProvider);
     await prefs.setString(_windowEffectKey, effect.name);
+    if (PlatformUtils.isDesktop) {
+      await Window.setEffect(
+        effect: resolveWindowEffect(effect),
+        color: const Color(0x00000000),
+      );
+    }
   }
 }
 

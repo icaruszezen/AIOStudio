@@ -2,6 +2,8 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'design_tokens.dart';
+
 const _themeModeKey = 'theme_mode';
 
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
@@ -85,6 +87,23 @@ class AppColors {
   static Color overlayLight([double alpha = 0.9]) =>
       Colors.white.withValues(alpha: alpha);
 
+  // -- Content on accent / media overlay backgrounds --
+
+  static const Color onAccent = Color(0xFFFFFFFF);
+  static const Color textOnMedia = Color(0xDDFFFFFF);
+  static const Color borderOnMedia = Color(0x55FFFFFF);
+
+  // -- Project card gradient palette --
+
+  static const projectGradients = [
+    [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+    [Color(0xFF3B82F6), Color(0xFF06B6D4)],
+    [Color(0xFF10B981), Color(0xFF34D399)],
+    [Color(0xFFF59E0B), Color(0xFFF97316)],
+    [Color(0xFFEF4444), Color(0xFFF472B6)],
+    [Color(0xFF8B5CF6), Color(0xFFEC4899)],
+  ];
+
   // -- Provider icon colors (settings page) --
 
   static Color providerOpenAI(Brightness b) =>
@@ -111,16 +130,13 @@ class AppTheme {
   static FluentThemeData? _cachedDark;
 
   static Typography _typography(Brightness brightness) {
-    const fontFamily = 'Microsoft YaHei UI';
-    const fallback = ['PingFang SC', 'Noto Sans SC', 'sans-serif'];
-
     final color = brightness == Brightness.light
         ? const Color(0xE4000000)
         : Colors.white;
 
     TextStyle base(double size, FontWeight weight, double height) => TextStyle(
-          fontFamily: fontFamily,
-          fontFamilyFallback: fallback,
+          fontFamily: DesignTokens.fontFamily,
+          fontFamilyFallback: DesignTokens.fontFallback,
           fontSize: size,
           fontWeight: weight,
           height: height,

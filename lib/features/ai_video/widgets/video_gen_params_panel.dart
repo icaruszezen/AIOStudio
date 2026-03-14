@@ -5,6 +5,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/database_provider.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../prompts/views/prompt_optimize_dialog.dart';
 import '../providers/video_gen_provider.dart';
 
@@ -277,11 +278,11 @@ class _VideoGenParamsPanelState extends ConsumerState<VideoGenParamsPanel> {
                     icon: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.5),
+                        color: AppColors.overlayDark(0.5),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(FluentIcons.cancel,
-                          size: 10, color: Colors.white),
+                          size: 10, color: AppColors.onAccent),
                     ),
                     onPressed: () => notifier.setInputImage(null),
                   ),

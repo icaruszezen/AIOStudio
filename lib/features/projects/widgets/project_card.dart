@@ -6,6 +6,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/theme/app_theme.dart';
 
 class ProjectCard extends StatefulWidget {
   const ProjectCard({
@@ -32,18 +33,9 @@ class ProjectCard extends StatefulWidget {
 class _ProjectCardState extends State<ProjectCard> {
   bool _isHovered = false;
 
-  static const _gradients = [
-    [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-    [Color(0xFF3B82F6), Color(0xFF06B6D4)],
-    [Color(0xFF10B981), Color(0xFF34D399)],
-    [Color(0xFFF59E0B), Color(0xFFF97316)],
-    [Color(0xFFEF4444), Color(0xFFF472B6)],
-    [Color(0xFF8B5CF6), Color(0xFFEC4899)],
-  ];
-
   List<Color> _gradientForProject(String name) {
-    final index = name.hashCode.abs() % _gradients.length;
-    return _gradients[index];
+    final index = name.hashCode.abs() % AppColors.projectGradients.length;
+    return AppColors.projectGradients[index];
   }
 
   @override
@@ -176,7 +168,7 @@ class _ProjectCardState extends State<ProjectCard> {
                   const BorderRadius.vertical(top: Radius.circular(6)),
               child: Container(
                 height: height,
-                color: Colors.black.withValues(alpha: 0.4),
+                color: AppColors.overlayDark(0.4),
                 child: Center(
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -228,7 +220,7 @@ class _ProjectCardState extends State<ProjectCard> {
         child: Text(
           initial,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppColors.onAccent,
             fontSize: 32,
             fontWeight: FontWeight.bold,
           ),
@@ -254,13 +246,13 @@ class _HoverIconButton extends StatelessWidget {
     return Tooltip(
       message: tooltip,
       child: IconButton(
-        icon: Icon(icon, size: 16, color: Colors.white),
+        icon: Icon(icon, size: 16, color: AppColors.onAccent),
         onPressed: onPressed,
         style: ButtonStyle(
           backgroundColor: WidgetStateProperty.resolveWith((states) {
-            if (states.isPressed) return Colors.white.withValues(alpha: 0.3);
-            if (states.isHovered) return Colors.white.withValues(alpha: 0.2);
-            return Colors.white.withValues(alpha: 0.1);
+            if (states.isPressed) return AppColors.overlayLight(0.3);
+            if (states.isHovered) return AppColors.overlayLight(0.2);
+            return AppColors.overlayLight(0.1);
           }),
           shape: WidgetStateProperty.all(
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),

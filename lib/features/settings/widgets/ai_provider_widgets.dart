@@ -52,14 +52,14 @@ class StepDot extends StatelessWidget {
                 ? const Icon(
                     FluentIcons.check_mark,
                     size: 10,
-                    color: Colors.white,
+                    color: AppColors.onAccent,
                   )
                 : Text(
                     '${index + 1}',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: (isActive || isCompleted) ? Colors.white : color,
+                      color: (isActive || isCompleted) ? AppColors.onAccent : color,
                     ),
                   ),
           ),

@@ -102,12 +102,12 @@ class AssetThumbnail extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.5),
+              color: AppColors.overlayDark(0.5),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               FluentIcons.play,
-              color: Colors.white,
+              color: AppColors.onAccent,
               size: 20,
             ),
           ),
@@ -119,13 +119,13 @@ class AssetThumbnail extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.7),
+                color: AppColors.overlayDark(0.7),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 _formatDuration(asset.duration!),
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.onAccent,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -181,10 +181,10 @@ class AssetThumbnail extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.5),
+            color: AppColors.overlayDark(0.5),
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Icon(icon, size: 12, color: Colors.white),
+          child: Icon(icon, size: 12, color: AppColors.onAccent),
         ),
       ),
     );
@@ -197,7 +197,7 @@ class AssetThumbnail extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.5),
+          color: AppColors.overlayDark(0.5),
           borderRadius: BorderRadius.circular(4),
         ),
         child: const Icon(
@@ -230,7 +230,7 @@ class AssetThumbnail extends StatelessWidget {
             child: const Icon(
               FluentIcons.check_mark,
               size: 12,
-              color: Colors.white,
+              color: AppColors.onAccent,
             ),
           ),
         ),

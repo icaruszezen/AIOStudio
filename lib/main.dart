@@ -15,6 +15,7 @@ import 'core/providers/database_provider.dart';
 import 'core/services/extension_bridge/extension_providers.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/platform_utils.dart';
+import 'features/settings/providers/settings_provider.dart';
 
 final _log = Logger(printer: PrettyPrinter(methodCount: 4));
 
@@ -39,14 +40,14 @@ Future<void> main() async {
 
     PaintingBinding.instance.imageCache.maximumSizeBytes = 100 << 20;
 
+    final prefs = await SharedPreferences.getInstance();
+
     if (PlatformUtils.isDesktop) {
       await windowManager.ensureInitialized();
 
       await Window.initialize();
       await Window.setEffect(
-        effect: defaultTargetPlatform == TargetPlatform.linux
-            ? WindowEffect.transparent
-            : WindowEffect.acrylic,
+        effect: resolveWindowEffect(readSavedWindowEffect(prefs)),
         color: const Color(0x00000000),
       );
 
@@ -63,8 +64,6 @@ Future<void> main() async {
         await windowManager.focus();
       });
     }
-
-    final prefs = await SharedPreferences.getInstance();
 
     final container = ProviderContainer(
       overrides: [
