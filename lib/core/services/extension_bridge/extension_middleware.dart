@@ -1,6 +1,23 @@
+import 'dart:convert';
+
 import 'package:shelf/shelf.dart';
 
 const _maxBodyBytes = 200 * 1024 * 1024; // 200 MB
+const _jsonHeaders = {'Content-Type': 'application/json'};
+
+bool _isTrustedOrigin(String origin) {
+  return origin.startsWith('chrome-extension://') ||
+      origin.startsWith('moz-extension://') ||
+      origin.startsWith('safari-web-extension://');
+}
+
+Response _errorResponse(int statusCode, String message) {
+  return Response(
+    statusCode,
+    body: jsonEncode({'success': false, 'error': message}),
+    headers: _jsonHeaders,
+  );
+}
 
 /// Validates a bearer token on all requests except health-check.
 Middleware tokenAuthMiddleware(String expectedToken) {
@@ -17,10 +34,7 @@ Middleware tokenAuthMiddleware(String expectedToken) {
           : '';
 
       if (token != expectedToken) {
-        return Response.forbidden(
-          '{"error":"Invalid or missing auth token"}',
-          headers: {'Content-Type': 'application/json'},
-        );
+        return _errorResponse(403, 'Invalid or missing auth token');
       }
       return innerHandler(request);
     };
@@ -28,17 +42,24 @@ Middleware tokenAuthMiddleware(String expectedToken) {
 }
 
 /// Adds CORS headers and handles OPTIONS preflight requests.
+/// Only reflects the request Origin when it comes from a trusted
+/// browser-extension scheme; non-browser clients (curl, Postman) don't
+/// need CORS headers.
 Middleware corsMiddleware() {
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
+  const baseCorsHeaders = {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers':
-        'Content-Type, X-AIO-Client, Origin, Accept, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Origin, Accept, Authorization',
     'Access-Control-Max-Age': '86400',
   };
 
   return (Handler innerHandler) {
     return (Request request) async {
+      final origin = request.headers['origin'] ?? '';
+      final corsHeaders = {
+        ...baseCorsHeaders,
+        if (_isTrustedOrigin(origin)) 'Access-Control-Allow-Origin': origin,
+      };
+
       if (request.method == 'OPTIONS') {
         return Response.ok('', headers: corsHeaders);
       }
@@ -48,25 +69,20 @@ Middleware corsMiddleware() {
   };
 }
 
-/// Validates the request origin – accepts browser-extension origins
-/// (`chrome-extension://`, `moz-extension://`) and the custom header.
+/// Validates the request origin – accepts browser-extension origins and
+/// empty origin (non-browser clients like curl/Postman that will still be
+/// authenticated by [tokenAuthMiddleware] further down the pipeline).
 Middleware originCheckMiddleware() {
   return (Handler innerHandler) {
     return (Request request) async {
       if (request.method == 'OPTIONS') return innerHandler(request);
 
       final origin = request.headers['origin'] ?? '';
-      final aioClient = request.headers['x-aio-client'] ?? '';
 
-      final trusted = origin.startsWith('chrome-extension://') ||
-          origin.startsWith('moz-extension://') ||
-          origin.startsWith('safari-web-extension://') ||
-          origin.isEmpty || // same-origin / curl / Postman
-          aioClient == 'browser-extension';
+      final trusted = _isTrustedOrigin(origin) || origin.isEmpty;
 
       if (!trusted) {
-        return Response.forbidden('{"error":"Untrusted origin"}',
-            headers: {'Content-Type': 'application/json'});
+        return _errorResponse(403, 'Untrusted origin');
       }
       return innerHandler(request);
     };
@@ -81,9 +97,7 @@ Middleware requestSizeLimitMiddleware() {
       if (cl != null) {
         final size = int.tryParse(cl) ?? 0;
         if (size > _maxBodyBytes) {
-          return Response(413,
-              body: '{"error":"Request body too large (max 200 MB)"}',
-              headers: {'Content-Type': 'application/json'});
+          return _errorResponse(413, 'Request body too large (max 200 MB)');
         }
       }
       return innerHandler(request);
@@ -102,12 +116,8 @@ Middleware rateLimitMiddleware({int maxRequests = 10}) {
       timestamps.removeWhere((t) => t.isBefore(windowStart));
 
       if (timestamps.length >= maxRequests) {
-        return Response(429,
-            body: '{"error":"Too many requests"}',
-            headers: {
-              'Content-Type': 'application/json',
-              'Retry-After': '1',
-            });
+        final resp = _errorResponse(429, 'Too many requests');
+        return resp.change(headers: {'Retry-After': '1'});
       }
       timestamps.add(now);
       return innerHandler(request);

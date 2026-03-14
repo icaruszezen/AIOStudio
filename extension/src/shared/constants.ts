@@ -1,11 +1,13 @@
 export const DEFAULT_PORT = 52140;
 export const BASE_URL_KEY = 'aio_studio_base_url';
 export const PORT_KEY = 'aio_studio_port';
+export const AUTH_TOKEN_KEY = 'aio_studio_auth_token';
 
 export const API_PATHS = {
   HEALTH: '/api/health',
   PROJECTS: '/api/projects',
   IMPORT: '/api/assets/import-from-extension',
+  BATCH_IMPORT: '/api/assets/batch-import',
 } as const;
 
 export const HEARTBEAT_INTERVAL_MS = 30_000;

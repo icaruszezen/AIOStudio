@@ -14,6 +14,7 @@ export interface SaveRequest {
   mediaType: 'image' | 'video';
   projectId: string;
   name: string;
+  fileName?: string;
   pageUrl: string;
   pageTitle: string;
 }

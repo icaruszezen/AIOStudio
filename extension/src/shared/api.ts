@@ -1,8 +1,20 @@
 import type { Project, SaveRequest, SaveResponse } from './types';
 import { API_PATHS, DEFAULT_PORT, getBaseUrl } from './constants';
 
+function extractFileName(url: string): string {
+  try {
+    const pathname = new URL(url).pathname;
+    const segments = pathname.split('/');
+    const raw = segments[segments.length - 1] || 'untitled';
+    return decodeURIComponent(raw);
+  } catch {
+    return 'untitled';
+  }
+}
+
 export class AIOStudioAPI {
   private baseUrl: string;
+  private authToken: string | null = null;
 
   constructor(port: number = DEFAULT_PORT) {
     this.baseUrl = getBaseUrl(port);
@@ -10,6 +22,20 @@ export class AIOStudioAPI {
 
   setPort(port: number): void {
     this.baseUrl = getBaseUrl(port);
+  }
+
+  setAuthToken(token: string | null): void {
+    this.authToken = token;
+  }
+
+  private getAuthHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (this.authToken) {
+      headers['Authorization'] = `Bearer ${this.authToken}`;
+    }
+    return headers;
   }
 
   async checkConnection(): Promise<boolean> {
@@ -27,7 +53,7 @@ export class AIOStudioAPI {
   async getProjects(): Promise<Project[]> {
     const res = await fetch(`${this.baseUrl}${API_PATHS.PROJECTS}`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.getAuthHeaders(),
     });
     if (!res.ok) throw new Error(`获取项目列表失败: ${res.status}`);
     return res.json();
@@ -35,19 +61,20 @@ export class AIOStudioAPI {
 
   async saveMedia(request: SaveRequest): Promise<SaveResponse> {
     try {
-      const mediaBlob = await this.downloadMedia(request.mediaUrl);
-      const formData = new FormData();
-      formData.append('file', mediaBlob, request.name);
-      formData.append('mediaType', request.mediaType);
-      formData.append('projectId', request.projectId);
-      formData.append('name', request.name);
-      formData.append('pageUrl', request.pageUrl);
-      formData.append('pageTitle', request.pageTitle);
-      formData.append('sourceUrl', request.mediaUrl);
+      const fileName = request.fileName ?? extractFileName(request.mediaUrl);
 
       const res = await fetch(`${this.baseUrl}${API_PATHS.IMPORT}`, {
         method: 'POST',
-        body: formData,
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({
+          mediaUrl: request.mediaUrl,
+          mediaType: request.mediaType,
+          fileName,
+          projectId: request.projectId,
+          name: request.name,
+          pageUrl: request.pageUrl,
+          pageTitle: request.pageTitle,
+        }),
       });
 
       if (!res.ok) {
@@ -63,11 +90,5 @@ export class AIOStudioAPI {
         error: err instanceof Error ? err.message : '保存失败',
       };
     }
-  }
-
-  private async downloadMedia(url: string): Promise<Blob> {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`下载媒体失败: ${res.status}`);
-    return res.blob();
   }
 }

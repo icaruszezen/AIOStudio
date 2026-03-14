@@ -29,18 +29,70 @@ class AssetFileManager {
         _storage = storage,
         _dio = dio ?? Dio();
 
-  /// Validates that [url] uses http or https scheme.
+  /// Validates that [url] uses http/https and does not target private networks.
   static void _validateDownloadUrl(String url) {
     final uri = Uri.tryParse(url);
     if (uri == null || (uri.scheme != 'http' && uri.scheme != 'https')) {
       throw ArgumentError('Only http/https URLs are allowed, got: $url');
     }
+
+    final host = uri.host.toLowerCase();
+    if (host.isEmpty || host == 'localhost') {
+      throw ArgumentError('Download from localhost is not allowed');
+    }
+
+    final ip = InternetAddress.tryParse(host);
+    if (ip != null) {
+      bool blocked = false;
+      if (ip.type == InternetAddressType.IPv4) {
+        final b = ip.rawAddress;
+        blocked = b[0] == 127 || // 127.0.0.0/8
+            b[0] == 10 || // 10.0.0.0/8
+            (b[0] == 172 && b[1] >= 16 && b[1] <= 31) || // 172.16.0.0/12
+            (b[0] == 192 && b[1] == 168) || // 192.168.0.0/16
+            (b[0] == 169 && b[1] == 254) || // 169.254.0.0/16
+            b.every((v) => v == 0); // 0.0.0.0
+      } else if (ip.type == InternetAddressType.IPv6) {
+        final b = ip.rawAddress;
+        final isLoopback = b.last == 1 &&
+            b.sublist(0, b.length - 1).every((v) => v == 0); // ::1
+        final isLinkLocal = b[0] == 0xfe && (b[1] & 0xc0) == 0x80; // fe80::/10
+        final isUla = (b[0] & 0xfe) == 0xfc; // fc00::/7
+        final isAllZeros = b.every((v) => v == 0); // ::
+        blocked = isLoopback || isLinkLocal || isUla || isAllZeros;
+      }
+      if (blocked) {
+        throw ArgumentError('Download from private/reserved IP is not allowed');
+      }
+    }
   }
 
   /// Wraps [Dio.download] with a receive timeout and a size cap.
+  /// Issues a HEAD request first to reject oversized files early, then
+  /// falls back to progress-based checking during the actual download.
   /// Cleans up the partial file on failure to avoid storage leaks.
   Future<void> _safeDownload(String url, String destPath) async {
     _validateDownloadUrl(url);
+
+    try {
+      final headResp = await _dio.head<void>(
+        url,
+        options: Options(receiveTimeout: const Duration(seconds: 10)),
+      );
+      final cl = int.tryParse(
+        headResp.headers.value('content-length') ?? '',
+      );
+      if (cl != null && cl > _maxDownloadBytes) {
+        throw ArgumentError(
+          'File too large: $cl bytes (max $_maxDownloadBytes)',
+        );
+      }
+    } on ArgumentError {
+      rethrow;
+    } on DioException catch (e) {
+      _log.d('HEAD pre-check skipped for $url: $e');
+    }
+
     try {
       await _dio.download(
         url,
@@ -170,6 +222,13 @@ class AssetFileManager {
     if (commaIdx != -1 && commaIdx < 100) {
       raw = raw.substring(commaIdx + 1);
     }
+    final estimatedBytes = (raw.length * 3) ~/ 4;
+    if (estimatedBytes > _maxDownloadBytes) {
+      throw ArgumentError(
+        'Base64 data too large: ~$estimatedBytes bytes '
+        '(max $_maxDownloadBytes)',
+      );
+    }
 
     final dir = await _storage.getAssetDirectory(projectId);
     final fileName = '${_uuid.v4()}$extension';
@@ -266,6 +325,13 @@ class AssetFileManager {
       final commaIdx = raw.indexOf(',');
       if (commaIdx != -1 && commaIdx < 100) {
         raw = raw.substring(commaIdx + 1);
+      }
+      final estimatedBytes = (raw.length * 3) ~/ 4;
+      if (estimatedBytes > _maxDownloadBytes) {
+        throw ArgumentError(
+          'Base64 data too large: ~$estimatedBytes bytes '
+          '(max $_maxDownloadBytes)',
+        );
       }
       final bytes = base64Decode(raw);
       await File(destPath).writeAsBytes(bytes);

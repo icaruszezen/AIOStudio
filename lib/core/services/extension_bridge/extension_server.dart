@@ -56,10 +56,10 @@ class ExtensionServer {
 
     final pipeline = const shelf.Pipeline()
         .addMiddleware(corsMiddleware())
-        .addMiddleware(originCheckMiddleware())
-        .addMiddleware(tokenAuthMiddleware(authToken))
-        .addMiddleware(requestSizeLimitMiddleware())
         .addMiddleware(rateLimitMiddleware())
+        .addMiddleware(originCheckMiddleware())
+        .addMiddleware(requestSizeLimitMiddleware())
+        .addMiddleware(tokenAuthMiddleware(authToken))
         .addMiddleware(shelf.logRequests())
         .addHandler(_handlers.router.call);
 

@@ -1,5 +1,6 @@
 import { AIOStudioAPI } from '../shared/api';
 import {
+  AUTH_TOKEN_KEY,
   HEARTBEAT_INTERVAL_MS,
   PORT_KEY,
 } from '../shared/constants';
@@ -15,18 +16,24 @@ const api = new AIOStudioAPI();
 let connectionStatus: ConnectionStatus = 'disconnected';
 
 // ---------------------------------------------------------------------------
-// Port initialization
+// Port & auth token initialization
 // ---------------------------------------------------------------------------
 
-async function loadPort(): Promise<void> {
-  const data = await chrome.storage.local.get(PORT_KEY);
+async function loadConfig(): Promise<void> {
+  const data = await chrome.storage.local.get([PORT_KEY, AUTH_TOKEN_KEY]);
   const port = data[PORT_KEY] as number | undefined;
+  const token = data[AUTH_TOKEN_KEY] as string | undefined;
   if (port) api.setPort(port);
+  if (token) api.setAuthToken(token);
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'local' && changes[PORT_KEY]?.newValue != null) {
+  if (area !== 'local') return;
+  if (changes[PORT_KEY]?.newValue != null) {
     api.setPort(changes[PORT_KEY].newValue as number);
+  }
+  if (changes[AUTH_TOKEN_KEY] !== undefined) {
+    api.setAuthToken((changes[AUTH_TOKEN_KEY].newValue as string) ?? null);
   }
 });
 
@@ -147,7 +154,7 @@ async function handleMessage(message: Message): Promise<unknown> {
 // Bootstrap
 // ---------------------------------------------------------------------------
 
-loadPort().then(() => {
+loadConfig().then(() => {
   heartbeat();
   setInterval(heartbeat, HEARTBEAT_INTERVAL_MS);
 });
