@@ -9,7 +9,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../projects/providers/projects_provider.dart';
+import '../../../core/providers/database_provider.dart'
+    show activeProjectsProvider;
 import '../providers/prompts_provider.dart';
 import 'prompt_optimize_dialog.dart';
 

@@ -1,10 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../features/settings/providers/settings_provider.dart';
+import 'app_config_provider.dart';
 import '../database/app_database.dart';
 import '../services/secure_key_service.dart';
 import '../services/storage/asset_file_manager.dart';
 import '../services/storage/local_storage_service.dart';
+
+// ---------------------------------------------------------------------------
+// Shared cross-module data providers
+// ---------------------------------------------------------------------------
+
+final activeProjectsProvider = StreamProvider<List<Project>>((ref) {
+  return ref.watch(projectDaoProvider).watchActiveProjects();
+});
+
+// ---------------------------------------------------------------------------
+// Database & DAO providers
+// ---------------------------------------------------------------------------
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();

@@ -14,7 +14,8 @@ import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/platform_utils.dart';
 import '../../../shared/utils/format_utils.dart';
-import '../../projects/providers/projects_provider.dart';
+import '../../../core/providers/database_provider.dart'
+    show activeProjectsProvider;
 import '../providers/assets_provider.dart';
 import 'asset_tag_editor.dart';
 import 'asset_type_helpers.dart';

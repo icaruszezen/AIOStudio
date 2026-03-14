@@ -5,13 +5,12 @@ import 'package:uuid/uuid.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/database_provider.dart';
 
+export '../../../core/providers/database_provider.dart'
+    show activeProjectsProvider;
+
 // ---------------------------------------------------------------------------
 // Stream providers
 // ---------------------------------------------------------------------------
-
-final activeProjectsProvider = StreamProvider<List<Project>>((ref) {
-  return ref.watch(projectDaoProvider).watchActiveProjects();
-});
 
 final archivedProjectsProvider = StreamProvider<List<Project>>((ref) {
   return ref.watch(projectDaoProvider).watchArchivedProjects();

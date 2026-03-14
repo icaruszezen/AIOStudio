@@ -5,6 +5,8 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../constants/app_constants.dart';
+
 import 'daos/ai_provider_config_dao.dart';
 import 'daos/ai_task_dao.dart';
 import 'daos/asset_dao.dart';
@@ -83,7 +85,7 @@ class AppDatabase extends _$AppDatabase {
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dir = await getApplicationSupportDirectory();
-    final file = File(p.join(dir.path, 'aio_studio.sqlite'));
+    final file = File(p.join(dir.path, AppConstants.databaseFileName));
     return NativeDatabase.createInBackground(file);
   });
 }

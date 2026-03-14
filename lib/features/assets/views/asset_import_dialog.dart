@@ -7,7 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../shared/utils/format_utils.dart';
-import '../../projects/providers/projects_provider.dart';
+import '../../../core/providers/database_provider.dart'
+    show activeProjectsProvider;
 import '../providers/assets_provider.dart';
 
 class AssetImportDialog extends ConsumerStatefulWidget {

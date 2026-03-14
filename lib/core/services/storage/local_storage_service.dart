@@ -10,6 +10,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../constants/app_constants.dart';
+
 class StorageStats {
   final int totalFiles;
   final int totalSizeBytes;
@@ -57,12 +59,12 @@ class LocalStorageService {
       return Directory(cacheDirectory!);
     }
     final dir = await getApplicationSupportDirectory();
-    return Directory(p.join(dir.path, 'aio_data'));
+    return Directory(p.join(dir.path, AppConstants.dataDirectoryName));
   }
 
   static Future<String> get defaultCachePath async {
     final dir = await getApplicationSupportDirectory();
-    return p.join(dir.path, 'aio_data');
+    return p.join(dir.path, AppConstants.dataDirectoryName);
   }
 
   Future<Directory> getAssetDirectory(String projectId) async {
