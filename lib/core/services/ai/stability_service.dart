@@ -54,6 +54,14 @@ class StabilityService extends AiService {
   String get providerType => 'stability';
 
   @override
+  Set<String> get imageGenCapabilities => const {
+        ImageGenCap.cfgScale,
+        ImageGenCap.steps,
+        ImageGenCap.seed,
+        ImageGenCap.negativePrompt,
+      };
+
+  @override
   bool get supportsChatCompletion => false;
 
   @override

@@ -86,9 +86,9 @@ class _HistoryCardState extends ConsumerState<_HistoryCard> {
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (isFailed)
+                  if (isFailed || isCompleted)
                     Tooltip(
-                      message: '重试',
+                      message: '重新生成',
                       child: IconButton(
                         icon: const Icon(FluentIcons.refresh, size: 14),
                         onPressed: () => ref
@@ -96,6 +96,14 @@ class _HistoryCardState extends ConsumerState<_HistoryCard> {
                             .retryFromTask(task),
                       ),
                     ),
+                  Tooltip(
+                    message: '删除',
+                    child: IconButton(
+                      icon: Icon(FluentIcons.delete, size: 14,
+                          color: AppColors.error(theme.brightness)),
+                      onPressed: () => _confirmDelete(context, task),
+                    ),
+                  ),
                   IconButton(
                     icon: Icon(
                       _expanded
@@ -154,6 +162,35 @@ class _HistoryCardState extends ConsumerState<_HistoryCard> {
     );
   }
 
+  Future<void> _confirmDelete(BuildContext context, AiTask task) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => ContentDialog(
+        title: const Text('删除记录'),
+        content: const Text('确定要删除这条生成记录吗？此操作不可撤销。'),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ButtonStyle(
+              backgroundColor: WidgetStatePropertyAll(
+                AppColors.error(FluentTheme.of(ctx).brightness),
+              ),
+            ),
+            child: const Text('删除'),
+          ),
+          Button(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('取消'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      await ref.read(imageGenProvider.notifier).deleteTask(task.id);
+    }
+  }
+
   Widget _statusIcon(String status, FluentThemeData theme) {
     switch (status) {
       case 'completed':
@@ -167,6 +204,9 @@ class _HistoryCardState extends ConsumerState<_HistoryCard> {
           height: 16,
           child: ProgressRing(strokeWidth: 2),
         );
+      case 'cancelled':
+        return Icon(FluentIcons.blocked2, size: 16,
+            color: theme.resources.textFillColorSecondary);
       default:
         return Icon(FluentIcons.clock,
             size: 16, color: theme.resources.textFillColorSecondary);

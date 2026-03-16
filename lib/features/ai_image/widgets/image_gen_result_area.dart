@@ -17,6 +17,8 @@ import '../providers/image_gen_provider.dart';
 import 'image_preview_dialog.dart';
 import 'save_to_asset_dialog.dart';
 
+Directory? _clipboardTempDir;
+
 class ImageGenResultArea extends ConsumerWidget {
   const ImageGenResultArea({super.key});
 
@@ -279,6 +281,7 @@ class ImageGenResultArea extends ConsumerWidget {
             imageIndex: imageIndex,
             projectId: result.projectId,
             name: result.name,
+            tagIds: result.tagIds,
           );
       if (context.mounted) {
         await displayInfoBar(context, builder: (ctx, close) {
@@ -302,8 +305,11 @@ class ImageGenResultArea extends ConsumerWidget {
       clipText = image.url!;
       infoMsg = '已复制图片 URL';
     } else if (image.bytes != null) {
-      final tmpDir = await Directory.systemTemp.createTemp('aio_img_');
-      final tmpFile = File(p.join(tmpDir.path, 'image.png'));
+      try {
+        _clipboardTempDir?.deleteSync(recursive: true);
+      } catch (_) {}
+      _clipboardTempDir = await Directory.systemTemp.createTemp('aio_clipboard_');
+      final tmpFile = File(p.join(_clipboardTempDir!.path, 'image.png'));
       await tmpFile.writeAsBytes(image.bytes!);
       clipText = tmpFile.path;
       infoMsg = '已复制图片文件路径';
@@ -338,7 +344,15 @@ class ImageGenResultArea extends ConsumerWidget {
       if (image.bytes != null) {
         await File(savePath).writeAsBytes(image.bytes!);
       } else if (image.url != null) {
-        await Dio().download(image.url!, savePath);
+        final dio = Dio(BaseOptions(
+          connectTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 120),
+        ));
+        try {
+          await dio.download(image.url!, savePath);
+        } finally {
+          dio.close();
+        }
       }
 
       if (context.mounted) {
@@ -352,9 +366,10 @@ class ImageGenResultArea extends ConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
+        final userMsg = e is DioException ? '下载图片失败，请检查网络连接' : '保存失败，请重试';
         await displayInfoBar(context, builder: (ctx, close) {
           return InfoBar(
-            title: Text('保存失败: $e'),
+            title: Text(userMsg),
             severity: InfoBarSeverity.error,
             onClose: close,
           );

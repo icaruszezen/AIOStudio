@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/database_provider.dart';
+import '../../../core/services/ai/ai_service.dart';
 import '../../prompts/views/prompt_optimize_dialog.dart';
 import '../providers/image_gen_provider.dart';
 
@@ -39,15 +40,28 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
           _negativePromptController.text != next.negativePrompt) {
         _negativePromptController.text = next.negativePrompt;
       }
+      if (prev?.width != next.width &&
+          _widthController.text != next.width.toString()) {
+        _widthController.text = next.width.toString();
+      }
+      if (prev?.height != next.height &&
+          _heightController.text != next.height.toString()) {
+        _heightController.text = next.height.toString();
+      }
     });
 
     final theme = FluentTheme.of(context);
     final genState = ref.watch(imageGenProvider);
     final notifier = ref.read(imageGenProvider.notifier);
     final providers = notifier.getAvailableProviders();
-    final providerType = _getProviderType(genState.selectedProviderId);
-    final isDallE3 = genState.selectedModel == 'dall-e-3';
-    final isStability = providerType == 'stability';
+    final capabilities = notifier.getImageGenCapabilities();
+
+    final supportsStyle = capabilities.contains(ImageGenCap.style);
+    final supportsQuality = capabilities.contains(ImageGenCap.quality);
+    final supportsCfgScale = capabilities.contains(ImageGenCap.cfgScale);
+    final supportsSteps = capabilities.contains(ImageGenCap.steps);
+    final supportsSeed = capabilities.contains(ImageGenCap.seed);
+    final hasAdvancedParams = supportsCfgScale || supportsSteps || supportsSeed;
 
     return Container(
       color: theme.resources.solidBackgroundFillColorBase,
@@ -98,7 +112,7 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
                 Row(
                   children: [
                     Text(
-                      '${_promptController.text.length} 字',
+                      '${genState.prompt.length} 字',
                       style: theme.typography.caption?.copyWith(
                         color: theme.resources.textFillColorSecondary,
                       ),
@@ -163,7 +177,6 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
                           onChanged: (v) {
                             if (v != null) {
                               notifier.setCustomSize(v, genState.height);
-                              _widthController.text = v.toString();
                             }
                           },
                           min: 256,
@@ -182,7 +195,6 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
                           onChanged: (v) {
                             if (v != null) {
                               notifier.setCustomSize(genState.width, v);
-                              _heightController.text = v.toString();
                             }
                           },
                           min: 256,
@@ -210,8 +222,8 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
                   mode: SpinButtonPlacementMode.inline,
                 ),
 
-                // -- DALL-E 3 specific params --
-                if (isDallE3) ...[
+                // -- Style / Quality (capability-driven) --
+                if (supportsStyle) ...[
                   const SizedBox(height: 16),
                   _sectionLabel(theme, '风格'),
                   const SizedBox(height: 6),
@@ -225,6 +237,8 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
                     onChanged: (v) => notifier.setStyle(v),
                     isExpanded: true,
                   ),
+                ],
+                if (supportsQuality) ...[
                   const SizedBox(height: 12),
                   _sectionLabel(theme, '质量'),
                   const SizedBox(height: 6),
@@ -240,48 +254,54 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
                   ),
                 ],
 
-                // -- Stability AI specific params --
-                if (isStability) ...[
+                // -- Advanced params (capability-driven) --
+                if (hasAdvancedParams) ...[
                   const SizedBox(height: 16),
                   Expander(
                     header: const Text('高级参数'),
                     content: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _sectionLabel(theme,
-                            'CFG Scale: ${(genState.cfgScale ?? 7.0).toStringAsFixed(1)}'),
-                        Slider(
-                          value: genState.cfgScale ?? 7.0,
-                          min: 1,
-                          max: 30,
-                          divisions: 58,
-                          onChanged: (v) => notifier.setCfgScale(v),
-                          label:
-                              (genState.cfgScale ?? 7.0).toStringAsFixed(1),
-                        ),
-                        const SizedBox(height: 12),
-                        _sectionLabel(
-                            theme, 'Steps: ${genState.steps ?? 30}'),
-                        Slider(
-                          value: (genState.steps ?? 30).toDouble(),
-                          min: 10,
-                          max: 50,
-                          divisions: 40,
-                          onChanged: (v) => notifier.setSteps(v.round()),
-                          label: '${genState.steps ?? 30}',
-                        ),
-                        const SizedBox(height: 12),
-                        _sectionLabel(theme, 'Seed（留空随机）'),
-                        const SizedBox(height: 4),
-                        NumberBox<int>(
-                          value: genState.seed,
-                          onChanged: (v) => notifier.setSeed(v),
-                          min: 0,
-                          max: 4294967295,
-                          mode: SpinButtonPlacementMode.none,
-                          placeholder: '随机',
-                          clearButton: true,
-                        ),
+                        if (supportsCfgScale) ...[
+                          _sectionLabel(theme,
+                              'CFG Scale: ${(genState.cfgScale ?? 7.0).toStringAsFixed(1)}'),
+                          Slider(
+                            value: genState.cfgScale ?? 7.0,
+                            min: 1,
+                            max: 30,
+                            divisions: 58,
+                            onChanged: (v) => notifier.setCfgScale(v),
+                            label:
+                                (genState.cfgScale ?? 7.0).toStringAsFixed(1),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        if (supportsSteps) ...[
+                          _sectionLabel(
+                              theme, 'Steps: ${genState.steps ?? 30}'),
+                          Slider(
+                            value: (genState.steps ?? 30).toDouble(),
+                            min: 10,
+                            max: 50,
+                            divisions: 40,
+                            onChanged: (v) => notifier.setSteps(v.round()),
+                            label: '${genState.steps ?? 30}',
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        if (supportsSeed) ...[
+                          _sectionLabel(theme, 'Seed（留空随机）'),
+                          const SizedBox(height: 4),
+                          NumberBox<int>(
+                            value: genState.seed,
+                            onChanged: (v) => notifier.setSeed(v),
+                            min: 0,
+                            max: 4294967295,
+                            mode: SpinButtonPlacementMode.none,
+                            placeholder: '随机',
+                            clearButton: true,
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -340,9 +360,9 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
     ImageGenNotifier notifier,
   ) {
     if (genState.isGenerating) {
-      return const Row(
+      return Row(
         children: [
-          Expanded(
+          const Expanded(
             child: Center(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -352,6 +372,13 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
                   Text('生成中...'),
                 ],
               ),
+            ),
+          ),
+          Tooltip(
+            message: '取消生成',
+            child: IconButton(
+              icon: const Icon(FluentIcons.cancel, size: 16),
+              onPressed: notifier.cancelGeneration,
             ),
           ),
         ],
@@ -397,16 +424,6 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
         ],
       ),
     );
-  }
-
-  String? _getProviderType(String? providerId) {
-    if (providerId == null) return null;
-    final notifier = ref.read(imageGenProvider.notifier);
-    final providers = notifier.getAvailableProviders();
-    for (final p in providers) {
-      if (p.providerId == providerId) return p.providerType;
-    }
-    return null;
   }
 
   Future<void> _pickFromPromptLibrary(BuildContext context) async {

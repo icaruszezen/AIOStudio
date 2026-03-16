@@ -71,6 +71,12 @@ class CustomService extends AiService with OpenAiCompatibleMixin {
       .toList();
 
   @override
+  Set<String> get imageGenCapabilities => const {
+        ImageGenCap.style,
+        ImageGenCap.quality,
+      };
+
+  @override
   bool get supportsChatCompletion =>
       _modelInfos.any((m) => m.isEnabled && m.isChatModel);
 

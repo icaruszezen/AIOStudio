@@ -1,6 +1,16 @@
 import 'ai_exceptions.dart';
 import 'ai_models.dart';
 
+/// Well-known capability keys for [AiService.imageGenCapabilities].
+abstract class ImageGenCap {
+  static const style = 'style';
+  static const quality = 'quality';
+  static const cfgScale = 'cfg_scale';
+  static const steps = 'steps';
+  static const seed = 'seed';
+  static const negativePrompt = 'negative_prompt';
+}
+
 /// Base contract for all AI service provider implementations.
 ///
 /// Concrete implementations should override capability flags
@@ -29,6 +39,11 @@ abstract class AiService {
 
   /// Provider type tag for UI branching (e.g. 'openai', 'stability', 'custom').
   String get providerType => 'custom';
+
+  /// Capability tags for image generation parameters. UI uses these to
+  /// decide which parameter controls to show instead of hard-coding
+  /// provider/model names. See [ImageGenCap] for well-known keys.
+  Set<String> get imageGenCapabilities => const {};
 
   bool get supportsChatCompletion;
   bool get supportsImageGeneration;

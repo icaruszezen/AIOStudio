@@ -7,8 +7,13 @@ import '../../../core/providers/database_provider.dart';
 class SaveToAssetResult {
   final String projectId;
   final String name;
+  final List<String> tagIds;
 
-  const SaveToAssetResult({required this.projectId, required this.name});
+  const SaveToAssetResult({
+    required this.projectId,
+    required this.name,
+    this.tagIds = const [],
+  });
 }
 
 class SaveToAssetDialog extends ConsumerStatefulWidget {
@@ -27,24 +32,42 @@ class _SaveToAssetDialogState extends ConsumerState<SaveToAssetDialog> {
   late final TextEditingController _nameController;
   String? _selectedProjectId;
   List<Project> _projects = [];
+  List<Tag> _allTags = [];
+  final Set<String> _selectedTagIds = {};
   bool _loading = true;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.defaultName);
-    _loadProjects();
+    _loadData();
   }
 
-  Future<void> _loadProjects() async {
-    final dao = ref.read(projectDaoProvider);
-    final projects = await dao.getAllProjects();
-    if (mounted) {
-      setState(() {
-        _projects = projects;
-        _selectedProjectId = projects.isNotEmpty ? projects.first.id : null;
-        _loading = false;
-      });
+  Future<void> _loadData() async {
+    try {
+      final projectDao = ref.read(projectDaoProvider);
+      final tagDao = ref.read(tagDaoProvider);
+      final projects = await projectDao.getAllProjects();
+      final tags = await tagDao.getAllTags();
+      if (mounted) {
+        setState(() {
+          _projects = projects;
+          _allTags = tags;
+          _selectedProjectId = projects.isNotEmpty ? projects.first.id : null;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _loading = false);
+        await displayInfoBar(context, builder: (ctx, close) {
+          return InfoBar(
+            title: const Text('加载数据失败，请关闭后重试'),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          );
+        });
+      }
     }
   }
 
@@ -97,6 +120,48 @@ class _SaveToAssetDialogState extends ConsumerState<SaveToAssetDialog> {
                   controller: _nameController,
                   placeholder: '输入资产名称',
                 ),
+                if (_allTags.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text('标签', style: theme.typography.bodyStrong),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: _allTags.map((tag) {
+                      final selected = _selectedTagIds.contains(tag.id);
+                      return ToggleButton(
+                        checked: selected,
+                        onChanged: (_) {
+                          setState(() {
+                            if (selected) {
+                              _selectedTagIds.remove(tag.id);
+                            } else {
+                              _selectedTagIds.add(tag.id);
+                            }
+                          });
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (tag.color != null) ...[
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: Color(tag.color!),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                            ],
+                            Text(tag.name,
+                                style: const TextStyle(fontSize: 12)),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
               ],
             ),
       actions: [
@@ -105,6 +170,7 @@ class _SaveToAssetDialogState extends ConsumerState<SaveToAssetDialog> {
               ? () => Navigator.of(context).pop(SaveToAssetResult(
                     projectId: _selectedProjectId!,
                     name: _nameController.text.trim(),
+                    tagIds: _selectedTagIds.toList(),
                   ))
               : null,
           child: const Text('保存'),

@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/ai_providers.dart';
 import '../../../core/providers/database_provider.dart';
+import '../../../core/services/ai/ai_exceptions.dart';
 import '../../../core/services/ai/ai_models.dart';
 import '../../../core/services/ai/ai_service.dart';
 import '../../../core/services/ai/ai_service_manager.dart';
@@ -145,6 +146,8 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
   static final _log = Logger(printer: PrettyPrinter(methodCount: 0));
   static const _uuid = Uuid();
 
+  final _cancelledTaskIds = <String>{};
+
   AiServiceManager get _serviceManager => ref.read(aiServiceManagerProvider);
 
   @override
@@ -155,6 +158,7 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
 
   Future<void> _initDefaultProvider() async {
     final manager = await ref.read(aiServicesReadyProvider.future);
+    if (state.selectedProviderId != null) return;
     final imageServices = manager.getImageServices();
     if (imageServices.isNotEmpty) {
       final service = imageServices.first;
@@ -193,6 +197,12 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
   List<String> getProviderImageModels(String providerId) {
     final service = _serviceManager.getService(providerId);
     return service?.imageModels ?? [];
+  }
+
+  Set<String> getImageGenCapabilities() {
+    if (state.selectedProviderId == null) return const {};
+    final service = _serviceManager.getService(state.selectedProviderId!);
+    return service?.imageGenCapabilities ?? const {};
   }
 
   // -- Prompt ---------------------------------------------------------------
@@ -239,6 +249,18 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
   void toggleHistory() =>
       state = state.copyWith(showHistory: !state.showHistory);
 
+  // -- Cancel ---------------------------------------------------------------
+
+  void cancelGeneration() {
+    if (!state.isGenerating || state.currentTaskId == null) return;
+    _cancelledTaskIds.add(state.currentTaskId!);
+    state = state.copyWith(
+      isGenerating: false,
+      clearError: true,
+      clearTaskId: true,
+    );
+  }
+
   // -- Generation -----------------------------------------------------------
 
   Future<void> generateImage() async {
@@ -273,7 +295,6 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
         'negative_prompt': state.negativePrompt,
     });
 
-    // 1. Create task record (pending)
     await dao.insertTask(AiTasksCompanion.insert(
       id: taskId,
       type: 'image',
@@ -285,7 +306,6 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
       createdAt: now.millisecondsSinceEpoch,
     ));
 
-    // 2. Update to running
     await dao.updateTaskFields(taskId, AiTasksCompanion(
       status: const Value('running'),
       startedAt: Value(now.millisecondsSinceEpoch),
@@ -309,7 +329,14 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
 
       final response = await service.generateImage(request);
 
-      // 3. Success
+      if (_cancelledTaskIds.remove(taskId)) {
+        await dao.updateTaskFields(taskId, AiTasksCompanion(
+          status: const Value('cancelled'),
+          completedAt: Value(DateTime.now().millisecondsSinceEpoch),
+        ));
+        return;
+      }
+
       final completedAt = DateTime.now().millisecondsSinceEpoch;
       await dao.updateTaskFields(taskId, AiTasksCompanion(
         status: const Value('completed'),
@@ -325,21 +352,40 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
 
       _log.i('Image generation completed: ${response.images.length} images');
     } catch (e) {
-      // 4. Failure
-      final errorMsg = e.toString();
+      if (_cancelledTaskIds.remove(taskId)) {
+        await dao.updateTaskFields(taskId, AiTasksCompanion(
+          status: const Value('cancelled'),
+          completedAt: Value(DateTime.now().millisecondsSinceEpoch),
+        ));
+        return;
+      }
+
+      final userMsg = _userFriendlyError(e);
       await dao.updateTaskFields(taskId, AiTasksCompanion(
         status: const Value('failed'),
-        errorMessage: Value(errorMsg),
+        errorMessage: Value(e.toString()),
         completedAt: Value(DateTime.now().millisecondsSinceEpoch),
       ));
 
       state = state.copyWith(
         isGenerating: false,
-        errorMessage: errorMsg,
+        errorMessage: userMsg,
       );
 
-      _log.e('Image generation failed: $errorMsg');
+      _log.e('Image generation failed: $e');
     }
+  }
+
+  static String _userFriendlyError(Object e) {
+    if (e is AiServiceException) return e.userMessage;
+    final msg = e.toString();
+    if (msg.contains('SocketException') || msg.contains('Connection refused')) {
+      return '网络连接失败，请检查网络设置或代理配置';
+    }
+    if (msg.contains('TimeoutException') || msg.contains('timed out')) {
+      return '请求超时，请稍后重试';
+    }
+    return '图片生成失败，请检查参数后重试';
   }
 
   // -- Save to asset --------------------------------------------------------
@@ -348,6 +394,7 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
     required int imageIndex,
     required String projectId,
     required String name,
+    List<String> tagIds = const [],
   }) async {
     final result = state.currentResult;
     if (result == null || imageIndex >= result.images.length) return null;
@@ -374,11 +421,27 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
         return null;
       }
 
-      // Link asset to task
+      if (tagIds.isNotEmpty) {
+        final tagDao = ref.read(tagDaoProvider);
+        for (final tagId in tagIds) {
+          await tagDao.addTagToAsset(asset.id, tagId);
+        }
+      }
+
       if (state.currentTaskId != null) {
         final dao = ref.read(aiTaskDaoProvider);
+        final task = await dao.getTaskById(state.currentTaskId!);
+        final savedIds = _extractSavedAssetIds(task?.outputText)
+          ..add(asset.id);
+
+        final outputJson = task?.outputText != null
+            ? (jsonDecode(task!.outputText!) as Map<String, dynamic>)
+            : <String, dynamic>{};
+        outputJson['_savedAssetIds'] = savedIds;
+
         await dao.updateTaskFields(state.currentTaskId!, AiTasksCompanion(
           outputAssetId: Value(asset.id),
+          outputText: Value(jsonEncode(outputJson)),
         ));
       }
 
@@ -388,6 +451,23 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
       _log.e('Failed to save image to asset: $e');
       return null;
     }
+  }
+
+  static List<String> _extractSavedAssetIds(String? outputText) {
+    if (outputText == null) return [];
+    try {
+      final json = jsonDecode(outputText) as Map<String, dynamic>;
+      return ((json['_savedAssetIds'] as List<dynamic>?) ?? []).cast<String>();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  // -- Delete task ----------------------------------------------------------
+
+  Future<void> deleteTask(String taskId) async {
+    final dao = ref.read(aiTaskDaoProvider);
+    await dao.deleteTask(taskId);
   }
 
   // -- Retry ----------------------------------------------------------------
@@ -402,7 +482,14 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
       } catch (_) {}
     }
 
+    final providers = getAvailableProviders();
+    final matchedService = providers.where(
+      (s) => s.providerName == task.provider,
+    ).firstOrNull;
+
     state = state.copyWith(
+      selectedProviderId: matchedService?.providerId ?? state.selectedProviderId,
+      selectedModel: task.model ?? state.selectedModel,
       prompt: task.inputPrompt!,
       negativePrompt: params['negative_prompt'] as String? ?? '',
       width: params['width'] as int? ?? 1024,
@@ -429,9 +516,11 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
 // Auxiliary providers
 // ---------------------------------------------------------------------------
 
+const _historyPageSize = 50;
+
 final imageGenHistoryProvider = StreamProvider<List<AiTask>>((ref) {
   final dao = ref.watch(aiTaskDaoProvider);
-  return dao.watchByType('image');
+  return dao.watchByType('image', limit: _historyPageSize);
 });
 
 final imageGenTaskDetailProvider =

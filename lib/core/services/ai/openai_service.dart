@@ -55,6 +55,12 @@ class OpenAiService extends AiService with OpenAiCompatibleMixin {
   String get providerType => 'openai';
 
   @override
+  Set<String> get imageGenCapabilities => const {
+        ImageGenCap.style,
+        ImageGenCap.quality,
+      };
+
+  @override
   bool get supportsChatCompletion => true;
 
   @override

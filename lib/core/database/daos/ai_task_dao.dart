@@ -32,15 +32,18 @@ class AiTaskDao extends DatabaseAccessor<AppDatabase> with _$AiTaskDaoMixin {
   /// so the asset rows can be safely deleted without violating FK constraints.
   Future<void> nullifyOutputAssetIds(List<String> assetIds) =>
       (update(aiTasks)..where((t) => t.outputAssetId.isIn(assetIds)))
-          .write(AiTasksCompanion(outputAssetId: Value(null)));
+          .write(const AiTasksCompanion(outputAssetId: Value(null)));
 
   Future<void> updateTaskFields(String id, AiTasksCompanion entry) =>
       (update(aiTasks)..where((t) => t.id.equals(id))).write(entry);
 
-  Stream<List<AiTask>> watchByType(String type) => (select(aiTasks)
-        ..where((t) => t.type.equals(type))
-        ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
-      .watch();
+  Stream<List<AiTask>> watchByType(String type, {int? limit}) {
+    final query = select(aiTasks)
+      ..where((t) => t.type.equals(type))
+      ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
+    if (limit != null) query.limit(limit);
+    return query.watch();
+  }
 
   Future<List<AiTask>> filterByStatus(String status) =>
       (select(aiTasks)..where((t) => t.status.equals(status))).get();
