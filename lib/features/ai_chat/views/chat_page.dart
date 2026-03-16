@@ -21,6 +21,7 @@ class ChatPage extends ConsumerStatefulWidget {
 class _ChatPageState extends ConsumerState<ChatPage> {
   static const _minListWidth = 240.0;
   static const _maxListFraction = 0.4;
+  static const _scrollBottomThreshold = 150.0;
 
   double _listPanelWidth = 280.0;
   bool _sidebarCollapsed = false;
@@ -33,6 +34,12 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     _scrollController.dispose();
     _titleController.dispose();
     super.dispose();
+  }
+
+  bool _isNearBottom() {
+    if (!_scrollController.hasClients) return true;
+    final pos = _scrollController.position;
+    return pos.maxScrollExtent - pos.pixels < _scrollBottomThreshold;
   }
 
   void _scrollToBottom() {
@@ -52,13 +59,13 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   Widget build(BuildContext context) {
     final chatState = ref.watch(chatProvider);
 
-    // Auto-scroll when messages change or streaming
     ref.listen(chatProvider, (prev, next) {
       final prevMsgCount = prev?.currentConversation?.messages.length ?? 0;
       final nextMsgCount = next.currentConversation?.messages.length ?? 0;
-      final isStreaming = next.isGenerating;
 
-      if (nextMsgCount > prevMsgCount || isStreaming) {
+      if (nextMsgCount > prevMsgCount) {
+        _scrollToBottom();
+      } else if (next.isGenerating && _isNearBottom()) {
         _scrollToBottom();
       }
     });
@@ -101,46 +108,67 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     final theme = FluentTheme.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final drawerWidth = (screenWidth * 0.85).clamp(240.0, 300.0);
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (ctx) => Align(
-        alignment: AlignmentDirectional.centerStart,
-        child: Container(
-          width: drawerWidth,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            color: theme.micaBackgroundColor,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 16,
-              ),
-            ],
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                const Expanded(child: ConversationListPanel()),
-                const Divider(),
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Button(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(FluentIcons.chrome_back, size: 14),
-                        SizedBox(width: 6),
-                        Text('关闭'),
-                      ],
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierDismissible: true,
+        barrierColor: Colors.black.withValues(alpha: 0.3),
+        pageBuilder: (ctx, animation, secondaryAnimation) {
+          return Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: GestureDetector(
+              onHorizontalDragEnd: (details) {
+                if ((details.primaryVelocity ?? 0) < -200) {
+                  Navigator.of(ctx).pop();
+                }
+              },
+              child: Container(
+                width: drawerWidth,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  color: theme.micaBackgroundColor,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 16,
                     ),
+                  ],
+                ),
+                child: SafeArea(
+                  child: Column(
+                    children: [
+                      const Expanded(child: ConversationListPanel()),
+                      const Divider(),
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Button(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(FluentIcons.chrome_back, size: 14),
+                              SizedBox(width: 6),
+                              Text('关闭'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
+        transitionsBuilder: (ctx, animation, secondaryAnimation, child) {
+          return SlideTransition(
+            position:
+                Tween<Offset>(begin: const Offset(-1, 0), end: Offset.zero)
+                    .animate(CurvedAnimation(
+                        parent: animation, curve: Curves.easeOutCubic)),
+            child: child,
+          );
+        },
       ),
     );
   }
@@ -347,16 +375,35 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       );
     }
 
-    return GestureDetector(
-      onDoubleTap: () {
-        _titleController.text = conv.title;
-        setState(() => _editingTitle = true);
-      },
-      child: Text(
-        conv.title,
-        style: theme.typography.bodyStrong,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+    return Tooltip(
+      message: '双击编辑标题',
+      child: GestureDetector(
+        onDoubleTap: () {
+          _titleController.text = conv.title;
+          setState(() => _editingTitle = true);
+        },
+        child: MouseRegion(
+          cursor: SystemMouseCursors.text,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  conv.title,
+                  style: theme.typography.bodyStrong,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                FluentIcons.edit,
+                size: 12,
+                color: theme.resources.textFillColorSecondary,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -426,7 +473,8 @@ class _ChatPageState extends ConsumerState<ChatPage> {
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll(AppColors.error(FluentTheme.of(context).brightness)),
+              backgroundColor: WidgetStatePropertyAll(
+                  AppColors.error(FluentTheme.of(context).brightness)),
             ),
             child: const Text('删除'),
           ),

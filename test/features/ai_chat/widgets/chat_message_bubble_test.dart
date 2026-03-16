@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 ChatMessage _userMessage({String content = 'Hello!'}) {
   return ChatMessage(
     id: 'msg-user',
-    role: 'user',
+    role: ChatRole.user,
     content: content,
     timestamp: DateTime(2025, 1, 15, 14, 30),
   );
@@ -20,7 +20,7 @@ ChatMessage _assistantMessage({
 }) {
   return ChatMessage(
     id: 'msg-ai',
-    role: 'assistant',
+    role: ChatRole.assistant,
     content: content,
     timestamp: DateTime(2025, 1, 15, 14, 31),
     isStreaming: isStreaming,

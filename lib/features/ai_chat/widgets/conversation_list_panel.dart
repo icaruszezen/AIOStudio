@@ -17,24 +17,43 @@ class ConversationListPanel extends ConsumerStatefulWidget {
 
 class _ConversationListPanelState
     extends ConsumerState<ConversationListPanel> {
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
     final chatState = ref.watch(chatProvider);
-    final conversations = chatState.conversations;
+    final allConversations = chatState.conversations;
+
+    final filtered = _searchQuery.isEmpty
+        ? allConversations
+        : allConversations
+            .where((c) =>
+                c.title.toLowerCase().contains(_searchQuery.toLowerCase()))
+            .toList();
 
     return Column(
       children: [
         _buildHeader(theme),
+        if (allConversations.length > 5) _buildSearchBox(theme),
         const Divider(),
         Expanded(
-          child: conversations.isEmpty
-              ? const EmptyState(
+          child: filtered.isEmpty
+              ? EmptyState(
                   icon: FluentIcons.chat,
-                  title: '暂无对话',
-                  description: '点击"新建对话"开始聊天',
+                  title: _searchQuery.isEmpty ? '暂无对话' : '无匹配结果',
+                  description: _searchQuery.isEmpty
+                      ? '点击"新建对话"开始聊天'
+                      : '尝试其他关键词',
                 )
-              : _buildList(conversations, chatState.currentConversationId),
+              : _buildList(filtered, chatState.currentConversationId),
         ),
       ],
     );
@@ -61,6 +80,30 @@ class _ConversationListPanelState
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBox(FluentThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: TextBox(
+        controller: _searchController,
+        placeholder: '搜索对话...',
+        prefix: const Padding(
+          padding: EdgeInsets.only(left: 8),
+          child: Icon(FluentIcons.search, size: 14),
+        ),
+        suffix: _searchQuery.isNotEmpty
+            ? IconButton(
+                icon: const Icon(FluentIcons.clear, size: 10),
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() => _searchQuery = '');
+                },
+              )
+            : null,
+        onChanged: (value) => setState(() => _searchQuery = value),
       ),
     );
   }
@@ -127,7 +170,8 @@ class _ConversationListPanelState
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll(AppColors.error(FluentTheme.of(context).brightness)),
+              backgroundColor: WidgetStatePropertyAll(
+                  AppColors.error(FluentTheme.of(context).brightness)),
             ),
             child: const Text('删除'),
           ),
@@ -178,6 +222,35 @@ class _ConversationTileState extends State<_ConversationTile> {
     super.dispose();
   }
 
+  void _showContextMenu(BuildContext context, {required Offset position}) {
+    _flyoutController.showFlyout(
+      navigatorKey: Navigator.of(context, rootNavigator: true),
+      position: position,
+      barrierDismissible: true,
+      builder: (ctx) {
+        final theme = FluentTheme.of(context);
+        return MenuFlyout(
+          items: [
+            MenuFlyoutItem(
+              leading: const Icon(FluentIcons.rename, size: 14),
+              text: const Text('重命名'),
+              onPressed: widget.onRename,
+            ),
+            const MenuFlyoutSeparator(),
+            MenuFlyoutItem(
+              leading: Icon(FluentIcons.delete,
+                  size: 14, color: AppColors.error(theme.brightness)),
+              text: Text('删除',
+                  style:
+                      TextStyle(color: AppColors.error(theme.brightness))),
+              onPressed: widget.onDelete,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
@@ -189,28 +262,10 @@ class _ConversationTileState extends State<_ConversationTile> {
       controller: _flyoutController,
       child: GestureDetector(
         onTap: widget.onTap,
-        onSecondaryTapUp: (details) {
-          _flyoutController.showFlyout(
-            navigatorKey: Navigator.of(context, rootNavigator: true),
-            position: details.globalPosition,
-            barrierDismissible: true,
-            builder: (ctx) => MenuFlyout(
-              items: [
-                MenuFlyoutItem(
-                  leading: const Icon(FluentIcons.rename, size: 14),
-                  text: const Text('重命名'),
-                  onPressed: widget.onRename,
-                ),
-                const MenuFlyoutSeparator(),
-                MenuFlyoutItem(
-                  leading: Icon(FluentIcons.delete, size: 14, color: AppColors.error(theme.brightness)),
-                  text: Text('删除', style: TextStyle(color: AppColors.error(theme.brightness))),
-                  onPressed: widget.onDelete,
-                ),
-              ],
-            ),
-          );
-        },
+        onLongPressStart: (details) =>
+            _showContextMenu(context, position: details.globalPosition),
+        onSecondaryTapUp: (details) =>
+            _showContextMenu(context, position: details.globalPosition),
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

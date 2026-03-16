@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:fluent_ui/fluent_ui.dart';
@@ -26,41 +25,8 @@ class ChatMessageBubble extends StatefulWidget {
 class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   static const _collapsedThreshold = 500;
   bool _isExpanded = false;
-  bool _showCursor = true;
-  Timer? _cursorTimer;
 
-  @override
-  void initState() {
-    super.initState();
-    if (widget.message.isStreaming) {
-      _startCursorBlink();
-    }
-  }
-
-  @override
-  void didUpdateWidget(covariant ChatMessageBubble oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.message.isStreaming && _cursorTimer == null) {
-      _startCursorBlink();
-    } else if (!widget.message.isStreaming && _cursorTimer != null) {
-      _cursorTimer?.cancel();
-      _cursorTimer = null;
-    }
-  }
-
-  void _startCursorBlink() {
-    _cursorTimer = Timer.periodic(const Duration(milliseconds: 530), (_) {
-      if (mounted) setState(() => _showCursor = !_showCursor);
-    });
-  }
-
-  @override
-  void dispose() {
-    _cursorTimer?.cancel();
-    super.dispose();
-  }
-
-  bool get _isUser => widget.message.role == 'user';
+  bool get _isUser => widget.message.role == ChatRole.user;
   bool get _isLong =>
       widget.message.content.length > _collapsedThreshold &&
       !widget.message.isStreaming;
@@ -173,6 +139,15 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       return _buildTypingIndicator(theme);
     }
 
+    // During streaming: plain text for performance (no Markdown parsing)
+    if (widget.message.isStreaming) {
+      return SelectableText(
+        '$content\u258D',
+        style: theme.typography.body?.copyWith(height: 1.6),
+      );
+    }
+
+    // Completed: full Markdown rendering
     final displayContent = _isLong && !_isExpanded
         ? '${content.substring(0, _collapsedThreshold)}...'
         : content;
@@ -184,7 +159,6 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           child: _MarkdownContent(
             data: displayContent,
             isDarkMode: widget.isDarkMode,
-            showCursor: widget.message.isStreaming && _showCursor,
           ),
         ),
         if (_isLong)
@@ -202,7 +176,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   Widget _buildErrorContent(FluentThemeData theme) {
     return Row(
       children: [
-        Icon(FluentIcons.error_badge, size: 16, color: AppColors.error(theme.brightness)),
+        Icon(FluentIcons.error_badge,
+            size: 16, color: AppColors.error(theme.brightness)),
         const SizedBox(width: 8),
         Flexible(
           child: SelectableText(
@@ -249,7 +224,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
               errorBuilder: (_, __, ___) => Container(
                 width: 120,
                 height: 120,
-                color: FluentTheme.of(context).resources.subtleFillColorSecondary,
+                color: FluentTheme.of(context)
+                    .resources
+                    .subtleFillColorSecondary,
                 child: const Icon(FluentIcons.photo2, size: 32),
               ),
             ),
@@ -319,17 +296,14 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 class _MarkdownContent extends StatelessWidget {
   final String data;
   final bool isDarkMode;
-  final bool showCursor;
 
   const _MarkdownContent({
     required this.data,
     required this.isDarkMode,
-    this.showCursor = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final displayData = showCursor ? '$data▍' : data;
     final theme = FluentTheme.of(context);
 
     final pStyle = theme.typography.body?.copyWith(height: 1.6) ??
@@ -353,8 +327,7 @@ class _MarkdownContent extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: MarkdownGenerator()
-          .buildWidgets(displayData, config: config),
+      children: MarkdownGenerator().buildWidgets(data, config: config),
     );
   }
 }
@@ -444,7 +417,9 @@ class _CopyButtonState extends State<_CopyButton> {
       icon: Icon(
         _copied ? FluentIcons.check_mark : FluentIcons.copy,
         size: 12,
-        color: _copied ? AppColors.success(FluentTheme.of(context).brightness) : widget.iconColor,
+        color: _copied
+            ? AppColors.success(FluentTheme.of(context).brightness)
+            : widget.iconColor,
       ),
       onPressed: _doCopy,
     );
