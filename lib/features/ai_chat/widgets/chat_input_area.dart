@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../prompts/providers/prompts_provider.dart';
 import '../providers/chat_provider.dart';
 
 class ChatInputArea extends ConsumerStatefulWidget {
@@ -24,6 +25,13 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
   void initState() {
     super.initState();
     _focusNode.onKeyEvent = _handleKeyEvent;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final pending =
+          ref.read(pendingPromptContentProvider.notifier).consume();
+      if (pending != null && pending.isNotEmpty) {
+        _controller.text = pending;
+      }
+    });
   }
 
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {

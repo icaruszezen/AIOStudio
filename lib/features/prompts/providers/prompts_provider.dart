@@ -33,12 +33,6 @@ final favoritePromptsProvider = StreamProvider<List<Prompt>>((ref) {
 // Future providers
 // ---------------------------------------------------------------------------
 
-final searchPromptsProvider =
-    FutureProvider.family<List<Prompt>, String>((ref, query) {
-  if (query.isEmpty) return Future.value([]);
-  return ref.watch(promptDaoProvider).searchPrompts(query);
-});
-
 final promptDetailProvider =
     StreamProvider.family<Prompt?, String>((ref, id) {
   return ref.watch(promptDaoProvider).watchPromptById(id);
@@ -84,13 +78,37 @@ class _SearchQueryNotifier extends Notifier<String> {
   void set(String query) => state = query;
 }
 
-/// Combined provider: applies category filter and search to the full list.
+final promptFavoriteFilterProvider =
+    NotifierProvider<_FavoriteFilterNotifier, bool>(
+  _FavoriteFilterNotifier.new,
+);
+
+class _FavoriteFilterNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void set(bool value) => state = value;
+}
+
+/// Combined provider: applies category, favorite, and search filters.
 final filteredPromptsProvider = StreamProvider<List<Prompt>>((ref) {
   final category = ref.watch(promptCategoryFilterProvider);
   final query = ref.watch(promptSearchQueryProvider);
+  final favoritesOnly = ref.watch(promptFavoriteFilterProvider);
+
+  if (favoritesOnly) {
+    if (query.isNotEmpty) {
+      return ref
+          .watch(promptDaoProvider)
+          .watchSearchPrompts(query, favoritesOnly: true);
+    }
+    return ref.watch(promptDaoProvider).watchFavoritePrompts();
+  }
 
   if (query.isNotEmpty) {
-    return ref.watch(promptDaoProvider).watchSearchPrompts(query);
+    return ref
+        .watch(promptDaoProvider)
+        .watchSearchPrompts(query, category: category);
   }
 
   return ref.watch(promptDaoProvider).watchPrompts(category: category);
@@ -185,7 +203,11 @@ class PromptActions {
     return _ref.read(promptDaoProvider).duplicatePrompt(id);
   }
 
-  Future<String> optimizePrompt(String content, String? category) async {
+  Future<String> optimizePrompt(
+    String content,
+    String? category, {
+    String? modelId,
+  }) async {
     final service = _ref.read(defaultChatServiceProvider);
     if (service == null) {
       throw StateError('未配置 AI 聊天服务，请先在设置中添加 AI 服务。');
@@ -196,7 +218,7 @@ class PromptActions {
     if (models.isEmpty) {
       throw StateError('无可用的聊天模型，请先在设置中配置 AI 服务。');
     }
-    final model = models.first.id;
+    final model = modelId ?? models.first.id;
 
     final categoryLabel = _categoryDisplayName(category);
     final systemPrompt =
@@ -249,6 +271,29 @@ const promptCategories = [
   PromptCategoryInfo('text_gen', '文本生成'),
   PromptCategoryInfo('image_gen', '图片生成'),
   PromptCategoryInfo('video_gen', '视频生成'),
+  PromptCategoryInfo('chat', '对话'),
   PromptCategoryInfo('optimization', '优化'),
   PromptCategoryInfo('other', '其他'),
 ];
+
+// ---------------------------------------------------------------------------
+// Pending prompt for cross-module navigation
+// ---------------------------------------------------------------------------
+
+final pendingPromptContentProvider =
+    NotifierProvider<_PendingPromptNotifier, String?>(
+  _PendingPromptNotifier.new,
+);
+
+class _PendingPromptNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void set(String content) => state = content;
+
+  String? consume() {
+    final value = state;
+    state = null;
+    return value;
+  }
+}

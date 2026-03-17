@@ -29,8 +29,11 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
   final _searchController = TextEditingController();
   final _tabScrollController = ScrollController();
 
+  static const _favoriteTabIndex = 1;
+
   static final _categoryTabs = <String?>[
     null,
+    null, // favorites placeholder — handled via _favoriteTabIndex
     ...promptCategories.map((c) => c.value),
   ];
 
@@ -43,21 +46,30 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
 
   void _onTabChanged(int index) {
     setState(() => _selectedTabIndex = index);
-    final category = _categoryTabs[index];
-    ref.read(promptCategoryFilterProvider.notifier).set(category);
+    final isFav = index == _favoriteTabIndex;
+    ref.read(promptFavoriteFilterProvider.notifier).set(isFav);
+    if (!isFav) {
+      final category = _categoryTabs[index];
+      ref.read(promptCategoryFilterProvider.notifier).set(category);
+    }
   }
 
   Future<void> _createPrompt() async {
+    final catIndex = _selectedTabIndex;
+    final category = (catIndex > _favoriteTabIndex)
+        ? _categoryTabs[catIndex]
+        : null;
     final id = await ref.read(promptActionsProvider).createPrompt(
           title: '新提示词',
           content: '',
-          category: _categoryTabs[_selectedTabIndex],
+          category: category,
         );
     ref.read(currentPromptIdProvider.notifier).select(id);
   }
 
   void _onSearchChanged(String query) {
     ref.read(promptSearchQueryProvider.notifier).set(query);
+    setState(() {});
   }
 
   @override
@@ -167,6 +179,7 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
   Widget _buildCategoryTabs(FluentThemeData theme) {
     final tabLabels = [
       '全部',
+      '收藏',
       ...promptCategories.map((c) => c.label),
     ];
     return SizedBox(

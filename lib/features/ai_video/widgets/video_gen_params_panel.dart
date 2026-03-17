@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/database_provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../prompts/providers/prompts_provider.dart';
 import '../../prompts/views/prompt_optimize_dialog.dart';
 import '../providers/video_gen_provider.dart';
 
@@ -19,6 +20,19 @@ class VideoGenParamsPanel extends ConsumerStatefulWidget {
 
 class _VideoGenParamsPanelState extends ConsumerState<VideoGenParamsPanel> {
   final _promptController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final pending =
+          ref.read(pendingPromptContentProvider.notifier).consume();
+      if (pending != null && pending.isNotEmpty) {
+        _promptController.text = pending;
+        ref.read(videoGenProvider.notifier).updatePrompt(pending);
+      }
+    });
+  }
 
   @override
   void dispose() {

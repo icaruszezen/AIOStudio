@@ -58,12 +58,11 @@ class PromptDao extends DatabaseAccessor<AppDatabase> with _$PromptDaoMixin {
       (select(prompts)..where((t) => t.category.equals(category))).get();
 
   Future<void> incrementUseCount(String id) async {
-    final prompt = await getPromptById(id);
-    if (prompt != null) {
-      await (update(prompts)..where((t) => t.id.equals(id))).write(
-        PromptsCompanion(useCount: Value(prompt.useCount + 1)),
-      );
-    }
+    await customUpdate(
+      'UPDATE prompts SET use_count = use_count + 1 WHERE id = ?',
+      variables: [Variable.withString(id)],
+      updates: {prompts},
+    );
   }
 
   Future<List<Prompt>> filterByProject(String projectId) =>
@@ -84,19 +83,30 @@ class PromptDao extends DatabaseAccessor<AppDatabase> with _$PromptDaoMixin {
         ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
       .get();
 
-  Stream<List<Prompt>> watchSearchPrompts(String query) => (select(prompts)
-        ..where(
-            (t) => likeEscaped(t.title, query) | likeEscaped(t.content, query))
-        ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
-      .watch();
+  Stream<List<Prompt>> watchSearchPrompts(
+    String query, {
+    String? category,
+    bool favoritesOnly = false,
+  }) {
+    final q = select(prompts)
+      ..where(
+          (t) => likeEscaped(t.title, query) | likeEscaped(t.content, query))
+      ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]);
+    if (category != null) {
+      q.where((t) => t.category.equals(category));
+    }
+    if (favoritesOnly) {
+      q.where((t) => t.isFavorite.equals(true));
+    }
+    return q.watch();
+  }
 
   Future<void> toggleFavorite(String id) async {
-    final prompt = await getPromptById(id);
-    if (prompt != null) {
-      await (update(prompts)..where((t) => t.id.equals(id))).write(
-        PromptsCompanion(isFavorite: Value(!prompt.isFavorite)),
-      );
-    }
+    await customUpdate(
+      'UPDATE prompts SET is_favorite = NOT is_favorite WHERE id = ?',
+      variables: [Variable.withString(id)],
+      updates: {prompts},
+    );
   }
 
   static const _uuid = Uuid();

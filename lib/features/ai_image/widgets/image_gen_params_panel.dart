@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/database_provider.dart';
 import '../../../core/services/ai/ai_service.dart';
+import '../../prompts/providers/prompts_provider.dart';
 import '../../prompts/views/prompt_optimize_dialog.dart';
 import '../providers/image_gen_provider.dart';
 
@@ -19,6 +20,19 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
   final _negativePromptController = TextEditingController();
   final _widthController = TextEditingController(text: '1024');
   final _heightController = TextEditingController(text: '1024');
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final pending =
+          ref.read(pendingPromptContentProvider.notifier).consume();
+      if (pending != null && pending.isNotEmpty) {
+        _promptController.text = pending;
+        ref.read(imageGenProvider.notifier).updatePrompt(pending);
+      }
+    });
+  }
 
   @override
   void dispose() {

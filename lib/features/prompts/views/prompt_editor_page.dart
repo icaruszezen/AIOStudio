@@ -55,9 +55,25 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
   @override
   void dispose() {
     _autoSaveTimer?.cancel();
+    if (_isDirty) _saveSync();
     _titleController.dispose();
     _contentController.dispose();
     super.dispose();
+  }
+
+  void _saveSync() {
+    _isDirty = false;
+    final variablesJson = _variables.isEmpty
+        ? null
+        : jsonEncode(_variables.map((v) => v.toJson()).toList());
+    ref.read(promptActionsProvider).updatePrompt(
+          id: widget.promptId,
+          title: _titleController.text,
+          content: _contentController.text,
+          category: _category,
+          variables: variablesJson,
+          projectId: _projectId,
+        );
   }
 
   void _loadPrompt(Prompt prompt) {
@@ -192,14 +208,22 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
         _contentController.text = optimized;
         _onContentChanged();
       });
-      _scheduleSave();
     }
   }
 
   Future<void> _navigateAndUse(String route) async {
     await _save();
     await ref.read(promptActionsProvider).incrementUseCount(widget.promptId);
-    if (mounted) context.go(route);
+    if (!mounted) return;
+
+    String content = _contentController.text;
+    for (final v in _variables) {
+      if (v.defaultValue != null && v.defaultValue!.isNotEmpty) {
+        content = content.replaceAll('{{${v.name}}}', v.defaultValue!);
+      }
+    }
+    ref.read(pendingPromptContentProvider.notifier).set(content);
+    context.go(route);
   }
 
   @override
