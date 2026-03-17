@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -28,7 +30,27 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
   _ViewMode _viewMode = _ViewMode.grid;
   _SortField _sortField = _SortField.updatedAt;
   String _searchQuery = '';
+  String _debouncedSearchQuery = '';
   bool _showArchived = false;
+  Timer? _searchDebounce;
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String text) {
+    setState(() => _searchQuery = text);
+    _searchDebounce?.cancel();
+    if (text.isEmpty) {
+      setState(() => _debouncedSearchQuery = '');
+      return;
+    }
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) setState(() => _debouncedSearchQuery = text);
+    });
+  }
 
   List<Project> _sortProjects(List<Project> projects) {
     final sorted = List<Project>.from(projects)
@@ -64,7 +86,24 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
       ),
     );
     if (confirmed == true) {
-      await ref.read(projectActionsProvider).delete(project.id);
+      try {
+        await ref.read(projectActionsProvider).delete(project.id);
+      } catch (e) {
+        if (mounted) {
+          await displayInfoBar(
+            context,
+            builder: (context, close) => InfoBar(
+              title: const Text('删除失败'),
+              content: Text('$e'),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -76,12 +115,53 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
     ProjectCreateDialog.show(context, existing: project);
   }
 
-  void _onArchive(Project project) {
-    ref.read(projectActionsProvider).archive(project.id);
+  Future<void> _createProject() async {
+    final newId = await ProjectCreateDialog.show(context);
+    if (newId != null && mounted) {
+      context.push('/projects/$newId');
+    }
   }
 
-  void _onUnarchive(Project project) {
-    ref.read(projectActionsProvider).unarchive(project.id);
+  Future<void> _onArchive(Project project) async {
+    try {
+      await ref.read(projectActionsProvider).archive(project.id);
+    } catch (e) {
+      if (mounted) {
+        await displayInfoBar(
+          context,
+          builder: (context, close) => InfoBar(
+            title: const Text('归档失败'),
+            content: Text('$e'),
+            severity: InfoBarSeverity.error,
+            action: IconButton(
+              icon: const Icon(FluentIcons.clear),
+              onPressed: close,
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _onUnarchive(Project project) async {
+    try {
+      await ref.read(projectActionsProvider).unarchive(project.id);
+    } catch (e) {
+      if (mounted) {
+        await displayInfoBar(
+          context,
+          builder: (context, close) => InfoBar(
+            title: const Text('取消归档失败'),
+            content: Text('$e'),
+            severity: InfoBarSeverity.error,
+            action: IconButton(
+              icon: const Icon(FluentIcons.clear),
+              onPressed: close,
+            ),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -148,7 +228,7 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
                 ),
                 const SizedBox(width: 4),
                 FilledButton(
-                  onPressed: () => ProjectCreateDialog.show(context),
+                  onPressed: () => _createProject(),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -167,9 +247,7 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
             child: AutoSuggestBox<String>(
               placeholder: '搜索项目...',
               items: const [],
-              onChanged: (text, reason) {
-                setState(() => _searchQuery = text);
-              },
+              onChanged: (text, reason) => _onSearchChanged(text),
               leadingIcon: const Padding(
                 padding: EdgeInsets.only(left: 10),
                 child: Icon(FluentIcons.search, size: 14),
@@ -236,7 +314,7 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
                 ),
                 const SizedBox(width: 8),
                 FilledButton(
-                  onPressed: () => ProjectCreateDialog.show(context),
+                  onPressed: () => _createProject(),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -257,9 +335,7 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
                 child: AutoSuggestBox<String>(
                   placeholder: '搜索项目...',
                   items: const [],
-                  onChanged: (text, reason) {
-                    setState(() => _searchQuery = text);
-                  },
+                  onChanged: (text, reason) => _onSearchChanged(text),
                   leadingIcon: const Padding(
                     padding: EdgeInsets.only(left: 10),
                     child: Icon(FluentIcons.search, size: 14),
@@ -320,14 +396,14 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
             title: '还没有项目',
             description: '创建你的第一个 AGI 项目来开始工作吧',
             action: FilledButton(
-              onPressed: () => ProjectCreateDialog.show(context),
+              onPressed: () => _createProject(),
               child: const Text('新建项目'),
             ),
           );
         }
         final sorted = _sortProjects(projects);
         return _effectiveViewMode == _ViewMode.grid
-            ? _buildGridView(sorted)
+            ? _buildGridView(sorted, archived: false)
             : _buildListView(sorted, archived: false);
       },
     );
@@ -359,7 +435,12 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
   }
 
   Widget _buildSearchResults() {
-    final asyncResults = ref.watch(searchProjectsProvider(_searchQuery));
+    if (_debouncedSearchQuery.isEmpty) {
+      return const LoadingIndicator(message: '搜索中...');
+    }
+    final asyncResults = ref.watch(
+      searchProjectsProvider((_debouncedSearchQuery, _showArchived)),
+    );
 
     return asyncResults.when(
       loading: () => const LoadingIndicator(message: '搜索中...'),
@@ -379,13 +460,13 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
           );
         }
         return _effectiveViewMode == _ViewMode.grid
-            ? _buildGridView(projects)
-            : _buildListView(projects, archived: false);
+            ? _buildGridView(projects, archived: _showArchived)
+            : _buildListView(projects, archived: _showArchived);
       },
     );
   }
 
-  Widget _buildGridView(List<Project> projects) {
+  Widget _buildGridView(List<Project> projects, {required bool archived}) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final crossAxisCount =
@@ -402,9 +483,12 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
             final project = projects[index];
             return _ProjectCardWithContext(
               project: project,
+              archived: archived,
               onTap: () => _onProjectTap(project),
               onEdit: () => _onEdit(project),
-              onArchive: () => _onArchive(project),
+              onArchive: archived
+                  ? () => _onUnarchive(project)
+                  : () => _onArchive(project),
               onDelete: () => _confirmDelete(project),
             );
           },
@@ -420,6 +504,7 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
         final project = projects[index];
         return _ProjectTileWithContext(
           project: project,
+          archived: archived,
           onTap: () => _onProjectTap(project),
           onEdit: () => _onEdit(project),
           onArchive: archived
@@ -436,6 +521,7 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
 class _ProjectCardWithContext extends ConsumerWidget {
   const _ProjectCardWithContext({
     required this.project,
+    this.archived = false,
     this.onTap,
     this.onEdit,
     this.onArchive,
@@ -443,6 +529,7 @@ class _ProjectCardWithContext extends ConsumerWidget {
   });
 
   final Project project;
+  final bool archived;
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
   final VoidCallback? onArchive;
@@ -463,6 +550,7 @@ class _ProjectCardWithContext extends ConsumerWidget {
       child: ProjectCard(
         project: project,
         assetCount: assetCountAsync.value ?? 0,
+        archived: archived,
         onTap: onTap,
         onEdit: onEdit,
         onArchive: onArchive,
@@ -475,6 +563,7 @@ class _ProjectCardWithContext extends ConsumerWidget {
 class _ProjectTileWithContext extends ConsumerWidget {
   const _ProjectTileWithContext({
     required this.project,
+    this.archived = false,
     this.onTap,
     this.onEdit,
     this.onArchive,
@@ -482,6 +571,7 @@ class _ProjectTileWithContext extends ConsumerWidget {
   });
 
   final Project project;
+  final bool archived;
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
   final VoidCallback? onArchive;
@@ -502,6 +592,7 @@ class _ProjectTileWithContext extends ConsumerWidget {
       child: ProjectListTile(
         project: project,
         assetCount: assetCountAsync.value ?? 0,
+        archived: archived,
         onTap: onTap,
         onEdit: onEdit,
         onArchive: onArchive,

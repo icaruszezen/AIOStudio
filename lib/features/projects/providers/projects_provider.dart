@@ -1,10 +1,13 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/database_provider.dart';
 import '../../../core/utils/epoch_utils.dart';
+import '../../assets/providers/assets_provider.dart';
+import '../../prompts/providers/prompts_provider.dart';
 
 export '../../../core/providers/database_provider.dart'
     show activeProjectsProvider;
@@ -31,14 +34,22 @@ final projectAiTasksProvider =
 // Future providers
 // ---------------------------------------------------------------------------
 
-final searchProjectsProvider =
-    FutureProvider.family<List<Project>, String>((ref, query) {
+final searchProjectsProvider = FutureProvider.family<List<Project>,
+    (String query, bool archivedOnly)>((ref, params) {
+  final (query, archivedOnly) = params;
   if (query.isEmpty) return Future.value([]);
-  return ref.watch(projectDaoProvider).searchByName(query);
+  return ref
+      .watch(projectDaoProvider)
+      .searchByName(query, archivedOnly: archivedOnly);
 });
 
 final projectStatsProvider =
     FutureProvider.family<ProjectStats, String>((ref, projectId) async {
+  // Depend on stream providers so stats auto-refresh when data changes.
+  await ref.watch(assetsByProjectProvider(projectId).future);
+  await ref.watch(promptsByProjectProvider(projectId).future);
+  await ref.watch(projectAiTasksProvider(projectId).future);
+
   final assetDao = ref.watch(assetDaoProvider);
   final promptDao = ref.watch(promptDaoProvider);
   final aiTaskDao = ref.watch(aiTaskDaoProvider);
@@ -75,6 +86,7 @@ class ProjectActions {
 
   final Ref _ref;
   static const _uuid = Uuid();
+  static final _log = Logger(printer: PrettyPrinter(methodCount: 0));
 
   Future<String> create({
     required String name,
@@ -105,7 +117,9 @@ class ProjectActions {
   }) async {
     final dao = _ref.read(projectDaoProvider);
     final existing = await dao.getProjectById(id);
-    if (existing == null) return;
+    if (existing == null) {
+      throw StateError('Project $id not found');
+    }
 
     final now = epochNowMs();
     await dao.updateProject(
@@ -137,6 +151,7 @@ class ProjectActions {
     final projectDao = _ref.read(projectDaoProvider);
     final storage = _ref.read(localStorageServiceProvider);
 
+    final project = await projectDao.getProjectById(id);
     final assets = await assetDao.getByProject(id);
     final assetIds = assets.map((a) => a.id).toList();
 
@@ -150,11 +165,24 @@ class ProjectActions {
     });
 
     for (final asset in assets) {
-      if (asset.sourceType != 'local_import') {
-        await storage.deleteAssetFile(asset.filePath);
+      try {
+        if (asset.sourceType != 'local_import') {
+          await storage.deleteAssetFile(asset.filePath);
+        }
+        if (asset.thumbnailPath != null) {
+          await storage.deleteAssetFile(asset.thumbnailPath!);
+        }
+      } catch (e) {
+        _log.w('Failed to delete asset file: ${asset.filePath}', error: e);
       }
-      if (asset.thumbnailPath != null) {
-        await storage.deleteAssetFile(asset.thumbnailPath!);
+    }
+
+    final coverPath = project?.coverImagePath;
+    if (coverPath != null) {
+      try {
+        await storage.deleteAssetFile(coverPath);
+      } catch (e) {
+        _log.w('Failed to delete cover: $coverPath', error: e);
       }
     }
   }

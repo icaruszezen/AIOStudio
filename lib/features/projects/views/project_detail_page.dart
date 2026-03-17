@@ -29,6 +29,81 @@ class ProjectDetailPage extends ConsumerStatefulWidget {
 class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
   int _currentTabIndex = 0;
 
+  Future<void> _toggleArchive(Project project) async {
+    try {
+      final actions = ref.read(projectActionsProvider);
+      if (project.isArchived) {
+        await actions.unarchive(project.id);
+      } else {
+        await actions.archive(project.id);
+      }
+    } catch (e) {
+      if (mounted) {
+        await displayInfoBar(
+          context,
+          builder: (context, close) => InfoBar(
+            title: const Text('操作失败'),
+            content: Text('$e'),
+            severity: InfoBarSeverity.error,
+            action: IconButton(
+              icon: const Icon(FluentIcons.clear),
+              onPressed: close,
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _confirmDelete(Project project) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => ContentDialog(
+        title: const Text('确认删除'),
+        content: Text(
+          '确定要删除项目「${project.name}」吗？\n'
+          '此操作将同时删除该项目下所有关联的资产、提示词和 AI 任务，且不可恢复。',
+        ),
+        actions: [
+          Button(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(
+                AppColors.error(FluentTheme.of(context).brightness),
+              ),
+            ),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      try {
+        await ref.read(projectActionsProvider).delete(project.id);
+        if (mounted) context.go('/projects');
+      } catch (e) {
+        if (mounted) {
+          await displayInfoBar(
+            context,
+            builder: (context, close) => InfoBar(
+              title: const Text('删除失败'),
+              content: Text('$e'),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            ),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final asyncProject = ref.watch(projectDetailProvider(widget.projectId));
@@ -133,6 +208,40 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
                 Icon(FluentIcons.edit, size: 14),
                 SizedBox(width: 6),
                 Text('编辑'),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Button(
+            onPressed: () => _toggleArchive(project),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  project.isArchived
+                      ? FluentIcons.archive_undo
+                      : FluentIcons.archive,
+                  size: 14,
+                ),
+                const SizedBox(width: 6),
+                Text(project.isArchived ? '取消归档' : '归档'),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Button(
+            onPressed: () => _confirmDelete(project),
+            style: ButtonStyle(
+              foregroundColor: WidgetStateProperty.all(
+                AppColors.error(theme.brightness),
+              ),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(FluentIcons.delete, size: 14),
+                SizedBox(width: 6),
+                Text('删除'),
               ],
             ),
           ),

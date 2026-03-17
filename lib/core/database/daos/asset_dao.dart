@@ -74,6 +74,20 @@ class AssetDao extends DatabaseAccessor<AppDatabase> with _$AssetDaoMixin {
     return query.get();
   }
 
+  Future<Map<String, int>> countByProjects(List<String> projectIds) async {
+    if (projectIds.isEmpty) return {};
+    final count = countAll();
+    final query = selectOnly(assets)
+      ..addColumns([assets.projectId, count])
+      ..where(assets.projectId.isIn(projectIds))
+      ..groupBy([assets.projectId]);
+    final rows = await query.get();
+    return {
+      for (final row in rows)
+        row.read(assets.projectId)!: row.read(count) ?? 0,
+    };
+  }
+
   Future<int> countByProject(String projectId) async {
     final count = countAll();
     final query = selectOnly(assets)

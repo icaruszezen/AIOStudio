@@ -32,8 +32,16 @@ class ProjectDao extends DatabaseAccessor<AppDatabase>
         ProjectsCompanion(isArchived: Value(archived)),
       );
 
-  Future<List<Project>> searchByName(String query) =>
-      (select(projects)..where((t) => likeEscaped(t.name, query))).get();
+  Future<List<Project>> searchByName(
+    String query, {
+    bool archivedOnly = false,
+  }) =>
+      (select(projects)
+            ..where((t) =>
+                likeEscaped(t.name, query) &
+                t.isArchived.equals(archivedOnly))
+            ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
+          .get();
 
   Stream<List<Project>> watchActiveProjects() => (select(projects)
         ..where((t) => t.isArchived.equals(false))

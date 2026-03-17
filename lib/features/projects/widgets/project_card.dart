@@ -13,6 +13,7 @@ class ProjectCard extends StatefulWidget {
     super.key,
     required this.project,
     this.assetCount = 0,
+    this.archived = false,
     this.onTap,
     this.onEdit,
     this.onArchive,
@@ -21,6 +22,7 @@ class ProjectCard extends StatefulWidget {
 
   final Project project;
   final int assetCount;
+  final bool archived;
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
   final VoidCallback? onArchive;
@@ -180,8 +182,10 @@ class _ProjectCardState extends State<ProjectCard> {
                       ),
                       const SizedBox(width: 8),
                       _HoverIconButton(
-                        icon: FluentIcons.archive,
-                        tooltip: '归档',
+                        icon: widget.archived
+                            ? FluentIcons.archive_undo
+                            : FluentIcons.archive,
+                        tooltip: widget.archived ? '取消归档' : '归档',
                         onPressed: widget.onArchive,
                       ),
                       const SizedBox(width: 8),
@@ -189,6 +193,7 @@ class _ProjectCardState extends State<ProjectCard> {
                         icon: FluentIcons.delete,
                         tooltip: '删除',
                         onPressed: widget.onDelete,
+                        danger: true,
                       ),
                     ],
                   ),
@@ -235,18 +240,23 @@ class _HoverIconButton extends StatelessWidget {
     required this.icon,
     required this.tooltip,
     this.onPressed,
+    this.danger = false,
   });
 
   final IconData icon;
   final String tooltip;
   final VoidCallback? onPressed;
+  final bool danger;
 
   @override
   Widget build(BuildContext context) {
+    final iconColor = danger
+        ? AppColors.error(FluentTheme.of(context).brightness)
+        : AppColors.onAccent;
     return Tooltip(
       message: tooltip,
       child: IconButton(
-        icon: Icon(icon, size: 16, color: AppColors.onAccent),
+        icon: Icon(icon, size: 16, color: iconColor),
         onPressed: onPressed,
         style: ButtonStyle(
           backgroundColor: WidgetStateProperty.resolveWith((states) {

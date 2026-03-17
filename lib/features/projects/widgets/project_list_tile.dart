@@ -8,6 +8,7 @@ class ProjectListTile extends StatefulWidget {
     super.key,
     required this.project,
     this.assetCount = 0,
+    this.archived = false,
     this.onTap,
     this.onEdit,
     this.onArchive,
@@ -16,6 +17,7 @@ class ProjectListTile extends StatefulWidget {
 
   final Project project;
   final int assetCount;
+  final bool archived;
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
   final VoidCallback? onArchive;
@@ -111,17 +113,31 @@ class _ProjectListTileState extends State<ProjectListTile> {
                 ),
               ),
               if (_isHovered) ...[
-                IconButton(
-                  icon: const Icon(FluentIcons.edit, size: 14),
-                  onPressed: widget.onEdit,
+                Tooltip(
+                  message: '编辑',
+                  child: IconButton(
+                    icon: const Icon(FluentIcons.edit, size: 14),
+                    onPressed: widget.onEdit,
+                  ),
                 ),
-                IconButton(
-                  icon: const Icon(FluentIcons.archive, size: 14),
-                  onPressed: widget.onArchive,
+                Tooltip(
+                  message: widget.archived ? '取消归档' : '归档',
+                  child: IconButton(
+                    icon: Icon(
+                      widget.archived
+                          ? FluentIcons.archive_undo
+                          : FluentIcons.archive,
+                      size: 14,
+                    ),
+                    onPressed: widget.onArchive,
+                  ),
                 ),
-                IconButton(
-                  icon: const Icon(FluentIcons.delete, size: 14),
-                  onPressed: widget.onDelete,
+                Tooltip(
+                  message: '删除',
+                  child: IconButton(
+                    icon: const Icon(FluentIcons.delete, size: 14),
+                    onPressed: widget.onDelete,
+                  ),
                 ),
               ] else
                 const SizedBox(width: 96),

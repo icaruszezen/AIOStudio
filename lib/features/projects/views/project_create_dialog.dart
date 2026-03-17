@@ -14,11 +14,13 @@ class ProjectCreateDialog extends ConsumerStatefulWidget {
 
   final Project? existing;
 
-  static Future<bool?> show(
+  /// Returns the project ID on success (new ID on create, existing ID on
+  /// edit), or `null` if cancelled.
+  static Future<String?> show(
     BuildContext context, {
     Project? existing,
   }) {
-    return showDialog<bool>(
+    return showDialog<String>(
       context: context,
       builder: (_) => ProjectCreateDialog(existing: existing),
     );
@@ -70,6 +72,10 @@ class _ProjectCreateDialogState extends ConsumerState<ProjectCreateDialog> {
       setState(() => _nameError = '项目名称不能为空');
       return;
     }
+    if (name.length > 100) {
+      setState(() => _nameError = '项目名称不能超过 100 个字符');
+      return;
+    }
     setState(() {
       _nameError = null;
       _isSubmitting = true;
@@ -79,6 +85,7 @@ class _ProjectCreateDialogState extends ConsumerState<ProjectCreateDialog> {
       final actions = ref.read(projectActionsProvider);
       final desc = _descController.text.trim();
 
+      String? newId;
       if (_isEditing) {
         await actions.update(
           id: widget.existing!.id,
@@ -88,14 +95,16 @@ class _ProjectCreateDialogState extends ConsumerState<ProjectCreateDialog> {
           clearCover: _coverPath == null && widget.existing!.coverImagePath != null,
         );
       } else {
-        await actions.create(
+        newId = await actions.create(
           name: name,
           description: desc.isEmpty ? null : desc,
           coverImagePath: _coverPath,
         );
       }
 
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) {
+        Navigator.of(context).pop(newId ?? widget.existing?.id);
+      }
     } catch (e) {
       if (mounted) {
         await displayInfoBar(
