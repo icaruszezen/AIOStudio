@@ -55,8 +55,12 @@ final videoTaskPollerProvider =
 class VideoTaskPoller extends Notifier<VideoPollerState> {
   static final _log = Logger(printer: PrettyPrinter(methodCount: 0));
   static const _pollInterval = Duration(seconds: 5);
+  static const _maxPollDuration = Duration(minutes: 30);
+  static const _maxConsecutiveErrors = 10;
 
   Timer? _timer;
+  bool _isPolling = false;
+  final Map<String, int> _errorCounts = {};
 
   @override
   VideoPollerState build() {
@@ -82,16 +86,35 @@ class VideoTaskPoller extends Notifier<VideoPollerState> {
     final updated = Map<String, PollTask>.from(state.activeTasks);
     updated[localTaskId] = task;
     state = state.copyWith(activeTasks: updated);
+    _errorCounts.remove(localTaskId);
 
     _ensureTimerRunning();
     _log.i('[Poller] Started polling for task $localTaskId '
         '(remote: $remoteTaskId)');
   }
 
-  void cancelPolling(String localTaskId) {
+  /// Removes a task from the active poll queue.
+  ///
+  /// When [markCancelled] is true (i.e. user-initiated cancel), the
+  /// database record is also set to 'cancelled' so the task won't be
+  /// restored on the next app launch.
+  Future<void> cancelPolling(
+    String localTaskId, {
+    bool markCancelled = false,
+  }) async {
     final updated = Map<String, PollTask>.from(state.activeTasks)
       ..remove(localTaskId);
+    _errorCounts.remove(localTaskId);
     state = state.copyWith(activeTasks: updated);
+
+    if (markCancelled) {
+      final dao = ref.read(aiTaskDaoProvider);
+      await dao.updateTaskFields(localTaskId, AiTasksCompanion(
+        status: const Value('cancelled'),
+        completedAt: Value(DateTime.now().millisecondsSinceEpoch),
+      ));
+      ref.invalidate(videoGenTaskDetailProvider(localTaskId));
+    }
 
     if (updated.isEmpty) _stopTimer();
     _log.i('[Poller] Cancelled polling for task $localTaskId');
@@ -112,7 +135,6 @@ class VideoTaskPoller extends Notifier<VideoPollerState> {
           final remoteTaskId = params['remote_task_id'] as String?;
           if (remoteTaskId == null) continue;
 
-          // We need to figure out providerId - look up from the manager
           final manager =
               await ref.read(aiServicesReadyProvider.future);
           final services = manager.getVideoServices();
@@ -146,27 +168,68 @@ class VideoTaskPoller extends Notifier<VideoPollerState> {
   }
 
   Future<void> _pollAll() async {
+    if (_isPolling) return;
     if (state.activeTasks.isEmpty) {
       _stopTimer();
       return;
     }
 
-    final tasks = List<PollTask>.from(state.activeTasks.values);
+    _isPolling = true;
+    try {
+      final tasks = List<PollTask>.from(state.activeTasks.values);
+      await Future.wait(
+        tasks.map((task) => _pollSingle(task).catchError((e) {
+          _log.e('[Poller] Error polling task ${task.localTaskId}: $e');
+          _recordError(task.localTaskId);
+        })),
+      );
+    } finally {
+      _isPolling = false;
+    }
+  }
 
-    await Future.wait(
-      tasks.map((task) => _pollSingle(task).catchError((e) {
-        _log.e('[Poller] Error polling task ${task.localTaskId}: $e');
-      })),
-    );
+  void _recordError(String localTaskId) {
+    final count = (_errorCounts[localTaskId] ?? 0) + 1;
+    _errorCounts[localTaskId] = count;
+    if (count >= _maxConsecutiveErrors) {
+      _log.e('[Poller] Task $localTaskId hit $_maxConsecutiveErrors '
+          'consecutive errors, marking as failed');
+      _failTask(
+        localTaskId,
+        '轮询连续失败 $count 次，已自动停止',
+      );
+    }
+  }
+
+  Future<void> _failTask(String localTaskId, String errorMessage) async {
+    final dao = ref.read(aiTaskDaoProvider);
+    await dao.updateTaskFields(localTaskId, AiTasksCompanion(
+      status: const Value('failed'),
+      errorMessage: Value(errorMessage),
+      completedAt: Value(DateTime.now().millisecondsSinceEpoch),
+    ));
+    await cancelPolling(localTaskId);
+    ref.invalidate(videoGenTaskDetailProvider(localTaskId));
   }
 
   Future<void> _pollSingle(PollTask task) async {
+    final elapsed = DateTime.now().difference(task.startedAt);
+    if (elapsed > _maxPollDuration) {
+      _log.w('[Poller] Task ${task.localTaskId} exceeded max poll duration '
+          '(${_maxPollDuration.inMinutes}min)');
+      await _failTask(
+        task.localTaskId,
+        '任务轮询超时（超过 ${_maxPollDuration.inMinutes} 分钟）',
+      );
+      return;
+    }
+
     final manager = ref.read(aiServiceManagerProvider);
     final service = manager.getService(task.providerId);
     if (service == null) {
       _log.w('[Poller] Service not found for ${task.providerId}, '
           'removing task ${task.localTaskId}');
-      cancelPolling(task.localTaskId);
+      await cancelPolling(task.localTaskId, markCancelled: true);
       return;
     }
 
@@ -180,7 +243,7 @@ class VideoTaskPoller extends Notifier<VideoPollerState> {
         completedAt: Value(DateTime.now().millisecondsSinceEpoch),
       ));
 
-      cancelPolling(task.localTaskId);
+      await cancelPolling(task.localTaskId);
 
       ref.read(videoGenProvider.notifier)
           .viewTaskResult(task.localTaskId, response.videoUrl);
@@ -193,23 +256,25 @@ class VideoTaskPoller extends Notifier<VideoPollerState> {
 
       _log.i('[Poller] Task ${task.localTaskId} completed');
     } else if (response.status == 'failed') {
+      final errorMsg = response.errorMessage ?? '视频生成失败';
       await dao.updateTaskFields(task.localTaskId, AiTasksCompanion(
         status: const Value('failed'),
-        errorMessage: const Value('视频生成失败'),
+        errorMessage: Value(errorMsg),
         completedAt: Value(DateTime.now().millisecondsSinceEpoch),
       ));
 
-      cancelPolling(task.localTaskId);
+      await cancelPolling(task.localTaskId);
       ref.invalidate(videoGenTaskDetailProvider(task.localTaskId));
 
       ref.read(notificationServiceProvider).show(
         title: '视频生成失败',
-        message: '视频生成任务失败，请重试',
+        message: errorMsg,
         isError: true,
       );
 
-      _log.e('[Poller] Task ${task.localTaskId} failed');
+      _log.e('[Poller] Task ${task.localTaskId} failed: $errorMsg');
+    } else {
+      _errorCounts.remove(task.localTaskId);
     }
-    // Otherwise still processing – wait for next poll cycle
   }
 }

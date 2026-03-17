@@ -409,11 +409,13 @@ class AiVideoResponse {
   final String? videoUrl;
   final String? taskId;
   final String status;
+  final String? errorMessage;
 
   const AiVideoResponse({
     this.videoUrl,
     this.taskId,
     required this.status,
+    this.errorMessage,
   });
 
   factory AiVideoResponse.fromJson(Map<String, dynamic> json) =>
@@ -421,11 +423,14 @@ class AiVideoResponse {
         videoUrl: json['video_url'] as String?,
         taskId: json['task_id'] as String?,
         status: json['status'] as String? ?? 'unknown',
+        errorMessage: json['error_message'] as String? ??
+            json['error'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
         if (videoUrl != null) 'video_url': videoUrl,
         if (taskId != null) 'task_id': taskId,
         'status': status,
+        if (errorMessage != null) 'error_message': errorMessage,
       };
 }

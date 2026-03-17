@@ -187,7 +187,7 @@ class _TaskCard extends ConsumerWidget {
                     tooltip: '取消',
                     onPressed: () => ref
                         .read(videoTaskPollerProvider.notifier)
-                        .cancelPolling(task.id),
+                        .cancelPolling(task.id, markCancelled: true),
                   ),
               ],
             ),

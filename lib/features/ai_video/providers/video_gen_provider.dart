@@ -143,6 +143,7 @@ class VideoGenNotifier extends Notifier<VideoGenState> {
 
   Future<void> _initDefaultProvider() async {
     final manager = await ref.read(aiServicesReadyProvider.future);
+    if (state.selectedProviderId != null) return;
     final videoServices = manager.getVideoServices();
     if (videoServices.isNotEmpty) {
       final service = videoServices.first;
@@ -237,6 +238,10 @@ class VideoGenNotifier extends Notifier<VideoGenState> {
   Future<void> submitGeneration() async {
     if (state.isSubmitting) return;
     if (state.prompt.trim().isEmpty && state.mode == VideoGenMode.text2video) {
+      return;
+    }
+    if (state.mode == VideoGenMode.image2video &&
+        state.inputImagePath == null) {
       return;
     }
     if (state.selectedProviderId == null || state.selectedModel == null) return;
@@ -407,14 +412,21 @@ class VideoGenNotifier extends Notifier<VideoGenState> {
         .where((s) => s.providerName == task.provider)
         .firstOrNull;
 
+    final w = params['width'] as int? ?? 1280;
+    final h = params['height'] as int? ?? 720;
+    final resIdx = videoResolutions.indexWhere(
+      (r) => r.width == w && r.height == h,
+    );
+
     state = state.copyWith(
       mode: mode,
       prompt: task.inputPrompt!,
       selectedProviderId: matchingService?.providerId,
       selectedModel: task.model,
-      width: params['width'] as int? ?? 1280,
-      height: params['height'] as int? ?? 720,
+      width: w,
+      height: h,
       duration: params['duration'] as int? ?? 5,
+      selectedResolutionIndex: resIdx >= 0 ? resIdx : 0,
       inputImagePath: params['input_image'] as String?,
       clearInputImage: !params.containsKey('input_image'),
       clearError: true,

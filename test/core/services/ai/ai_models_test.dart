@@ -313,11 +313,13 @@ void main() {
         'video_url': 'https://v.mp4',
         'task_id': 'abc-123',
         'status': 'completed',
+        'error_message': 'some error',
       });
 
       expect(resp.videoUrl, 'https://v.mp4');
       expect(resp.taskId, 'abc-123');
       expect(resp.status, 'completed');
+      expect(resp.errorMessage, 'some error');
     });
 
     test('fromJson defaults status to unknown', () {
@@ -326,6 +328,16 @@ void main() {
       expect(resp.videoUrl, isNull);
       expect(resp.taskId, isNull);
       expect(resp.status, 'unknown');
+      expect(resp.errorMessage, isNull);
+    });
+
+    test('fromJson reads errorMessage from "error" key as fallback', () {
+      final resp = AiVideoResponse.fromJson({
+        'status': 'failed',
+        'error': 'generation failed',
+      });
+
+      expect(resp.errorMessage, 'generation failed');
     });
 
     test('toJson omits null fields', () {
@@ -334,6 +346,7 @@ void main() {
       final json = resp.toJson();
       expect(json.containsKey('video_url'), false);
       expect(json.containsKey('task_id'), false);
+      expect(json.containsKey('error_message'), false);
       expect(json['status'], 'processing');
     });
 
@@ -342,12 +355,14 @@ void main() {
         'video_url': 'https://v.mp4',
         'task_id': 't1',
         'status': 'done',
+        'error_message': 'test error',
       });
 
       final restored = AiVideoResponse.fromJson(original.toJson());
       expect(restored.videoUrl, original.videoUrl);
       expect(restored.taskId, original.taskId);
       expect(restored.status, original.status);
+      expect(restored.errorMessage, original.errorMessage);
     });
   });
 }

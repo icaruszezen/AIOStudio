@@ -190,7 +190,7 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
             Button(
               onPressed: () {
                 ref.read(videoTaskPollerProvider.notifier)
-                    .cancelPolling(taskId);
+                    .cancelPolling(taskId, markCancelled: true);
                 ref.read(videoGenProvider.notifier).clearViewingTask();
               },
               child: const Text('取消'),
