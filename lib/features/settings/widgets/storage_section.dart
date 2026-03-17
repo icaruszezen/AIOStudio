@@ -305,7 +305,8 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
     if (action == null || !mounted) return;
 
     if (action == _MigrationAction.migrateAndSwitch) {
-      await _performMigration(oldPath, newPath);
+      final ok = await _performMigration(oldPath, newPath);
+      if (!ok || !mounted) return;
     }
 
     if (!mounted) return;
@@ -336,7 +337,8 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
     if (action == null || !mounted) return;
 
     if (action == _MigrationAction.migrateAndSwitch) {
-      await _performMigration(currentPath, defaultPath);
+      final ok = await _performMigration(currentPath, defaultPath);
+      if (!ok || !mounted) return;
     }
 
     if (!mounted) return;
@@ -385,7 +387,7 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
     );
   }
 
-  Future<void> _performMigration(String oldRoot, String newRoot) async {
+  Future<bool> _performMigration(String oldRoot, String newRoot) async {
     setState(() {
       _isMigrating = true;
       _migrationCurrent = 0;
@@ -409,6 +411,7 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
 
       final assetDao = ref.read(assetDaoProvider);
       await assetDao.updatePathPrefix(oldRoot, newRoot);
+      return true;
     } catch (e) {
       if (mounted) {
         displayInfoBar(context, builder: (_, close) => InfoBar(
@@ -418,6 +421,7 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
           onClose: close,
         ));
       }
+      return false;
     } finally {
       if (mounted) {
         setState(() => _isMigrating = false);

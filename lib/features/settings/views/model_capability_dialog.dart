@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/ai_providers.dart';
@@ -377,6 +378,7 @@ class _ModelCapabilityDialogState extends ConsumerState<ModelCapabilityDialog> {
                   controller: _contextCtrl,
                   placeholder: '如 128000',
                   keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   onChanged: (v) {
                     _contextWindow = int.tryParse(v);
                   },
@@ -391,6 +393,7 @@ class _ModelCapabilityDialogState extends ConsumerState<ModelCapabilityDialog> {
                   controller: _maxOutputCtrl,
                   placeholder: '如 16384',
                   keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   onChanged: (v) {
                     _maxOutputTokens = int.tryParse(v);
                   },

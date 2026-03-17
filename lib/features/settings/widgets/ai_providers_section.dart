@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart' show Value;
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -134,12 +133,18 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
   @override
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
+    final presetId = ProviderPresets.resolvePresetId(
+      config.type,
+      config.baseUrl,
+      config.extraConfig,
+    );
+    final preset = ProviderPresets.getById(presetId);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          _providerIcon(config, theme),
+          _providerIcon(preset, theme),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -149,9 +154,9 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
                 const SizedBox(height: 2),
                 Row(
                   children: [
-                    _TypeBadge(config: config),
+                    _TypeBadge(preset: preset, fallbackType: config.type),
                     const SizedBox(width: 8),
-                    _StatusIndicator(config: config),
+                    _StatusIndicator(config: config, preset: preset),
                   ],
                 ),
               ],
@@ -212,20 +217,7 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
 
   Future<void> _toggleEnabled(bool value) async {
     final dao = ref.read(aiProviderConfigDaoProvider);
-    await dao.updateConfig(
-      AiProviderConfigsCompanion(
-        id: Value(config.id),
-        name: Value(config.name),
-        type: Value(config.type),
-        apiKey: const Value(null),
-        baseUrl: Value(config.baseUrl),
-        defaultModel: Value(config.defaultModel),
-        isEnabled: Value(value),
-        extraConfig: Value(config.extraConfig),
-        createdAt: Value(config.createdAt),
-        updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
-      ),
-    );
+    await dao.updateEnabled(config.id, value);
     reloadAiServices(ref);
   }
 
@@ -283,12 +275,30 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
   }
 
   Future<void> _deleteProvider() async {
+    final taskCount =
+        await ref.read(aiTaskDaoProvider).countByProvider(config.id);
+
+    if (!mounted) return;
     final errorColor = AppColors.error(FluentTheme.of(context).brightness);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => ContentDialog(
         title: const Text('确认删除'),
-        content: Text('确定要删除服务商 "${config.name}" 吗？此操作不可撤销。'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('确定要删除服务商 "${config.name}" 吗？此操作不可撤销。'),
+            if (taskCount > 0) ...[
+              const SizedBox(height: 8),
+              InfoBar(
+                title: Text('该服务商关联了 $taskCount 条 AI 任务记录'),
+                content: const Text('删除后相关任务记录仍会保留，但无法再使用此服务商。'),
+                severity: InfoBarSeverity.warning,
+              ),
+            ],
+          ],
+        ),
         actions: [
           Button(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -304,7 +314,7 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
         ],
       ),
     );
-    if (confirmed == true) {
+    if (confirmed == true && mounted) {
       final dao = ref.read(aiProviderConfigDaoProvider);
       final secureKeys = ref.read(secureKeyServiceProvider);
       await secureKeys.deleteApiKey(config.id);
@@ -313,13 +323,7 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
     }
   }
 
-  static Widget _providerIcon(AiProviderConfig config, FluentThemeData theme) {
-    final presetId = ProviderPresets.resolvePresetId(
-      config.type,
-      config.baseUrl,
-      config.extraConfig,
-    );
-    final preset = ProviderPresets.getById(presetId);
+  static Widget _providerIcon(ProviderPreset? preset, FluentThemeData theme) {
     final icon = preset?.icon ?? FluentIcons.cloud;
     final color =
         preset?.color(theme.brightness) ?? AppColors.pending(theme.brightness);
@@ -337,19 +341,13 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
 }
 
 class _TypeBadge extends StatelessWidget {
-  const _TypeBadge({required this.config});
-  final AiProviderConfig config;
+  const _TypeBadge({required this.preset, required this.fallbackType});
+  final ProviderPreset? preset;
+  final String fallbackType;
 
   @override
   Widget build(BuildContext context) {
-    final presetId = ProviderPresets.resolvePresetId(
-      config.type,
-      config.baseUrl,
-      config.extraConfig,
-    );
-    final preset = ProviderPresets.getById(presetId);
-    final label = preset?.name ?? config.type;
-
+    final label = preset?.name ?? fallbackType;
     final theme = FluentTheme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
@@ -368,19 +366,14 @@ final _hasSecureApiKeyProvider =
 });
 
 class _StatusIndicator extends ConsumerWidget {
-  const _StatusIndicator({required this.config});
+  const _StatusIndicator({required this.config, required this.preset});
   final AiProviderConfig config;
+  final ProviderPreset? preset;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = FluentTheme.of(context);
     final b = theme.brightness;
-    final presetId = ProviderPresets.resolvePresetId(
-      config.type,
-      config.baseUrl,
-      config.extraConfig,
-    );
-    final preset = ProviderPresets.getById(presetId);
     final secureKeyAsync = ref.watch(_hasSecureApiKeyProvider(config.id));
     final hasApiKey = secureKeyAsync.value ?? false;
     final hasBaseUrl = config.baseUrl != null && config.baseUrl!.isNotEmpty;

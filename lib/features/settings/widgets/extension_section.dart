@@ -95,6 +95,19 @@ class ExtensionSection extends ConsumerWidget {
                   ),
                 ),
               ),
+              if (isRunning && port != actualPort) ...[
+                const SizedBox(height: 8),
+                InfoBar(
+                  title: const Text('端口已更改，需重启服务生效'),
+                  severity: InfoBarSeverity.warning,
+                  action: Button(
+                    onPressed: () => ref
+                        .read(extensionServerProvider.notifier)
+                        .restart(),
+                    child: const Text('立即重启'),
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
 
               // Connection status

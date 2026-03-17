@@ -37,6 +37,14 @@ class AiProviderConfigDao extends DatabaseAccessor<AppDatabase>
   Future<bool> updateConfig(AiProviderConfigsCompanion entry) =>
       update(aiProviderConfigs).replace(entry);
 
+  Future<void> updateEnabled(String id, bool enabled) =>
+      (update(aiProviderConfigs)..where((t) => t.id.equals(id))).write(
+        AiProviderConfigsCompanion(
+          isEnabled: Value(enabled),
+          updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
+        ),
+      );
+
   Future<int> deleteConfig(String id) =>
       (delete(aiProviderConfigs)..where((t) => t.id.equals(id))).go();
 }

@@ -83,7 +83,15 @@ class _NetworkSectionState extends ConsumerState<NetworkSection> {
                     setState(() => _isCustom = true);
                     final text = _customController.text.trim();
                     if (text.isNotEmpty) {
-                      ref.read(githubMirrorProvider.notifier).setMirror(text);
+                      final normalized =
+                          text.endsWith('/') ? text : '$text/';
+                      ref
+                          .read(githubMirrorProvider.notifier)
+                          .setMirror(normalized);
+                    } else {
+                      ref
+                          .read(githubMirrorProvider.notifier)
+                          .setMirror('');
                     }
                   } else {
                     setState(() => _isCustom = false);
@@ -108,6 +116,10 @@ class _NetworkSectionState extends ConsumerState<NetworkSection> {
                         ref
                             .read(githubMirrorProvider.notifier)
                             .setMirror(normalized);
+                      } else {
+                        ref
+                            .read(githubMirrorProvider.notifier)
+                            .setMirror('');
                       }
                     },
                   ),

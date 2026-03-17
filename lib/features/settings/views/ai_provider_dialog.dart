@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:drift/drift.dart' show Value;
@@ -45,6 +46,7 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
   String? _defaultModel;
 
   bool _isTesting = false;
+  bool _testCancelled = false;
   String? _testResult;
   bool? _testSuccess;
 
@@ -197,6 +199,7 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
 
   Future<void> _autoVerify() async {
     await _testConnection();
+    if (!mounted) return;
     if (_testSuccess == true) {
       final preset = _selectedPreset;
       if (preset != null && preset.supportsModelDiscovery) {
@@ -259,6 +262,7 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
 
     setState(() {
       _isTesting = true;
+      _testCancelled = false;
       _testResult = null;
       _testSuccess = null;
     });
@@ -272,6 +276,7 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
         _nameCtrl.text.trim(),
       );
       if (service == null) {
+        if (_testCancelled) return;
         setState(() {
           _testResult = '无法创建服务实例，请检查配置';
           _testSuccess = false;
@@ -279,24 +284,31 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
         return;
       }
 
-      await service.testConnection();
+      await service.testConnection().timeout(const Duration(seconds: 15));
       service.dispose();
 
-      if (mounted) {
+      if (mounted && !_testCancelled) {
         setState(() {
           _testResult = '连接成功';
           _testSuccess = true;
         });
       }
+    } on TimeoutException {
+      if (mounted && !_testCancelled) {
+        setState(() {
+          _testResult = '连接超时（15 秒），请检查网络或 API 地址';
+          _testSuccess = false;
+        });
+      }
     } catch (e) {
-      if (mounted) {
+      if (mounted && !_testCancelled) {
         setState(() {
           _testResult = '连接失败: $e';
           _testSuccess = false;
         });
       }
     } finally {
-      if (mounted) setState(() => _isTesting = false);
+      if (mounted && !_testCancelled) setState(() => _isTesting = false);
     }
   }
 
@@ -356,7 +368,20 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
       _discoveredModels[index] = _discoveredModels[index].copyWith(
         isEnabled: enabled,
       );
+      _syncDefaultModelToEnabled();
     });
+  }
+
+  void _syncDefaultModelToEnabled() {
+    final enabledModels = _discoveredModels.where((m) => m.isEnabled).toList();
+    if (enabledModels.isEmpty) {
+      _setDefaultModel(null);
+      return;
+    }
+    if (_defaultModel != null &&
+        !enabledModels.any((m) => m.id == _defaultModel)) {
+      _setDefaultModel(enabledModels.first.id);
+    }
   }
 
   Future<void> _editModelCapability(int index) async {
@@ -365,7 +390,10 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
       model: _discoveredModels[index],
     );
     if (result != null && mounted) {
-      setState(() => _discoveredModels[index] = result);
+      setState(() {
+        _discoveredModels[index] = result;
+        _syncDefaultModelToEnabled();
+      });
     }
   }
 
@@ -444,6 +472,17 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
       _showWarning('名称不能为空');
+      return;
+    }
+
+    final dao = ref.read(aiProviderConfigDaoProvider);
+    final existing = await dao.getAll();
+    final editingId = widget.existing?.id;
+    final hasDuplicate = existing.any(
+      (c) => c.name == name && c.id != editingId,
+    );
+    if (hasDuplicate) {
+      _showWarning('已存在同名服务商 "$name"，请使用不同名称');
       return;
     }
 
@@ -954,6 +993,16 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
           ),
           const SizedBox(width: 12),
           Text('正在测试连接...', style: theme.typography.body),
+          const Spacer(),
+          HyperlinkButton(
+            onPressed: () => setState(() {
+              _testCancelled = true;
+              _isTesting = false;
+              _testResult = '已取消';
+              _testSuccess = false;
+            }),
+            child: const Text('取消'),
+          ),
         ],
       );
     }
@@ -1101,11 +1150,6 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
   Widget _buildDefaultModelFromDiscovered() {
     final enabledModels = _discoveredModels.where((m) => m.isEnabled).toList();
     if (enabledModels.isEmpty) return const SizedBox.shrink();
-
-    if (_defaultModel != null &&
-        !enabledModels.any((m) => m.id == _defaultModel)) {
-      _setDefaultModel(enabledModels.first.id);
-    }
 
     return InfoLabel(
       label: '默认模型',
