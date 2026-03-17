@@ -23,8 +23,8 @@ final favoriteAssetsProvider = StreamProvider<List<Asset>>((ref) {
 });
 
 final assetDetailProvider =
-    FutureProvider.family<Asset?, String>((ref, id) {
-  return ref.watch(assetDaoProvider).getAssetById(id);
+    StreamProvider.family<Asset?, String>((ref, id) {
+  return ref.watch(assetDaoProvider).watchAssetById(id);
 });
 
 // ---------------------------------------------------------------------------
@@ -103,20 +103,27 @@ class AssetActions {
   Future<void> deleteAssets(List<String> ids) async {
     final dao = _ref.read(assetDaoProvider);
     final storage = _ref.read(localStorageServiceProvider);
+    final db = _ref.read(appDatabaseProvider);
 
     final assets = await Future.wait(ids.map(dao.getAssetById));
+
+    // Delete DB records first (transactional, can be rolled back).
+    await db.transaction(() => dao.batchDelete(ids));
+
+    // Then clean up physical files (best-effort, non-fatal on failure).
     for (final asset in assets) {
       if (asset == null) continue;
-      if (asset.sourceType != 'local_import') {
-        await storage.deleteAssetFile(asset.filePath);
-      }
-      if (asset.thumbnailPath != null) {
-        await storage.deleteAssetFile(asset.thumbnailPath!);
+      try {
+        if (asset.sourceType != 'local_import') {
+          await storage.deleteAssetFile(asset.filePath);
+        }
+        if (asset.thumbnailPath != null) {
+          await storage.deleteAssetFile(asset.thumbnailPath!);
+        }
+      } catch (_) {
+        // File cleanup failure is non-fatal; the DB record is already gone.
       }
     }
-
-    final db = _ref.read(appDatabaseProvider);
-    await db.transaction(() => dao.batchDelete(ids));
   }
 
   Future<void> toggleFavorite(String id) async {

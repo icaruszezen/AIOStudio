@@ -105,9 +105,13 @@ class _ImageViewerState extends State<ImageViewer> {
               child: Center(
                 child: RotatedBox(
                   quarterTurns: _rotationQuarters,
-                  child: Image.file(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) => Image.file(
                     File(widget.filePath),
                     fit: _isFitMode ? BoxFit.contain : null,
+                    cacheWidth: _isFitMode
+                        ? constraints.maxWidth.round().clamp(1, 2048)
+                        : null,
                     frameBuilder: (context, child, frame, loaded) {
                       if (!loaded && frame == null) {
                         return const Center(child: ProgressRing());
@@ -134,7 +138,7 @@ class _ImageViewerState extends State<ImageViewer> {
                         ],
                       ),
                     ),
-                  ),
+                  )),
                 ),
               ),
             ),
@@ -159,9 +163,12 @@ class _ImageViewerState extends State<ImageViewer> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          IconButton(
-            icon: const Icon(FluentIcons.remove, size: 12),
-            onPressed: _zoomOut,
+          Tooltip(
+            message: '缩小',
+            child: IconButton(
+              icon: const Icon(FluentIcons.remove, size: 12),
+              onPressed: _zoomOut,
+            ),
           ),
           const SizedBox(width: 4),
           SizedBox(
@@ -173,16 +180,22 @@ class _ImageViewerState extends State<ImageViewer> {
             ),
           ),
           const SizedBox(width: 4),
-          IconButton(
-            icon: const Icon(FluentIcons.add, size: 12),
-            onPressed: _zoomIn,
+          Tooltip(
+            message: '放大',
+            child: IconButton(
+              icon: const Icon(FluentIcons.add, size: 12),
+              onPressed: _zoomIn,
+            ),
           ),
           const SizedBox(width: 12),
           _divider(theme),
           const SizedBox(width: 12),
-          IconButton(
-            icon: const Icon(FluentIcons.rotate, size: 14),
-            onPressed: _rotate,
+          Tooltip(
+            message: '旋转',
+            child: IconButton(
+              icon: const Icon(FluentIcons.rotate, size: 14),
+              onPressed: _rotate,
+            ),
           ),
           const SizedBox(width: 12),
           _divider(theme),

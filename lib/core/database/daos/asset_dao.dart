@@ -151,6 +151,92 @@ class AssetDao extends DatabaseAccessor<AppDatabase> with _$AssetDaoMixin {
     return result.read(count) ?? 0;
   }
 
+  /// Watches a single asset by its ID.
+  Stream<Asset?> watchAssetById(String id) =>
+      (select(assets)..where((t) => t.id.equals(id))).watchSingleOrNull();
+
+  /// Watches assets with server-side filtering, sorting and optional tag join.
+  Stream<List<Asset>> watchFiltered({
+    String? typeFilter,
+    String? projectFilter,
+    Set<String> tagIds = const {},
+    String searchQuery = '',
+    String sortColumn = 'createdAt',
+    bool sortAscending = false,
+  }) {
+    if (tagIds.isNotEmpty) {
+      return _watchFilteredWithTags(
+        typeFilter: typeFilter,
+        projectFilter: projectFilter,
+        tagIds: tagIds,
+        searchQuery: searchQuery,
+        sortColumn: sortColumn,
+        sortAscending: sortAscending,
+      );
+    }
+
+    final query = select(assets)
+      ..where((t) {
+        Expression<bool> expr = const Constant(true);
+        if (typeFilter != null) expr = expr & t.type.equals(typeFilter);
+        if (projectFilter != null) {
+          expr = expr & t.projectId.equals(projectFilter);
+        }
+        if (searchQuery.isNotEmpty) {
+          expr = expr & likeEscaped(t.name, searchQuery);
+        }
+        return expr;
+      })
+      ..orderBy([(t) => _orderTerm(t, sortColumn, sortAscending)]);
+
+    return query.watch();
+  }
+
+  Stream<List<Asset>> _watchFilteredWithTags({
+    String? typeFilter,
+    String? projectFilter,
+    required Set<String> tagIds,
+    String searchQuery = '',
+    String sortColumn = 'createdAt',
+    bool sortAscending = false,
+  }) {
+    final query = select(assets).join([
+      innerJoin(assetTags, assetTags.assetId.equalsExp(assets.id)),
+    ]);
+
+    Expression<bool> where = assetTags.tagId.isIn(tagIds.toList());
+    if (typeFilter != null) where = where & assets.type.equals(typeFilter);
+    if (projectFilter != null) {
+      where = where & assets.projectId.equals(projectFilter);
+    }
+    if (searchQuery.isNotEmpty) {
+      where = where & likeEscaped(assets.name, searchQuery);
+    }
+
+    query
+      ..where(where)
+      ..groupBy([assets.id])
+      ..orderBy([_orderTerm(assets, sortColumn, sortAscending)]);
+
+    return query.watch().map(
+          (rows) => rows.map((r) => r.readTable(assets)).toList(),
+        );
+  }
+
+  static OrderingTerm _orderTerm(
+    $AssetsTable t,
+    String sortColumn,
+    bool ascending,
+  ) {
+    final mode = ascending ? OrderingMode.asc : OrderingMode.desc;
+    return switch (sortColumn) {
+      'name' => OrderingTerm(expression: t.name, mode: mode),
+      'fileSize' => OrderingTerm(expression: t.fileSize, mode: mode),
+      'type' => OrderingTerm(expression: t.type, mode: mode),
+      _ => OrderingTerm(expression: t.createdAt, mode: mode),
+    };
+  }
+
   /// Sets all `thumbnailPath` values to NULL (used after clearing the
   /// thumbnail cache directory to avoid dangling references).
   Future<void> clearAllThumbnailPaths() async {

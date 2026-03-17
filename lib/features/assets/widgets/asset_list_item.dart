@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:intl/intl.dart';
 
@@ -7,6 +5,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/format_utils.dart';
 import 'asset_context_menu.dart';
+import 'asset_thumbnail.dart';
 import 'asset_type_helpers.dart';
 
 class AssetListItem extends StatefulWidget {
@@ -89,7 +88,14 @@ class _AssetListItemState extends State<AssetListItem> {
                   )
                 else
                   const SizedBox(width: 28),
-                _buildThumbnail(theme),
+                SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: AssetThumbnail(
+                    asset: widget.asset,
+                    showFavorite: false,
+                  ),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   flex: 3,
@@ -165,50 +171,6 @@ class _AssetListItemState extends State<AssetListItem> {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildThumbnail(FluentThemeData theme) {
-    const size = 36.0;
-
-    final bool hasThumbnail = widget.asset.type == 'image' ||
-        (widget.asset.type == 'video' && widget.asset.thumbnailPath != null);
-
-    if (hasThumbnail) {
-      final path = widget.asset.thumbnailPath ?? widget.asset.filePath;
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: Container(
-          width: size,
-          height: size,
-          color: theme.resources.subtleFillColorSecondary,
-          child: Image.file(
-            File(path),
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => _iconPlaceholder(theme, size),
-          ),
-        ),
-      );
-    }
-
-    return _iconPlaceholder(theme, size);
-  }
-
-  Widget _iconPlaceholder(FluentThemeData theme, double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: theme.resources.subtleFillColorSecondary,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Center(
-        child: Icon(
-          assetTypeIcon(widget.asset.type),
-          size: 16,
-          color: theme.resources.textFillColorSecondary,
         ),
       ),
     );

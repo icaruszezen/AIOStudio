@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:fluent_ui/fluent_ui.dart';
@@ -43,10 +44,18 @@ class _TextPreviewWidgetState extends State<TextPreviewWidget> {
     });
     try {
       final file = File(widget.filePath);
-      final lines = await file.readAsLines();
-      _totalLines = lines.length;
+      final lines = <String>[];
+      final stream = file.openRead().transform(utf8.decoder).transform(
+            const LineSplitter(),
+          );
+      await for (final line in stream) {
+        lines.add(line);
+        if (lines.length >= _maxLines + 1) break;
+      }
       _truncated = lines.length > _maxLines;
-      _content = (_truncated ? lines.take(_maxLines) : lines).join('\n');
+      _totalLines = _truncated ? -1 : lines.length;
+      _content = (lines.length > _maxLines ? lines.take(_maxLines) : lines)
+          .join('\n');
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -97,7 +106,7 @@ class _TextPreviewWidgetState extends State<TextPreviewWidget> {
                   size: 14, color: theme.resources.textFillColorSecondary),
               const SizedBox(width: 8),
               Text(
-                '$_totalLines 行',
+                _truncated ? '超过 $_maxLines 行' : '$_totalLines 行',
                 style: theme.typography.caption
                     ?.copyWith(color: theme.resources.textFillColorSecondary),
               ),

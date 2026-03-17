@@ -30,7 +30,7 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
   static const _maxPanelFraction = 0.5;
 
   bool _showInfoPanel = true;
-  double _infoPanelWidth = 320.0;
+  final _infoPanelWidth = ValueNotifier<double>(320.0);
   final _focusNode = FocusNode();
 
   @override
@@ -58,6 +58,7 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
   @override
   void dispose() {
     _focusNode.dispose();
+    _infoPanelWidth.dispose();
     super.dispose();
   }
 
@@ -184,19 +185,25 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
               ),
             ),
           const SizedBox(width: 8),
-          IconButton(
-            icon: Icon(FluentIcons.chevron_left, size: 12,
-                color: prevId == null
-                    ? theme.resources.textFillColorDisabled
-                    : null),
-            onPressed: prevId != null ? () => _navigateTo(prevId) : null,
+          Tooltip(
+            message: '上一个',
+            child: IconButton(
+              icon: Icon(FluentIcons.chevron_left, size: 12,
+                  color: prevId == null
+                      ? theme.resources.textFillColorDisabled
+                      : null),
+              onPressed: prevId != null ? () => _navigateTo(prevId) : null,
+            ),
           ),
-          IconButton(
-            icon: Icon(FluentIcons.chevron_right, size: 12,
-                color: nextId == null
-                    ? theme.resources.textFillColorDisabled
-                    : null),
-            onPressed: nextId != null ? () => _navigateTo(nextId) : null,
+          Tooltip(
+            message: '下一个',
+            child: IconButton(
+              icon: Icon(FluentIcons.chevron_right, size: 12,
+                  color: nextId == null
+                      ? theme.resources.textFillColorDisabled
+                      : null),
+              onPressed: nextId != null ? () => _navigateTo(nextId) : null,
+            ),
           ),
           const SizedBox(width: 8),
           Tooltip(
@@ -217,17 +224,18 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
 
   Widget _buildHorizontalLayout(
       FluentThemeData theme, Asset asset, double totalWidth) {
-    final maxInfoWidth = totalWidth * _maxPanelFraction;
-    final clampedInfoWidth =
-        _infoPanelWidth.clamp(_minPanelWidth, maxInfoWidth);
-
     return Row(
       children: [
         Expanded(child: _buildPreviewArea(asset)),
         if (_showInfoPanel) ...[
           _buildDragHandle(theme, totalWidth),
-          SizedBox(
-            width: clampedInfoWidth,
+          ValueListenableBuilder<double>(
+            valueListenable: _infoPanelWidth,
+            builder: (context, width, child) {
+              final maxInfoWidth = totalWidth * _maxPanelFraction;
+              final clamped = width.clamp(_minPanelWidth, maxInfoWidth);
+              return SizedBox(width: clamped, child: child);
+            },
             child: AssetInfoPanel(
               asset: asset,
               onDeleted: () => context.go(AppRoutes.assets),
@@ -265,11 +273,9 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
   Widget _buildDragHandle(FluentThemeData theme, double totalWidth) {
     return GestureDetector(
       onHorizontalDragUpdate: (details) {
-        setState(() {
-          _infoPanelWidth -= details.delta.dx;
-          final maxW = totalWidth * _maxPanelFraction;
-          _infoPanelWidth = _infoPanelWidth.clamp(_minPanelWidth, maxW);
-        });
+        final maxW = totalWidth * _maxPanelFraction;
+        _infoPanelWidth.value =
+            (_infoPanelWidth.value - details.delta.dx).clamp(_minPanelWidth, maxW);
       },
       child: MouseRegion(
         cursor: SystemMouseCursors.resizeColumn,

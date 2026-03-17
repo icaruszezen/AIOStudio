@@ -27,6 +27,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   bool _isMuted = false;
   double _speed = 1.0;
   bool _showControls = true;
+  String? _error;
   Timer? _hideTimer;
   final List<StreamSubscription<dynamic>> _subscriptions = [];
   final _speedFlyoutController = FlyoutController();
@@ -56,6 +57,9 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       _player.stream.volume.listen((vol) {
         if (mounted) setState(() => _volume = vol);
       }),
+      _player.stream.error.listen((error) {
+        if (mounted) setState(() => _error = error);
+      }),
     ]);
   }
 
@@ -83,6 +87,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   }
 
   void _seek(double value) {
+    if (_duration.inMilliseconds <= 0) return;
     final ms = (value * _duration.inMilliseconds).round();
     _player.seek(Duration(milliseconds: ms));
   }
@@ -107,7 +112,9 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   void _resetHideTimer() {
     _hideTimer?.cancel();
-    setState(() => _showControls = true);
+    if (!_showControls) {
+      setState(() => _showControls = true);
+    }
     _hideTimer = Timer(const Duration(seconds: 3), () {
       if (mounted && _isPlaying) {
         setState(() => _showControls = false);
@@ -118,6 +125,28 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
+
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(FluentIcons.error_badge,
+                size: 48, color: theme.resources.textFillColorSecondary),
+            const SizedBox(height: 8),
+            Text('无法播放视频', style: theme.typography.body),
+            const SizedBox(height: 4),
+            Text(
+              _error!,
+              style: theme.typography.caption?.copyWith(
+                color: theme.resources.textFillColorSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
 
     return MouseRegion(
       onHover: (_) => _resetHideTimer(),

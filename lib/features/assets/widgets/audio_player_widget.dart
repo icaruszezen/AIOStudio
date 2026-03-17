@@ -28,6 +28,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   Duration _duration = Duration.zero;
   double _volume = 100.0;
   bool _isMuted = false;
+  String? _error;
   final List<StreamSubscription<dynamic>> _subscriptions = [];
 
   @override
@@ -52,6 +53,9 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
       _player.stream.volume.listen((vol) {
         if (mounted) setState(() => _volume = vol);
       }),
+      _player.stream.error.listen((error) {
+        if (mounted) setState(() => _error = error);
+      }),
     ]);
   }
 
@@ -73,6 +77,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   }
 
   void _seek(double value) {
+    if (_duration.inMilliseconds <= 0) return;
     final ms = (value * _duration.inMilliseconds).round();
     _player.seek(Duration(milliseconds: ms));
   }
@@ -98,6 +103,28 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
             ? _position.inMilliseconds / _duration.inMilliseconds
             : 0.0;
     final ext = p.extension(widget.filePath).toUpperCase().replaceFirst('.', '');
+
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(FluentIcons.error_badge,
+                size: 48, color: theme.resources.textFillColorSecondary),
+            const SizedBox(height: 8),
+            Text('无法播放音频', style: theme.typography.body),
+            const SizedBox(height: 4),
+            Text(
+              _error!,
+              style: theme.typography.caption?.copyWith(
+                color: theme.resources.textFillColorSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
 
     return Center(
       child: Padding(
@@ -126,8 +153,8 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
               ),
             ),
             const SizedBox(height: 32),
-            SizedBox(
-              width: 480,
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
               child: _WaveformVisualizer(
                 progress: progress.clamp(0.0, 1.0),
                 isPlaying: _isPlaying,
@@ -135,8 +162,8 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
               ),
             ),
             const SizedBox(height: 16),
-            SizedBox(
-              width: 480,
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
               child: Row(
                 children: [
                   Text(

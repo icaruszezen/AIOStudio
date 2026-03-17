@@ -191,25 +191,71 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
   }
 
   Future<void> _addExistingTag(String tagId) async {
-    await ref.read(tagActionsProvider).addToAsset(widget.assetId, tagId);
-    setState(() {
-      _isAdding = false;
-      _textController.clear();
-    });
+    try {
+      await ref.read(tagActionsProvider).addToAsset(widget.assetId, tagId);
+    } catch (e) {
+      if (mounted) {
+        await displayInfoBar(context, builder: (_, close) => InfoBar(
+          title: const Text('添加标签失败'),
+          content: Text('$e'),
+          severity: InfoBarSeverity.error,
+          action: IconButton(
+            icon: const Icon(FluentIcons.clear),
+            onPressed: close,
+          ),
+        ));
+      }
+    }
+    if (mounted) {
+      setState(() {
+        _isAdding = false;
+        _textController.clear();
+      });
+    }
   }
 
   Future<void> _createAndAddTag(String name) async {
-    final actions = ref.read(tagActionsProvider);
-    final tagId = await actions.create(name: name.trim());
-    await actions.addToAsset(widget.assetId, tagId);
-    setState(() {
-      _isAdding = false;
-      _textController.clear();
-    });
+    try {
+      final actions = ref.read(tagActionsProvider);
+      final tagId = await actions.create(name: name.trim());
+      await actions.addToAsset(widget.assetId, tagId);
+    } catch (e) {
+      if (mounted) {
+        await displayInfoBar(context, builder: (_, close) => InfoBar(
+          title: const Text('创建标签失败'),
+          content: Text('$e'),
+          severity: InfoBarSeverity.error,
+          action: IconButton(
+            icon: const Icon(FluentIcons.clear),
+            onPressed: close,
+          ),
+        ));
+      }
+    }
+    if (mounted) {
+      setState(() {
+        _isAdding = false;
+        _textController.clear();
+      });
+    }
   }
 
   Future<void> _removeTag(String tagId) async {
-    await ref.read(tagActionsProvider).removeFromAsset(widget.assetId, tagId);
+    try {
+      await ref.read(tagActionsProvider).removeFromAsset(widget.assetId, tagId);
+    } catch (e) {
+      if (mounted) {
+        await displayInfoBar(context, builder: (_, close) => InfoBar(
+          title: const Text('移除标签失败'),
+          content: Text('$e'),
+          severity: InfoBarSeverity.error,
+          action: IconButton(
+            icon: const Icon(FluentIcons.clear),
+            onPressed: close,
+          ),
+        ));
+      }
+    }
   }
 }
 

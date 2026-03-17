@@ -4,13 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/providers/database_provider.dart'
+    show activeProjectsProvider;
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/platform_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
-import '../../../core/providers/database_provider.dart'
-    show activeProjectsProvider;
 import '../providers/asset_filter_provider.dart';
 import '../providers/assets_provider.dart';
 import '../widgets/asset_filter_bar.dart';
@@ -49,7 +49,6 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
 
     final theme = FluentTheme.of(context);
     final filter = ref.watch(assetFilterProvider);
-    final filteredAsync = ref.watch(filteredAssetsProvider);
     final projectsAsync = ref.watch(activeProjectsProvider);
     final projects = projectsAsync.value ?? <Project>[];
 
@@ -80,31 +79,22 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                     isMobileLayout ? 12 : 20,
                     0,
                   ),
-                  child: filteredAsync.when(
-                    loading: () =>
-                        const LoadingIndicator(message: '加载资产中...'),
-                    error: (e, _) => Center(
-                      child: InfoBar(
-                        title: const Text('加载失败'),
-                        content: Text('$e'),
-                        severity: InfoBarSeverity.error,
-                      ),
-                    ),
-                    data: (assets) {
-                      if (assets.isEmpty) {
-                        return _buildEmptyState(filter);
-                      }
-                      return filter.viewMode == AssetViewMode.grid
-                          ? _buildGridView(assets)
-                          : _buildListView(assets);
-                    },
+                  child: _AssetsContent(
+                    selectedIds: _selectedIds,
+                    onItemTap: _handleItemTap,
+                    onLongPress: _handleLongPress,
+                    onFavoriteToggle: (id) =>
+                        ref.read(assetActionsProvider).toggleFavorite(id),
+                    onDelete: _confirmDeleteSingle,
+                    onRename: _showRenameDialog,
+                    onShowImport: _showImportDialog,
                   ),
                 ),
               ),
               if (isMobileLayout && _hasSelection)
                 _buildMobileBottomActionBar(theme)
               else
-                _buildStatusBar(theme, filteredAsync),
+                _AssetsStatusBar(selectedCount: _selectedIds.length),
             ],
           ),
         );
@@ -543,127 +533,6 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Grid & List views
-  // ---------------------------------------------------------------------------
-
-  Widget _buildGridView(List<Asset> assets) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final crossAxisCount =
-            (constraints.maxWidth / 200).floor().clamp(2, 8);
-        return GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: 0.85,
-          ),
-          itemCount: assets.length,
-          itemBuilder: (context, index) {
-            final asset = assets[index];
-            return GestureDetector(
-              onLongPress: () => _handleLongPress(asset, index),
-              child: AssetGridItem(
-                asset: asset,
-                isSelected: _selectedIds.contains(asset.id),
-                onTap: () => _handleItemTap(asset, index, assets),
-                onFavoriteToggle: () =>
-                    ref.read(assetActionsProvider).toggleFavorite(asset.id),
-                onDelete: () => _confirmDeleteSingle(asset),
-                onRename: () => _showRenameDialog(asset),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildListView(List<Asset> assets) {
-    return ListView.builder(
-      itemCount: assets.length,
-      itemBuilder: (context, index) {
-        final asset = assets[index];
-        return GestureDetector(
-          onLongPress: () => _handleLongPress(asset, index),
-          child: AssetListItem(
-            asset: asset,
-            isSelected: _selectedIds.contains(asset.id),
-            onTap: () => _handleItemTap(asset, index, assets),
-            onFavoriteToggle: () =>
-                ref.read(assetActionsProvider).toggleFavorite(asset.id),
-            onDelete: () => _confirmDeleteSingle(asset),
-            onRename: () => _showRenameDialog(asset),
-          ),
-        );
-      },
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // Status bar
-  // ---------------------------------------------------------------------------
-
-  Widget _buildStatusBar(FluentThemeData theme, AsyncValue<List<Asset>> data) {
-    final total = data.value?.length ?? 0;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: theme.resources.cardStrokeColorDefault),
-        ),
-      ),
-      child: Row(
-        children: [
-          Text(
-            '共 $total 个资产',
-            style: theme.typography.caption?.copyWith(
-              color: theme.resources.textFillColorSecondary,
-            ),
-          ),
-          if (_hasSelection) ...[
-            Text(
-              ' · 已选择 ${_selectedIds.length} 个',
-              style: theme.typography.caption?.copyWith(
-                color: theme.accentColor,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // Empty & drag overlay
-  // ---------------------------------------------------------------------------
-
-  Widget _buildEmptyState(AssetFilterState filter) {
-    if (filter.hasActiveFilters) {
-      return EmptyState(
-        icon: FluentIcons.filter,
-        title: '没有匹配的资产',
-        description: '尝试调整筛选条件',
-        action: Button(
-          onPressed: () => ref.read(assetFilterProvider.notifier).clearAll(),
-          child: const Text('清除筛选'),
-        ),
-      );
-    }
-    return EmptyState(
-      icon: FluentIcons.photo_collection,
-      title: '还没有资产',
-      description: '导入本地文件或从浏览器扩展抓取资源',
-      action: FilledButton(
-        onPressed: () => _showImportDialog(),
-        child: const Text('导入资产'),
-      ),
-    );
-  }
-
   Widget _buildDragOverlay(FluentThemeData theme) {
     return Positioned.fill(
       child: Container(
@@ -932,5 +801,173 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
       }
     }
     controller.dispose();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Extracted ConsumerWidgets for isolated provider watches
+// ---------------------------------------------------------------------------
+
+class _AssetsContent extends ConsumerWidget {
+  const _AssetsContent({
+    required this.selectedIds,
+    required this.onItemTap,
+    required this.onLongPress,
+    required this.onFavoriteToggle,
+    required this.onDelete,
+    required this.onRename,
+    required this.onShowImport,
+  });
+
+  final Set<String> selectedIds;
+  final void Function(Asset, int, List<Asset>) onItemTap;
+  final void Function(Asset, int) onLongPress;
+  final void Function(String) onFavoriteToggle;
+  final void Function(Asset) onDelete;
+  final void Function(Asset) onRename;
+  final VoidCallback onShowImport;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final filter = ref.watch(assetFilterProvider);
+    final filteredAsync = ref.watch(filteredAssetsProvider);
+
+    return filteredAsync.when(
+      loading: () => const LoadingIndicator(message: '加载资产中...'),
+      error: (e, _) => Center(
+        child: InfoBar(
+          title: const Text('加载失败'),
+          content: Text('$e'),
+          severity: InfoBarSeverity.error,
+        ),
+      ),
+      data: (assets) {
+        if (assets.isEmpty) {
+          return _buildEmptyState(context, ref, filter);
+        }
+        return filter.viewMode == AssetViewMode.grid
+            ? _buildGridView(assets)
+            : _buildListView(assets);
+      },
+    );
+  }
+
+  Widget _buildEmptyState(
+    BuildContext context,
+    WidgetRef ref,
+    AssetFilterState filter,
+  ) {
+    if (filter.hasActiveFilters) {
+      return EmptyState(
+        icon: FluentIcons.filter,
+        title: '没有匹配的资产',
+        description: '尝试调整筛选条件',
+        action: Button(
+          onPressed: () => ref.read(assetFilterProvider.notifier).clearAll(),
+          child: const Text('清除筛选'),
+        ),
+      );
+    }
+    return EmptyState(
+      icon: FluentIcons.photo_collection,
+      title: '还没有资产',
+      description: '导入本地文件或从浏览器扩展抓取资源',
+      action: FilledButton(
+        onPressed: onShowImport,
+        child: const Text('导入资产'),
+      ),
+    );
+  }
+
+  Widget _buildGridView(List<Asset> assets) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount =
+            (constraints.maxWidth / 200).floor().clamp(2, 8);
+        return GridView.builder(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 0.85,
+          ),
+          itemCount: assets.length,
+          itemBuilder: (context, index) {
+            final asset = assets[index];
+            return GestureDetector(
+              onLongPress: () => onLongPress(asset, index),
+              child: AssetGridItem(
+                asset: asset,
+                isSelected: selectedIds.contains(asset.id),
+                onTap: () => onItemTap(asset, index, assets),
+                onFavoriteToggle: () => onFavoriteToggle(asset.id),
+                onDelete: () => onDelete(asset),
+                onRename: () => onRename(asset),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildListView(List<Asset> assets) {
+    return ListView.builder(
+      itemCount: assets.length,
+      itemBuilder: (context, index) {
+        final asset = assets[index];
+        return GestureDetector(
+          onLongPress: () => onLongPress(asset, index),
+          child: AssetListItem(
+            asset: asset,
+            isSelected: selectedIds.contains(asset.id),
+            onTap: () => onItemTap(asset, index, assets),
+            onFavoriteToggle: () => onFavoriteToggle(asset.id),
+            onDelete: () => onDelete(asset),
+            onRename: () => onRename(asset),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _AssetsStatusBar extends ConsumerWidget {
+  const _AssetsStatusBar({required this.selectedCount});
+
+  final int selectedCount;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = FluentTheme.of(context);
+    final filteredAsync = ref.watch(filteredAssetsProvider);
+    final total = filteredAsync.value?.length ?? 0;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: theme.resources.cardStrokeColorDefault),
+        ),
+      ),
+      child: Row(
+        children: [
+          Text(
+            '共 $total 个资产',
+            style: theme.typography.caption?.copyWith(
+              color: theme.resources.textFillColorSecondary,
+            ),
+          ),
+          if (selectedCount > 0)
+            Text(
+              ' · 已选择 $selectedCount 个',
+              style: theme.typography.caption?.copyWith(
+                color: theme.accentColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }

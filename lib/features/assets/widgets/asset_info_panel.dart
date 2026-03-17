@@ -11,11 +11,11 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/providers/database_provider.dart'
+    show activeProjectsProvider;
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/platform_utils.dart';
 import '../../../shared/utils/format_utils.dart';
-import '../../../core/providers/database_provider.dart'
-    show activeProjectsProvider;
 import '../providers/assets_provider.dart';
 import 'asset_tag_editor.dart';
 import 'asset_type_helpers.dart';
@@ -278,7 +278,7 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
           content: Column(
             children: [
               _infoRow(
-                  theme, '来源', _sourceTypeLabel(_asset.sourceType)),
+                  theme, '来源', assetSourceLabel(_asset.sourceType)),
               if (_asset.originalUrl != null &&
                   _asset.originalUrl!.isNotEmpty)
                 _infoRowWithAction(
@@ -429,12 +429,5 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
       ),
     );
   }
-
-  static String _sourceTypeLabel(String source) => switch (source) {
-        'local_import' => '本地导入',
-        'browser_extension' => '浏览器抓取',
-        'ai_generated' => 'AI 生成',
-        _ => source,
-      };
 
 }

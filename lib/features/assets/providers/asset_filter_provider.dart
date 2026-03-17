@@ -1,8 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
-import 'assets_provider.dart';
-import 'tags_provider.dart';
+import '../../../core/providers/database_provider.dart';
 
 // ---------------------------------------------------------------------------
 // Enums & state
@@ -57,6 +58,30 @@ class AssetFilterState {
       viewMode: viewMode ?? this.viewMode,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AssetFilterState &&
+          typeFilter == other.typeFilter &&
+          projectFilter == other.projectFilter &&
+          tagFilters.length == other.tagFilters.length &&
+          tagFilters.containsAll(other.tagFilters) &&
+          sortField == other.sortField &&
+          sortAscending == other.sortAscending &&
+          searchQuery == other.searchQuery &&
+          viewMode == other.viewMode;
+
+  @override
+  int get hashCode => Object.hash(
+        typeFilter,
+        projectFilter,
+        Object.hashAll(tagFilters.toList()..sort()),
+        sortField,
+        sortAscending,
+        searchQuery,
+        viewMode,
+      );
 }
 
 // ---------------------------------------------------------------------------
@@ -69,8 +94,13 @@ final assetFilterProvider =
 );
 
 class AssetFilterNotifier extends Notifier<AssetFilterState> {
+  Timer? _debounce;
+
   @override
-  AssetFilterState build() => const AssetFilterState();
+  AssetFilterState build() {
+    ref.onDispose(() => _debounce?.cancel());
+    return const AssetFilterState();
+  }
 
   void setTypeFilter(String? type) =>
       state = state.copyWith(typeFilter: () => type);
@@ -99,72 +129,43 @@ class AssetFilterNotifier extends Notifier<AssetFilterState> {
   void toggleSortDirection() =>
       state = state.copyWith(sortAscending: !state.sortAscending);
 
-  void setSearchQuery(String query) =>
+  void setSearchQuery(String query) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
       state = state.copyWith(searchQuery: query);
+    });
+  }
 
   void setViewMode(AssetViewMode mode) =>
       state = state.copyWith(viewMode: mode);
 
-  void clearAll() => state = const AssetFilterState();
+  void clearAll() {
+    _debounce?.cancel();
+    state = const AssetFilterState();
+  }
 }
 
 // ---------------------------------------------------------------------------
-// Combined filtered assets
+// SQL-backed filtered assets stream
 // ---------------------------------------------------------------------------
 
-final filteredAssetsProvider = Provider<AsyncValue<List<Asset>>>((ref) {
+final filteredAssetsProvider = StreamProvider<List<Asset>>((ref) {
   final filter = ref.watch(assetFilterProvider);
-  final assetsAsync = ref.watch(allAssetsProvider);
-  final assetTagsAsync = ref.watch(allAssetTagsProvider);
+  final dao = ref.watch(assetDaoProvider);
 
-  return assetsAsync.when(
-    loading: () => const AsyncValue<List<Asset>>.loading(),
-    error: AsyncValue<List<Asset>>.error,
-    data: (assets) {
-      final assetTags = assetTagsAsync.value ?? <AssetTag>[];
+  final sortColumn = switch (filter.sortField) {
+    AssetSortField.name => 'name',
+    AssetSortField.createdAt => 'createdAt',
+    AssetSortField.fileSize => 'fileSize',
+    AssetSortField.type => 'type',
+  };
 
-      var filtered = List<Asset>.from(assets);
-
-      if (filter.typeFilter != null) {
-        filtered = filtered.where((a) => a.type == filter.typeFilter).toList();
-      }
-
-      if (filter.projectFilter != null) {
-        filtered = filtered
-            .where((a) => a.projectId == filter.projectFilter)
-            .toList();
-      }
-
-      if (filter.tagFilters.isNotEmpty) {
-        final assetIdsWithTags = <String>{};
-        for (final at in assetTags) {
-          if (filter.tagFilters.contains(at.tagId)) {
-            assetIdsWithTags.add(at.assetId);
-          }
-        }
-        filtered =
-            filtered.where((a) => assetIdsWithTags.contains(a.id)).toList();
-      }
-
-      if (filter.searchQuery.isNotEmpty) {
-        final query = filter.searchQuery.toLowerCase();
-        filtered = filtered
-            .where((a) => a.name.toLowerCase().contains(query))
-            .toList();
-      }
-
-      filtered.sort((a, b) {
-        final cmp = switch (filter.sortField) {
-          AssetSortField.name => a.name.compareTo(b.name),
-          AssetSortField.createdAt => a.createdAt.compareTo(b.createdAt),
-          AssetSortField.fileSize =>
-            (a.fileSize ?? 0).compareTo(b.fileSize ?? 0),
-          AssetSortField.type => a.type.compareTo(b.type),
-        };
-        return filter.sortAscending ? cmp : -cmp;
-      });
-
-      return AsyncValue<List<Asset>>.data(filtered);
-    },
+  return dao.watchFiltered(
+    typeFilter: filter.typeFilter,
+    projectFilter: filter.projectFilter,
+    tagIds: filter.tagFilters,
+    searchQuery: filter.searchQuery,
+    sortColumn: sortColumn,
+    sortAscending: filter.sortAscending,
   );
 });

@@ -4,11 +4,12 @@ import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart' as p;
 
 import '../../../core/database/app_database.dart';
-import '../../../shared/utils/format_utils.dart';
 import '../../../core/providers/database_provider.dart'
     show activeProjectsProvider;
+import '../../../shared/utils/format_utils.dart';
 import '../providers/assets_provider.dart';
 
 class AssetImportDialog extends ConsumerStatefulWidget {
@@ -64,13 +65,17 @@ class _AssetImportDialogState extends ConsumerState<AssetImportDialog> {
 
   Future<void> _addFile(String path) async {
     if (_files.any((f) => f.path == path)) return;
-    final file = File(path);
-    final stat = await file.stat();
-    _files.add(_FileEntry(
-      path: path,
-      name: file.uri.pathSegments.last,
-      size: stat.size,
-    ));
+    try {
+      final file = File(path);
+      final stat = await file.stat();
+      _files.add(_FileEntry(
+        path: path,
+        name: p.basename(path),
+        size: stat.size,
+      ));
+    } catch (_) {
+      // Skip files that cannot be stat'd (e.g. removed between selection and add)
+    }
   }
 
   Future<void> _pickFiles() async {
@@ -94,38 +99,46 @@ class _AssetImportDialogState extends ConsumerState<AssetImportDialog> {
       _importedCount = 0;
     });
 
+    final actions = ref.read(assetActionsProvider);
+    final paths = _files.map((f) => f.path).toList();
+    int successCount = 0;
+    final failures = <String>[];
+
     try {
-      final actions = ref.read(assetActionsProvider);
-      for (var i = 0; i < _files.length; i++) {
-        await actions.importLocalFiles(
-          [_files[i].path],
-          projectId: _selectedProjectId,
-        );
+      for (var i = 0; i < paths.length; i++) {
+        try {
+          await actions.importLocalFiles(
+            [paths[i]],
+            projectId: _selectedProjectId,
+          );
+          successCount++;
+        } catch (e) {
+          failures.add(p.basename(paths[i]));
+        }
         if (mounted) {
           setState(() => _importedCount = i + 1);
         }
       }
-      if (mounted) {
-        Navigator.of(context).pop(_files.length);
-      }
-    } catch (e) {
-      if (mounted) {
-        await displayInfoBar(
-          context,
-          builder: (context, close) => InfoBar(
-            title: const Text('导入失败'),
-            content: Text('$e'),
-            severity: InfoBarSeverity.error,
-            action: IconButton(
-              icon: const Icon(FluentIcons.clear),
-              onPressed: close,
-            ),
-          ),
-        );
-      }
     } finally {
       if (mounted) {
         setState(() => _isImporting = false);
+        if (failures.isNotEmpty) {
+          await displayInfoBar(
+            context,
+            builder: (context, close) => InfoBar(
+              title: Text('$successCount 个成功，${failures.length} 个失败'),
+              content: Text('失败: ${failures.join(', ')}'),
+              severity: InfoBarSeverity.warning,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            ),
+          );
+        }
+        if (successCount > 0 && mounted) {
+          Navigator.of(context).pop(successCount);
+        }
       }
     }
   }

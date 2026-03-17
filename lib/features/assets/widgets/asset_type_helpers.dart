@@ -17,8 +17,8 @@ String assetTypeLabel(String type) => switch (type) {
     };
 
 String assetSourceLabel(String source) => switch (source) {
-      'local_import' => '本地',
-      'browser_extension' => '浏览器',
-      'ai_generated' => 'AI',
+      'local_import' => '本地导入',
+      'browser_extension' => '浏览器抓取',
+      'ai_generated' => 'AI 生成',
       _ => source,
     };

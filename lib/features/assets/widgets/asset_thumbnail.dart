@@ -4,6 +4,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/format_utils.dart';
 import 'asset_type_helpers.dart';
 
 class AssetThumbnail extends StatelessWidget {
@@ -14,7 +15,6 @@ class AssetThumbnail extends StatelessWidget {
     this.isFavorite = false,
     this.showFavorite = true,
     this.onFavoriteToggle,
-    this.size,
   });
 
   final Asset asset;
@@ -22,7 +22,6 @@ class AssetThumbnail extends StatelessWidget {
   final bool isFavorite;
   final bool showFavorite;
   final VoidCallback? onFavoriteToggle;
-  final double? size;
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +122,7 @@ class AssetThumbnail extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                _formatDuration(asset.duration!),
+                formatDurationFromSeconds(asset.duration!),
                 style: const TextStyle(
                   color: AppColors.onAccent,
                   fontSize: 12,
@@ -238,9 +237,4 @@ class AssetThumbnail extends StatelessWidget {
     );
   }
 
-  static String _formatDuration(double seconds) {
-    final mins = seconds ~/ 60;
-    final secs = (seconds % 60).round();
-    return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
-  }
 }
