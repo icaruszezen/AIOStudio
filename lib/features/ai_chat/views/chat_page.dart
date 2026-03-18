@@ -180,7 +180,6 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     );
   }
 
-
   Widget _buildChatArea(ChatState chatState, {required bool isMobileLayout}) {
     final conv = chatState.currentConversation;
 

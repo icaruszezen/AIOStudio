@@ -1,7 +1,9 @@
 import { AIOStudioAPI } from '../shared/api';
 import {
   AUTH_TOKEN_KEY,
-  HEARTBEAT_INTERVAL_MS,
+  CONNECTION_STATUS_KEY,
+  HEARTBEAT_ALARM_NAME,
+  HEARTBEAT_INTERVAL_MIN,
   PORT_KEY,
 } from '../shared/constants';
 import type {
@@ -13,7 +15,19 @@ import type {
 } from '../shared/types';
 
 const api = new AIOStudioAPI();
-let connectionStatus: ConnectionStatus = 'disconnected';
+
+// ---------------------------------------------------------------------------
+// Connection status (persisted to survive SW restarts)
+// ---------------------------------------------------------------------------
+
+async function getConnectionStatus(): Promise<ConnectionStatus> {
+  const data = await chrome.storage.session.get(CONNECTION_STATUS_KEY);
+  return (data[CONNECTION_STATUS_KEY] as ConnectionStatus) ?? 'disconnected';
+}
+
+async function setConnectionStatus(status: ConnectionStatus): Promise<void> {
+  await chrome.storage.session.set({ [CONNECTION_STATUS_KEY]: status });
+}
 
 // ---------------------------------------------------------------------------
 // Port & auth token initialization
@@ -26,6 +40,8 @@ async function loadConfig(): Promise<void> {
   if (port) api.setPort(port);
   if (token) api.setAuthToken(token);
 }
+
+const configReady = loadConfig();
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return;
@@ -59,6 +75,10 @@ chrome.runtime.onInstalled.addListener(() => {
     title: '保存链接中的媒体到 AIO Studio',
     contexts: ['link'],
   });
+
+  chrome.alarms.create(HEARTBEAT_ALARM_NAME, {
+    periodInMinutes: HEARTBEAT_INTERVAL_MIN,
+  });
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
@@ -68,39 +88,52 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   const mediaType =
     info.menuItemId === 'save-video' ? 'video' : ('image' as const);
 
-  chrome.tabs.sendMessage(tab.id, {
-    action: 'CONTEXT_MENU_SAVE',
-    payload: {
-      srcUrl,
-      mediaType,
-      pageUrl: tab.url ?? '',
-      pageTitle: tab.title ?? '',
-    } satisfies ContextMenuSavePayload,
-  } satisfies Message<ContextMenuSavePayload>);
+  try {
+    await chrome.tabs.sendMessage(tab.id, {
+      action: 'CONTEXT_MENU_SAVE',
+      payload: {
+        srcUrl,
+        mediaType,
+        pageUrl: tab.url ?? '',
+        pageTitle: tab.title ?? '',
+      } satisfies ContextMenuSavePayload,
+    } satisfies Message<ContextMenuSavePayload>);
+  } catch {
+    // Content script not available on this tab (e.g. chrome:// pages)
+  }
 });
 
 // ---------------------------------------------------------------------------
-// Heartbeat
+// Heartbeat (via chrome.alarms for SW lifecycle safety)
 // ---------------------------------------------------------------------------
 
 async function heartbeat(): Promise<void> {
-  const prev = connectionStatus;
-  connectionStatus = 'connecting';
+  const prev = await getConnectionStatus();
+  await setConnectionStatus('connecting');
 
   const ok = await api.checkConnection();
-  connectionStatus = ok ? 'connected' : 'disconnected';
+  const next: ConnectionStatus = ok ? 'connected' : 'disconnected';
+  await setConnectionStatus(next);
 
-  if (prev !== connectionStatus) {
-    broadcastConnectionStatus();
+  if (prev !== next) {
+    broadcastConnectionStatus(next);
   }
 }
 
-function broadcastConnectionStatus(): void {
-  chrome.runtime.sendMessage({
-    action: 'CONNECTION_STATUS_CHANGED',
-    payload: connectionStatus,
-  } satisfies Message<ConnectionStatus>).catch(() => {});
+function broadcastConnectionStatus(status: ConnectionStatus): void {
+  chrome.runtime
+    .sendMessage({
+      action: 'CONNECTION_STATUS_CHANGED',
+      payload: status,
+    } satisfies Message<ConnectionStatus>)
+    .catch(() => {});
 }
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === HEARTBEAT_ALARM_NAME) {
+    configReady.then(() => heartbeat()).catch(() => {});
+  }
+});
 
 // ---------------------------------------------------------------------------
 // Message handling
@@ -112,8 +145,8 @@ chrome.runtime.onMessage.addListener(
     _sender: chrome.runtime.MessageSender,
     sendResponse: (response: unknown) => void,
   ) => {
-    handleMessage(message).then(sendResponse);
-    return true; // async response
+    configReady.then(() => handleMessage(message)).then(sendResponse);
+    return true;
   },
 );
 
@@ -121,12 +154,13 @@ async function handleMessage(message: Message): Promise<unknown> {
   switch (message.action) {
     case 'CHECK_CONNECTION': {
       const ok = await api.checkConnection();
-      connectionStatus = ok ? 'connected' : 'disconnected';
-      return connectionStatus;
+      const status: ConnectionStatus = ok ? 'connected' : 'disconnected';
+      await setConnectionStatus(status);
+      return status;
     }
 
     case 'GET_CONNECTION_STATUS':
-      return connectionStatus;
+      return getConnectionStatus();
 
     case 'GET_PROJECTS':
       return api.getProjects();
@@ -154,8 +188,12 @@ async function handleMessage(message: Message): Promise<unknown> {
 // Bootstrap
 // ---------------------------------------------------------------------------
 
-loadConfig().then(() => {
-  heartbeat();
-  setInterval(heartbeat, HEARTBEAT_INTERVAL_MS);
+configReady.then(async () => {
+  heartbeat().catch(() => {});
+  const existing = await chrome.alarms.get(HEARTBEAT_ALARM_NAME);
+  if (!existing) {
+    chrome.alarms.create(HEARTBEAT_ALARM_NAME, {
+      periodInMinutes: HEARTBEAT_INTERVAL_MIN,
+    });
+  }
 });
-

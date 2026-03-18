@@ -1,16 +1,6 @@
 import type { Project, SaveRequest, SaveResponse } from './types';
-import { API_PATHS, DEFAULT_PORT, getBaseUrl } from './constants';
-
-function extractFileName(url: string): string {
-  try {
-    const pathname = new URL(url).pathname;
-    const segments = pathname.split('/');
-    const raw = segments[segments.length - 1] || 'untitled';
-    return decodeURIComponent(raw);
-  } catch {
-    return 'untitled';
-  }
-}
+import { API_PATHS, API_REQUEST_TIMEOUT_MS, DEFAULT_PORT, HEALTH_CHECK_TIMEOUT_MS, getBaseUrl } from './constants';
+import { extractFilename } from './utils';
 
 export class AIOStudioAPI {
   private baseUrl: string;
@@ -42,7 +32,7 @@ export class AIOStudioAPI {
     try {
       const res = await fetch(`${this.baseUrl}${API_PATHS.HEALTH}`, {
         method: 'GET',
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(HEALTH_CHECK_TIMEOUT_MS),
       });
       return res.ok;
     } catch {
@@ -54,6 +44,7 @@ export class AIOStudioAPI {
     const res = await fetch(`${this.baseUrl}${API_PATHS.PROJECTS}`, {
       method: 'GET',
       headers: this.getAuthHeaders(),
+      signal: AbortSignal.timeout(API_REQUEST_TIMEOUT_MS),
     });
     if (!res.ok) throw new Error(`获取项目列表失败: ${res.status}`);
     return res.json();
@@ -61,7 +52,7 @@ export class AIOStudioAPI {
 
   async saveMedia(request: SaveRequest): Promise<SaveResponse> {
     try {
-      const fileName = request.fileName ?? extractFileName(request.mediaUrl);
+      const fileName = request.fileName ?? extractFilename(request.mediaUrl);
 
       const res = await fetch(`${this.baseUrl}${API_PATHS.IMPORT}`, {
         method: 'POST',
@@ -75,6 +66,7 @@ export class AIOStudioAPI {
           pageUrl: request.pageUrl,
           pageTitle: request.pageTitle,
         }),
+        signal: AbortSignal.timeout(API_REQUEST_TIMEOUT_MS),
       });
 
       if (!res.ok) {

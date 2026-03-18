@@ -27,6 +27,8 @@ export default function App() {
   const [saveResults, setSaveResults] = useState<SaveResponse[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [port, setPort] = useState(DEFAULT_PORT);
+  const [loadingProjects, setLoadingProjects] = useState(false);
+  const [projectsError, setProjectsError] = useState<string | null>(null);
 
   // Load port
   useEffect(() => {
@@ -54,6 +56,8 @@ export default function App() {
   }, []);
 
   const loadProjects = useCallback(async () => {
+    setLoadingProjects(true);
+    setProjectsError(null);
     try {
       const list = (await chrome.runtime.sendMessage({
         action: 'GET_PROJECTS',
@@ -61,6 +65,9 @@ export default function App() {
       setProjects(list ?? []);
     } catch {
       setProjects([]);
+      setProjectsError('加载项目列表失败');
+    } finally {
+      setLoadingProjects(false);
     }
   }, []);
 
@@ -122,17 +129,35 @@ export default function App() {
     }));
 
     const results: SaveResponse[] = [];
-    for (let i = 0; i < requests.length; i++) {
-      const res = (await chrome.runtime.sendMessage({
-        action: 'SAVE_MEDIA',
-        payload: requests[i],
-      } satisfies Message<SaveRequest>)) as SaveResponse;
-      results.push(res);
-      setSaveProgress({ done: i + 1, total: requests.length });
+    let done = 0;
+    const concurrency = 3;
+    try {
+      for (let i = 0; i < requests.length; i += concurrency) {
+        const chunk = requests.slice(i, i + concurrency);
+        const chunkResults = await Promise.all(
+          chunk.map((req) =>
+            chrome.runtime
+              .sendMessage({
+                action: 'SAVE_MEDIA',
+                payload: req,
+              } satisfies Message<SaveRequest>)
+              .then((r) => r as SaveResponse)
+              .catch(
+                (err): SaveResponse => ({
+                  success: false,
+                  error: err instanceof Error ? err.message : '保存失败',
+                }),
+              ),
+          ),
+        );
+        results.push(...chunkResults);
+        done += chunkResults.length;
+        setSaveProgress({ done, total: requests.length });
+      }
+    } finally {
+      setSaveResults(results);
+      setSaving(false);
     }
-
-    setSaveResults(results);
-    setSaving(false);
   };
 
   // Settings: save port
@@ -250,18 +275,34 @@ export default function App() {
 
               {/* Project + save */}
               <label style={styles.label}>目标项目</label>
-              <select
-                style={styles.select}
-                value={projectId}
-                onChange={(e) => setProjectId(e.target.value)}
-              >
-                <option value="">-- 选择项目 --</option>
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+              {loadingProjects ? (
+                <div style={{ fontSize: 12, color: '#666', padding: '6px 0' }}>
+                  加载项目列表中...
+                </div>
+              ) : projectsError ? (
+                <div style={{ fontSize: 12, color: '#D13438', padding: '6px 0' }}>
+                  {projectsError}
+                  <button
+                    style={{ ...styles.btnLink, marginLeft: 8 }}
+                    onClick={loadProjects}
+                  >
+                    重试
+                  </button>
+                </div>
+              ) : (
+                <select
+                  style={styles.select}
+                  value={projectId}
+                  onChange={(e) => setProjectId(e.target.value)}
+                >
+                  <option value="">-- 选择项目 --</option>
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              )}
 
               <button
                 style={{

@@ -3,7 +3,8 @@ export function extractFilename(url: string): string {
     if (url.startsWith('data:')) return '截图';
     const pathname = new URL(url).pathname;
     const segments = pathname.split('/');
-    return segments[segments.length - 1] || 'untitled';
+    const raw = segments[segments.length - 1] || 'untitled';
+    return decodeURIComponent(raw);
   } catch {
     return 'untitled';
   }

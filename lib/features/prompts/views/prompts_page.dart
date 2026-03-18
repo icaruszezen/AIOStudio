@@ -105,7 +105,6 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
     );
   }
 
-
   Widget _buildListPanel() {
     final theme = FluentTheme.of(context);
 

@@ -7,7 +7,7 @@ import type {
   SaveRequest,
   SaveResponse,
 } from '../shared/types';
-import { MIN_MEDIA_SIZE, SHORTCUT_REGION_CAPTURE } from '../shared/constants';
+import { BG_IMAGE_SCAN_LIMIT, MIN_MEDIA_SIZE, SHORTCUT_REGION_CAPTURE } from '../shared/constants';
 import { extractFilename } from '../shared/utils';
 
 // ============================================================================
@@ -190,16 +190,21 @@ function detectMedia(): MediaItem[] {
     });
   });
 
-  // CSS background-image
-  document.querySelectorAll('*').forEach((el) => {
+  // CSS background-image (scoped to common container elements with a scan limit)
+  const bgCandidates = document.querySelectorAll(
+    'div, section, header, footer, main, aside, article, figure, span, a',
+  );
+  const bgScanCount = Math.min(bgCandidates.length, BG_IMAGE_SCAN_LIMIT);
+  for (let i = 0; i < bgScanCount; i++) {
+    const el = bgCandidates[i] as HTMLElement;
     const bg = getComputedStyle(el).backgroundImage;
-    if (!bg || bg === 'none') return;
+    if (!bg || bg === 'none') continue;
     const match = bg.match(/url\(["']?(.+?)["']?\)/);
-    if (!match) return;
+    if (!match) continue;
     const url = match[1];
-    if (url.startsWith('data:')) return;
-    const rect = (el as HTMLElement).getBoundingClientRect();
-    if (rect.width < MIN_MEDIA_SIZE || rect.height < MIN_MEDIA_SIZE) return;
+    if (url.startsWith('data:')) continue;
+    const rect = el.getBoundingClientRect();
+    if (rect.width < MIN_MEDIA_SIZE || rect.height < MIN_MEDIA_SIZE) continue;
     add({
       url: new URL(url, location.href).href,
       type: 'image',
@@ -208,7 +213,7 @@ function detectMedia(): MediaItem[] {
       pageUrl: location.href,
       pageTitle: document.title,
     });
-  });
+  }
 
   // <video>
   document.querySelectorAll('video').forEach((video) => {
@@ -466,6 +471,29 @@ document.addEventListener(
   true,
 );
 
+// Reposition the save button on scroll (throttled via rAF)
+let scrollRAF: number | null = null;
+
+function updateSaveButtonPosition(): void {
+  if (!currentBtn || !currentTarget) return;
+  const rect = currentTarget.getBoundingClientRect();
+  currentBtn.style.top = `${rect.top + 6}px`;
+  currentBtn.style.left = `${rect.right - 38}px`;
+}
+
+document.addEventListener(
+  'scroll',
+  () => {
+    if (!currentBtn || !currentTarget) return;
+    if (scrollRAF) return;
+    scrollRAF = requestAnimationFrame(() => {
+      updateSaveButtonPosition();
+      scrollRAF = null;
+    });
+  },
+  { capture: true, passive: true },
+);
+
 // ============================================================================
 // Region capture mode (Alt+Shift+S)
 // ============================================================================
@@ -567,7 +595,11 @@ function startRegionCapture(): void {
         height: h,
         useCORS: true,
       });
-      const dataUrl = canvas.toDataURL('image/png');
+      const useJpeg = w * h > 500_000;
+      const dataUrl = canvas.toDataURL(
+        useJpeg ? 'image/jpeg' : 'image/png',
+        useJpeg ? 0.85 : undefined,
+      );
 
       const item: MediaItem = {
         url: dataUrl,

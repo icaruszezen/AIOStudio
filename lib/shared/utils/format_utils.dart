@@ -3,10 +3,10 @@ import 'package:intl/intl.dart';
 // -- Duration & file size --
 
 String formatDuration(Duration d) {
-  if (d.isNegative) d = Duration.zero;
-  final h = d.inHours;
-  final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-  final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+  final dur = d.isNegative ? Duration.zero : d;
+  final h = dur.inHours;
+  final m = dur.inMinutes.remainder(60).toString().padLeft(2, '0');
+  final s = dur.inSeconds.remainder(60).toString().padLeft(2, '0');
   if (h > 0) return '$h:$m:$s';
   return '$m:$s';
 }
@@ -53,7 +53,7 @@ String formatTime(DateTime dt) => _timeFmt.format(dt);
 
 String formatCompactNumber(int count) {
   if (count < 0) return '0';
-  if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
+  if (count >= 999950) return '${(count / 1000000).toStringAsFixed(1)}M';
   if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';
   return '$count';
 }
