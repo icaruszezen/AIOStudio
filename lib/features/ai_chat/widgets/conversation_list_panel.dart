@@ -1,8 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/format_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../models/chat_models.dart';
 import '../providers/chat_provider.dart';
@@ -256,7 +256,7 @@ class _ConversationTileState extends State<_ConversationTile> {
     final theme = FluentTheme.of(context);
     final conv = widget.conversation;
     final lastMsg = conv.lastMessage;
-    final timeStr = DateFormat('MM/dd HH:mm').format(conv.updatedAt);
+    final timeStr = formatShortDateTime(conv.updatedAt);
 
     return FlyoutTarget(
       controller: _flyoutController,

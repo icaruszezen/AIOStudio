@@ -10,8 +10,8 @@ import 'package:path/path.dart' as p;
 
 import '../../../core/router/app_router.dart';
 import '../../../core/services/ai/ai_models.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/error_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../providers/image_gen_provider.dart';
 import 'image_preview_dialog.dart';
@@ -31,7 +31,7 @@ class ImageGenResultArea extends ConsumerWidget {
     }
 
     if (genState.errorMessage != null) {
-      return _buildErrorState(context, genState.errorMessage!);
+      return ErrorState(title: '生成失败', message: genState.errorMessage);
     }
 
     final result = genState.currentResult;
@@ -44,33 +44,6 @@ class ImageGenResultArea extends ConsumerWidget {
     }
 
     return _buildResultGrid(context, ref, result, genState);
-  }
-
-  Widget _buildErrorState(BuildContext context, String error) {
-    final theme = FluentTheme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(FluentIcons.error_badge, size: 48, color: AppColors.error(theme.brightness)),
-            const SizedBox(height: 16),
-            Text('生成失败', style: theme.typography.subtitle),
-            const SizedBox(height: 8),
-            Text(
-              error,
-              style: theme.typography.body?.copyWith(
-                color: theme.resources.textFillColorSecondary,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 5,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Widget _buildResultGrid(

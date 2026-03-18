@@ -2,11 +2,11 @@ import 'dart:convert';
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/ai/ai_models.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/format_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../providers/image_gen_provider.dart';
@@ -59,7 +59,7 @@ class _HistoryCardState extends ConsumerState<_HistoryCard> {
     final theme = FluentTheme.of(context);
     final task = widget.task;
     final time = DateTime.fromMillisecondsSinceEpoch(task.createdAt);
-    final formattedTime = DateFormat('yyyy-MM-dd HH:mm').format(time);
+    final formattedTime = formatDateTime(time);
     final isFailed = task.status == 'failed';
     final isCompleted = task.status == 'completed';
 

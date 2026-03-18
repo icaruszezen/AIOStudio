@@ -3,10 +3,10 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/format_utils.dart';
 
 class ProjectCard extends StatefulWidget {
   const ProjectCard({
@@ -45,7 +45,7 @@ class _ProjectCardState extends State<ProjectCard> {
     final theme = FluentTheme.of(context);
     final project = widget.project;
     final updatedAt = DateTime.fromMillisecondsSinceEpoch(project.updatedAt);
-    final dateStr = DateFormat('yyyy-MM-dd').format(updatedAt);
+    final dateStr = formatDate(updatedAt);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),

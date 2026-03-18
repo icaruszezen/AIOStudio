@@ -5,7 +5,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -180,8 +179,6 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
     final theme = FluentTheme.of(context);
     final projectsAsync = ref.watch(activeProjectsProvider);
     final projects = projectsAsync.value ?? <Project>[];
-    final dateFormat = DateFormat('yyyy-MM-dd HH:mm');
-
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -301,14 +298,14 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
               _infoRow(
                 theme,
                 '创建时间',
-                dateFormat.format(
+                formatDateTime(
                   DateTime.fromMillisecondsSinceEpoch(_asset.createdAt),
                 ),
               ),
               _infoRow(
                 theme,
                 '修改时间',
-                dateFormat.format(
+                formatDateTime(
                   DateTime.fromMillisecondsSinceEpoch(_asset.updatedAt),
                 ),
               ),

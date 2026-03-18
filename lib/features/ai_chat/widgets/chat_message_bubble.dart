@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/format_utils.dart';
 import '../models/chat_models.dart';
 
 class ChatMessageBubble extends StatefulWidget {
@@ -258,7 +258,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   }
 
   Widget _buildFooter(FluentThemeData theme) {
-    final timeStr = DateFormat('HH:mm').format(widget.message.timestamp);
+    final timeStr = formatTime(widget.message.timestamp);
     final tokenInfo = widget.message.totalTokens;
 
     return Row(

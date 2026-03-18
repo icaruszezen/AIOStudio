@@ -1,7 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../shared/utils/format_utils.dart';
 
 class ProjectListTile extends StatefulWidget {
   const ProjectListTile({
@@ -35,7 +35,7 @@ class _ProjectListTileState extends State<ProjectListTile> {
     final theme = FluentTheme.of(context);
     final project = widget.project;
     final updatedAt = DateTime.fromMillisecondsSinceEpoch(project.updatedAt);
-    final dateStr = DateFormat('yyyy-MM-dd HH:mm').format(updatedAt);
+    final dateStr = formatDateTime(updatedAt);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),

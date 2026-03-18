@@ -7,6 +7,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/router/app_router.dart';
 import '../../../shared/widgets/breadcrumb_navigation.dart';
 import '../../../shared/widgets/loading_indicator.dart';
+import '../../../shared/widgets/resizable_divider.dart';
 import '../providers/asset_navigation_provider.dart';
 import '../providers/assets_provider.dart';
 import '../widgets/asset_info_panel.dart';
@@ -228,7 +229,11 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
       children: [
         Expanded(child: _buildPreviewArea(asset)),
         if (_showInfoPanel) ...[
-          _buildDragHandle(theme, totalWidth),
+          ResizableDivider(onDrag: (dx) {
+            final maxW = totalWidth * _maxPanelFraction;
+            _infoPanelWidth.value =
+                (_infoPanelWidth.value - dx).clamp(_minPanelWidth, maxW);
+          }),
           ValueListenableBuilder<double>(
             valueListenable: _infoPanelWidth,
             builder: (context, width, child) {
@@ -267,23 +272,6 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
           ),
         ],
       ],
-    );
-  }
-
-  Widget _buildDragHandle(FluentThemeData theme, double totalWidth) {
-    return GestureDetector(
-      onHorizontalDragUpdate: (details) {
-        final maxW = totalWidth * _maxPanelFraction;
-        _infoPanelWidth.value =
-            (_infoPanelWidth.value - details.delta.dx).clamp(_minPanelWidth, maxW);
-      },
-      child: MouseRegion(
-        cursor: SystemMouseCursors.resizeColumn,
-        child: Container(
-          width: 4,
-          color: theme.resources.cardStrokeColorDefault,
-        ),
-      ),
     );
   }
 

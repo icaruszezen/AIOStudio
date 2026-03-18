@@ -9,6 +9,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
+import '../../../shared/widgets/resizable_divider.dart';
 import '../providers/prompts_provider.dart';
 import '../widgets/prompt_card.dart';
 import 'prompt_editor_page.dart';
@@ -89,7 +90,13 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
                 width: clampedListWidth,
                 child: _buildListPanel(),
               ),
-              _buildDragHandle(totalWidth),
+              ResizableDivider(onDrag: (dx) {
+                setState(() {
+                  _listPanelWidth += dx;
+                  final maxW = totalWidth * _maxListFraction;
+                  _listPanelWidth = _listPanelWidth.clamp(_minListWidth, maxW);
+                });
+              }),
               Expanded(child: _buildEditorPanel()),
             ],
           );
@@ -98,25 +105,6 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
     );
   }
 
-  Widget _buildDragHandle(double totalWidth) {
-    final theme = FluentTheme.of(context);
-    return GestureDetector(
-      onHorizontalDragUpdate: (details) {
-        setState(() {
-          _listPanelWidth += details.delta.dx;
-          final maxW = totalWidth * _maxListFraction;
-          _listPanelWidth = _listPanelWidth.clamp(_minListWidth, maxW);
-        });
-      },
-      child: MouseRegion(
-        cursor: SystemMouseCursors.resizeColumn,
-        child: Container(
-          width: 4,
-          color: theme.resources.cardStrokeColorDefault,
-        ),
-      ),
-    );
-  }
 
   Widget _buildListPanel() {
     final theme = FluentTheme.of(context);

@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/format_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../providers/video_gen_provider.dart';
@@ -90,7 +90,7 @@ class _TaskCard extends ConsumerWidget {
     final pollerState = ref.watch(videoTaskPollerProvider);
     final isPolling = pollerState.activeTasks.containsKey(task.id);
     final time = DateTime.fromMillisecondsSinceEpoch(task.createdAt);
-    final formattedTime = DateFormat('MM-dd HH:mm').format(time);
+    final formattedTime = formatCompactDateTime(time);
 
     final statusColor = _statusColor(task.status, theme.brightness);
     final statusText = _statusText(task.status, isPolling);

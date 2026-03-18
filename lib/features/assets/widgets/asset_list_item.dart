@@ -1,5 +1,4 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
@@ -44,7 +43,7 @@ class _AssetListItemState extends State<AssetListItem> {
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
     final createdAt = DateTime.fromMillisecondsSinceEpoch(widget.asset.createdAt);
-    final dateStr = DateFormat('yyyy-MM-dd HH:mm').format(createdAt);
+    final dateStr = formatDateTime(createdAt);
 
     return GestureDetector(
       onTap: widget.onTap,

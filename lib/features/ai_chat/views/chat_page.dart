@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/platform_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/resizable_divider.dart';
 import '../models/chat_models.dart';
 import '../providers/chat_provider.dart';
 import '../widgets/chat_input_area.dart';
@@ -92,7 +93,13 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                   width: clampedListWidth,
                   child: const ConversationListPanel(),
                 ),
-                _buildDragHandle(totalWidth),
+                ResizableDivider(onDrag: (dx) {
+                  setState(() {
+                    _listPanelWidth += dx;
+                    final maxW = totalWidth * _maxListFraction;
+                    _listPanelWidth = _listPanelWidth.clamp(_minListWidth, maxW);
+                  });
+                }),
               ],
               Expanded(
                 child: _buildChatArea(chatState, isMobileLayout: false),
@@ -173,25 +180,6 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     );
   }
 
-  Widget _buildDragHandle(double totalWidth) {
-    final theme = FluentTheme.of(context);
-    return GestureDetector(
-      onHorizontalDragUpdate: (details) {
-        setState(() {
-          _listPanelWidth += details.delta.dx;
-          final maxW = totalWidth * _maxListFraction;
-          _listPanelWidth = _listPanelWidth.clamp(_minListWidth, maxW);
-        });
-      },
-      child: MouseRegion(
-        cursor: SystemMouseCursors.resizeColumn,
-        child: Container(
-          width: 4,
-          color: theme.resources.cardStrokeColorDefault,
-        ),
-      ),
-    );
-  }
 
   Widget _buildChatArea(ChatState chatState, {required bool isMobileLayout}) {
     final conv = chatState.currentConversation;

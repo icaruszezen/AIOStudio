@@ -8,8 +8,8 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
-import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/error_state.dart';
 import '../../ai_image/widgets/save_to_asset_dialog.dart';
 import '../../assets/widgets/video_player_widget.dart';
 import '../providers/video_gen_provider.dart';
@@ -64,7 +64,7 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
     }
 
     if (genState.errorMessage != null && taskId == null) {
-      return _buildErrorState(context, genState.errorMessage!);
+      return ErrorState(title: '生成失败', message: genState.errorMessage);
     }
 
     if (taskId == null) {
@@ -98,7 +98,7 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
     final taskAsync = ref.watch(videoGenTaskDetailProvider(taskId));
     return taskAsync.when(
       loading: () => _buildPollingState(context, taskId),
-      error: (e, _) => _buildErrorState(context, e.toString()),
+      error: (e, _) => ErrorState(title: '生成失败', message: e.toString()),
       data: (task) {
         if (task == null) {
           return const EmptyState(
@@ -108,8 +108,10 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
         }
 
         if (task.status == 'failed') {
-          return _buildErrorState(
-              context, task.errorMessage ?? '视频生成失败');
+          return ErrorState(
+            title: '生成失败',
+            message: task.errorMessage ?? '视频生成失败',
+          );
         }
 
         if (task.status == 'completed' && task.outputText != null) {
@@ -194,33 +196,6 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
                 ref.read(videoGenProvider.notifier).clearViewingTask();
               },
               child: const Text('取消'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorState(BuildContext context, String error) {
-    final theme = FluentTheme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(FluentIcons.error_badge, size: 48, color: AppColors.error(theme.brightness)),
-            const SizedBox(height: 16),
-            Text('生成失败', style: theme.typography.subtitle),
-            const SizedBox(height: 8),
-            Text(
-              error,
-              style: theme.typography.body?.copyWith(
-                color: theme.resources.textFillColorSecondary,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 5,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

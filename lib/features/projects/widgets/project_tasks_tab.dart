@@ -1,9 +1,9 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/format_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../providers/projects_provider.dart';
@@ -54,7 +54,7 @@ class _AiTaskListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
     final createdAt = DateTime.fromMillisecondsSinceEpoch(task.createdAt);
-    final dateStr = DateFormat('yyyy-MM-dd HH:mm').format(createdAt);
+    final dateStr = formatDateTime(createdAt);
     final typeColor = _typeColor(task.type, theme.brightness);
 
     return Padding(

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/database_provider.dart';
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/platform_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
@@ -108,7 +109,7 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
   }
 
   void _onProjectTap(Project project) {
-    context.push('/projects/${project.id}');
+    context.push('${AppRoutes.projects}/${project.id}');
   }
 
   void _onEdit(Project project) {
@@ -118,7 +119,7 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
   Future<void> _createProject() async {
     final newId = await ProjectCreateDialog.show(context);
     if (newId != null && mounted) {
-      context.push('/projects/$newId');
+      context.push('${AppRoutes.projects}/$newId');
     }
   }
 

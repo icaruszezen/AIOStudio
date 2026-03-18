@@ -6,8 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/platform_utils.dart';
+import '../../../shared/utils/format_utils.dart';
 import '../../../shared/widgets/breadcrumb_navigation.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
@@ -84,7 +86,7 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
     if (confirmed == true && mounted) {
       try {
         await ref.read(projectActionsProvider).delete(project.id);
-        if (mounted) context.go('/projects');
+        if (mounted) context.go(AppRoutes.projects);
       } catch (e) {
         if (mounted) {
           await displayInfoBar(
@@ -129,7 +131,7 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
               title: '项目不存在',
               description: '该项目可能已被删除',
               action: Button(
-                onPressed: () => context.go('/projects'),
+                onPressed: () => context.go(AppRoutes.projects),
                 child: const Text('返回项目列表'),
               ),
             ),
@@ -153,8 +155,8 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
             child: BreadcrumbNavigation(
               items: [
                 BreadcrumbEntry(
-                  label: '项目',
-                  onTap: () => context.go('/projects'),
+                  label: '项目管理',
+                  onTap: () => context.go(AppRoutes.projects),
                 ),
                 BreadcrumbEntry(label: project.name),
               ],
@@ -369,7 +371,7 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
               _StatCard(
                 icon: FluentIcons.diagnostic,
                 label: 'Token 消耗',
-                value: _formatTokenCount(stats.totalTokenUsage),
+                value: formatCompactNumber(stats.totalTokenUsage),
                 accentColor: AppColors.error(theme.brightness),
               ),
             ],
@@ -379,15 +381,6 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
     );
   }
 
-  String _formatTokenCount(int count) {
-    if (count >= 1000000) {
-      return '${(count / 1000000).toStringAsFixed(1)}M';
-    }
-    if (count >= 1000) {
-      return '${(count / 1000).toStringAsFixed(1)}K';
-    }
-    return '$count';
-  }
 }
 
 class _StatCard extends StatelessWidget {
