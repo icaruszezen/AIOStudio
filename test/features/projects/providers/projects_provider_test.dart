@@ -53,7 +53,7 @@ void main() {
       name: const Value('test.png'),
       type: const Value('image'),
       filePath: const Value('/fake/path/test.png'),
-      sourceType: const Value('local_import'),
+      sourceType: const Value('browser_extension'),
       createdAt: Value(now),
       updatedAt: Value(now),
     ));

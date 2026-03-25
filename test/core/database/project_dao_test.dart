@@ -112,12 +112,31 @@ void main() {
       expect(all, isEmpty);
     });
 
-    test('watchAllProjects emits updates', () async {
+    test('watchAllProjects emits updates on insert', () async {
       final stream = dao.watchAllProjects();
 
       await dao.insertProject(makeProject('p1', 'First'));
       final firstEmit = await stream.first;
       expect(firstEmit, hasLength(1));
+      expect(firstEmit.first.name, 'First');
+    });
+
+    test('watchAllProjects emits after each mutation', () async {
+      final stream = dao.watchAllProjects();
+
+      await dao.insertProject(makeProject('p1', 'First'));
+      final emit1 = await stream.first;
+      expect(emit1, hasLength(1));
+
+      await dao.insertProject(makeProject('p2', 'Second'));
+      final emit2 = await stream.first;
+      expect(emit2, hasLength(2));
+      expect(emit2.map((p) => p.name), containsAll(['First', 'Second']));
+
+      await dao.deleteProject('p1');
+      final emit3 = await stream.first;
+      expect(emit3, hasLength(1));
+      expect(emit3.first.name, 'Second');
     });
 
     test('watchActiveProjects and watchArchivedProjects', () async {

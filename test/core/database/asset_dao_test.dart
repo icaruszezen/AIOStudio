@@ -59,6 +59,7 @@ void main() {
 
       final all = await dao.getAllAssets();
       expect(all, hasLength(2));
+      expect(all.map((a) => a.name), containsAll(['Image One', 'Image Two']));
     });
 
     test('getAssetById returns correct asset', () async {
@@ -89,6 +90,9 @@ void main() {
 
       final fetched = await dao.getAssetById('a1');
       expect(fetched!.name, 'New');
+      expect(fetched.type, original.type, reason: 'type should be unchanged');
+      expect(fetched.filePath, original.filePath, reason: 'filePath should be unchanged');
+      expect(fetched.createdAt, original.createdAt, reason: 'createdAt should be unchanged');
     });
 
     test('deleteAsset removes the row', () async {
@@ -142,8 +146,13 @@ void main() {
       final page2 = await dao.getPaginated(limit: 3, offset: 3);
       expect(page2, hasLength(3));
 
-      final allIds = <String>{...page1.map((a) => a.id), ...page2.map((a) => a.id)};
-      expect(allIds, hasLength(6));
+      final page1Ids = page1.map((a) => a.id).toSet();
+      final page2Ids = page2.map((a) => a.id).toSet();
+      expect(page1Ids.intersection(page2Ids), isEmpty,
+          reason: 'Pages should not overlap');
+
+      final lastPage = await dao.getPaginated(limit: 5, offset: 8);
+      expect(lastPage, hasLength(2));
     });
 
     test('countByProject and countByProjectAndType', () async {
@@ -179,12 +188,20 @@ void main() {
 
     test('batchMoveToProject reassigns projectId', () async {
       await seedProject('proj1');
-      await dao.insertAsset(makeAsset('a1', 'One'));
-      await dao.insertAsset(makeAsset('a2', 'Two'));
+      await seedProject('proj2');
+      await dao.insertAsset(makeAsset('a1', 'One', projectId: 'proj1'));
+      await dao.insertAsset(makeAsset('a2', 'Two', projectId: 'proj1'));
+      await dao.insertAsset(makeAsset('a3', 'Three', projectId: 'proj1'));
 
-      await dao.batchMoveToProject(['a1', 'a2'], 'proj1');
-      final moved = await dao.getByProject('proj1');
-      expect(moved, hasLength(2));
+      await dao.batchMoveToProject(['a1', 'a2'], 'proj2');
+
+      final inProj2 = await dao.getByProject('proj2');
+      expect(inProj2, hasLength(2));
+      expect(inProj2.map((a) => a.id), containsAll(['a1', 'a2']));
+
+      final inProj1 = await dao.getByProject('proj1');
+      expect(inProj1, hasLength(1));
+      expect(inProj1.first.id, 'a3');
     });
 
     test('batchToggleFavorite sets favorite on multiple', () async {
