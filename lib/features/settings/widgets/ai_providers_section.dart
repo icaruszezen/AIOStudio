@@ -8,7 +8,7 @@ import '../../../core/services/ai/provider_presets.dart';
 import '../../../core/theme/app_theme.dart';
 import '../views/ai_provider_dialog.dart';
 
-final _allProvidersProvider = StreamProvider<List<AiProviderConfig>>((ref) {
+final _allProvidersProvider = StreamProvider.autoDispose<List<AiProviderConfig>>((ref) {
   return ref.watch(aiProviderConfigDaoProvider).watchAll();
 });
 
@@ -361,7 +361,7 @@ class _TypeBadge extends StatelessWidget {
 }
 
 final _hasSecureApiKeyProvider =
-    FutureProvider.family<bool, String>((ref, providerId) {
+    FutureProvider.autoDispose.family<bool, String>((ref, providerId) {
   return ref.watch(secureKeyServiceProvider).hasApiKey(providerId);
 });
 

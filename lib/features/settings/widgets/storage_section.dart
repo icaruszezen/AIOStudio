@@ -11,11 +11,11 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/format_utils.dart';
 import '../providers/settings_provider.dart';
 
-final _storageStatsProvider = FutureProvider<DetailedStorageStats>((ref) {
+final _storageStatsProvider = FutureProvider.autoDispose<DetailedStorageStats>((ref) {
   return ref.watch(localStorageServiceProvider).getDetailedStorageStats();
 });
 
-final _storagePathProvider = FutureProvider<String>((ref) {
+final _storagePathProvider = FutureProvider.autoDispose<String>((ref) {
   return ref.watch(localStorageServiceProvider).getStoragePath();
 });
 

@@ -46,7 +46,7 @@ final aiServicesReadyProvider = FutureProvider<AiServiceManager>((ref) async {
 /// Available model identifiers for the given capability type
 /// ("chat", "image", "video").
 final availableModelsProvider =
-    FutureProvider.family<List<AiModelInfo>, String>((ref, type) async {
+    FutureProvider.autoDispose.family<List<AiModelInfo>, String>((ref, type) async {
   final manager = await ref.watch(aiServicesReadyProvider.future);
   return manager.getAvailableModelInfos(type);
 });

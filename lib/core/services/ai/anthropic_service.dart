@@ -80,13 +80,17 @@ class AnthropicService extends AiService {
   }
 
   @override
-  Stream<String> chatCompletionStream(AiChatRequest request) async* {
+  Stream<String> chatCompletionStream(
+    AiChatRequest request, {
+    CancelToken? cancelToken,
+  }) async* {
     try {
       final body = _buildBody(request, stream: true);
       final response = await _dio.post<ResponseBody>(
         '/v1/messages',
         data: body,
         options: Options(responseType: ResponseType.stream),
+        cancelToken: cancelToken,
       );
 
       yield* _parseSseStream(response.data!.stream);

@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import 'ai_exceptions.dart';
 import 'ai_models.dart';
 
@@ -52,7 +54,10 @@ abstract class AiService {
   Future<AiChatResponse> chatCompletion(AiChatRequest request) async =>
       throw UnsupportedError('$providerName 不支持对话补全');
 
-  Stream<String> chatCompletionStream(AiChatRequest request) async* {
+  Stream<String> chatCompletionStream(
+    AiChatRequest request, {
+    CancelToken? cancelToken,
+  }) async* {
     throw UnsupportedError('$providerName 不支持流式对话');
   }
 

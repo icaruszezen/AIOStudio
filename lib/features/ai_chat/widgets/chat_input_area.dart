@@ -95,10 +95,12 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
   @override
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
-    final chatState = ref.watch(chatProvider);
-    final isGenerating = chatState.isGenerating;
-
-    final modelName = chatState.selectedModel ?? '未选择模型';
+    final isGenerating = ref.watch(
+      chatProvider.select((s) => s.isGenerating),
+    );
+    final modelName = ref.watch(
+      chatProvider.select((s) => s.selectedModel),
+    ) ?? '未选择模型';
 
     return Container(
       decoration: BoxDecoration(
@@ -158,7 +160,6 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
       maxLines: 5,
       minLines: 1,
       enabled: !isGenerating,
-      onChanged: (_) => setState(() {}),
     );
   }
 
@@ -180,18 +181,23 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
       );
     }
 
-    final hasContent =
-        _controller.text.trim().isNotEmpty || _attachedImages.isNotEmpty;
-    return FilledButton(
-      onPressed: hasContent ? _send : null,
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(FluentIcons.send, size: 12),
-          SizedBox(width: 6),
-          Text('发送'),
-        ],
-      ),
+    return ListenableBuilder(
+      listenable: _controller,
+      builder: (context, _) {
+        final hasContent =
+            _controller.text.trim().isNotEmpty || _attachedImages.isNotEmpty;
+        return FilledButton(
+          onPressed: hasContent ? _send : null,
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(FluentIcons.send, size: 12),
+              SizedBox(width: 6),
+              Text('发送'),
+            ],
+          ),
+        );
+      },
     );
   }
 

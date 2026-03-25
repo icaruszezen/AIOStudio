@@ -603,8 +603,8 @@ class _ProjectTileWithContext extends ConsumerWidget {
   }
 }
 
-final _assetCountProvider = FutureProvider.family<int, String>((ref, projectId) {
-  return ref.watch(assetDaoProvider).countByProject(projectId);
+final _assetCountProvider = StreamProvider.autoDispose.family<int, String>((ref, projectId) {
+  return ref.watch(assetDaoProvider).watchCountByProject(projectId);
 });
 
 /// Right-click context menu wrapper.

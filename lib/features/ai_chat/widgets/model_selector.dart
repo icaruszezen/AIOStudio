@@ -9,12 +9,18 @@ class ModelSelector extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final chatState = ref.watch(chatProvider);
-    // Rebuild when services finish loading or are reloaded after provider changes.
-    final servicesAsync = ref.watch(aiServicesReadyProvider);
+    final selectedProviderId = ref.watch(
+      chatProvider.select((s) => s.selectedProviderId),
+    );
+    final selectedModel = ref.watch(
+      chatProvider.select((s) => s.selectedModel),
+    );
+    final isLoading = ref.watch(
+      aiServicesReadyProvider.select((s) => s.isLoading),
+    );
     final notifier = ref.read(chatProvider.notifier);
 
-    if (servicesAsync.isLoading) {
+    if (isLoading) {
       return const SizedBox(
         width: 16,
         height: 16,
@@ -28,9 +34,8 @@ class ModelSelector extends ConsumerWidget {
       return const _EmptySelector();
     }
 
-    final currentKey = (chatState.selectedProviderId != null &&
-            chatState.selectedModel != null)
-        ? '${chatState.selectedProviderId}::${chatState.selectedModel}'
+    final currentKey = (selectedProviderId != null && selectedModel != null)
+        ? '$selectedProviderId::$selectedModel'
         : null;
 
     final items = <ComboBoxItem<String>>[];

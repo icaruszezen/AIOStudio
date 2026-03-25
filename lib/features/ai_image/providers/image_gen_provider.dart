@@ -423,9 +423,7 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
 
       if (tagIds.isNotEmpty) {
         final tagDao = ref.read(tagDaoProvider);
-        for (final tagId in tagIds) {
-          await tagDao.addTagToAsset(asset.id, tagId);
-        }
+        await tagDao.batchAddTagsToAsset(asset.id, tagIds);
       }
 
       if (state.currentTaskId != null) {
@@ -518,13 +516,13 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
 
 const _historyPageSize = 50;
 
-final imageGenHistoryProvider = StreamProvider<List<AiTask>>((ref) {
+final imageGenHistoryProvider = StreamProvider.autoDispose<List<AiTask>>((ref) {
   final dao = ref.watch(aiTaskDaoProvider);
   return dao.watchByType('image', limit: _historyPageSize);
 });
 
 final imageGenTaskDetailProvider =
-    FutureProvider.family<AiTask?, String>((ref, id) {
+    FutureProvider.autoDispose.family<AiTask?, String>((ref, id) {
   final dao = ref.watch(aiTaskDaoProvider);
   return dao.getTaskById(id);
 });

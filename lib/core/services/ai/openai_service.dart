@@ -88,13 +88,17 @@ class OpenAiService extends AiService with OpenAiCompatibleMixin {
   }
 
   @override
-  Stream<String> chatCompletionStream(AiChatRequest request) async* {
+  Stream<String> chatCompletionStream(
+    AiChatRequest request, {
+    CancelToken? cancelToken,
+  }) async* {
     try {
       final body = buildOpenAiChatBody(request, stream: true);
       final response = await _dio.post<ResponseBody>(
         '/v1/chat/completions',
         data: body,
         options: Options(responseType: ResponseType.stream),
+        cancelToken: cancelToken,
       );
 
       yield* parseOpenAiSseStream(response.data!.stream);

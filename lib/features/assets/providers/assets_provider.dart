@@ -14,7 +14,7 @@ final allAssetsProvider = StreamProvider<List<Asset>>((ref) {
 });
 
 final assetsByProjectProvider =
-    StreamProvider.family<List<Asset>, String>((ref, projectId) {
+    StreamProvider.autoDispose.family<List<Asset>, String>((ref, projectId) {
   return ref.watch(assetDaoProvider).watchAssets(projectId: projectId);
 });
 
@@ -23,7 +23,7 @@ final favoriteAssetsProvider = StreamProvider<List<Asset>>((ref) {
 });
 
 final assetDetailProvider =
-    StreamProvider.family<Asset?, String>((ref, id) {
+    StreamProvider.autoDispose.family<Asset?, String>((ref, id) {
   return ref.watch(assetDaoProvider).watchAssetById(id);
 });
 

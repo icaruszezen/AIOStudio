@@ -23,7 +23,10 @@ class VideoGenResultArea extends ConsumerStatefulWidget {
 }
 
 class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
-  final _dio = Dio();
+  final _dio = Dio(BaseOptions(
+    connectTimeout: const Duration(seconds: 30),
+    receiveTimeout: const Duration(minutes: 10),
+  ));
   Timer? _elapsedTimer;
   Duration _elapsed = Duration.zero;
   DateTime? _startTime;
@@ -55,16 +58,25 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
 
   @override
   Widget build(BuildContext context) {
-    final genState = ref.watch(videoGenProvider);
-    final pollerState = ref.watch(videoTaskPollerProvider);
-    final taskId = genState.currentViewingTaskId;
+    final taskId = ref.watch(
+      videoGenProvider.select((s) => s.currentViewingTaskId),
+    );
+    final isSubmitting = ref.watch(
+      videoGenProvider.select((s) => s.isSubmitting),
+    );
+    final errorMessage = ref.watch(
+      videoGenProvider.select((s) => s.errorMessage),
+    );
+    final activeTasks = ref.watch(
+      videoTaskPollerProvider.select((s) => s.activeTasks),
+    );
 
-    if (genState.isSubmitting) {
+    if (isSubmitting) {
       return _buildSubmittingState(context);
     }
 
-    if (genState.errorMessage != null && taskId == null) {
-      return ErrorState(title: '生成失败', message: genState.errorMessage);
+    if (errorMessage != null && taskId == null) {
+      return ErrorState(title: '生成失败', message: errorMessage);
     }
 
     if (taskId == null) {
@@ -76,7 +88,7 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
     }
 
     // Check if this task is still being polled
-    final isPolling = pollerState.activeTasks.containsKey(taskId);
+    final isPolling = activeTasks.containsKey(taskId);
 
     if (isPolling) {
       if (_elapsedTimer == null || !_elapsedTimer!.isActive) {
@@ -88,6 +100,8 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
     }
 
     _stopElapsedTimer();
+
+    final genState = ref.watch(videoGenProvider);
 
     // Task finished – check for video
     if (genState.currentVideoPath != null) {

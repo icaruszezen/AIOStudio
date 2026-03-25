@@ -14,7 +14,7 @@ final allTagsProvider = StreamProvider<List<Tag>>((ref) {
 });
 
 final tagsForAssetProvider =
-    StreamProvider.family<List<Tag>, String>((ref, assetId) {
+    StreamProvider.autoDispose.family<List<Tag>, String>((ref, assetId) {
   return ref.watch(tagDaoProvider).watchTagsForAsset(assetId);
 });
 

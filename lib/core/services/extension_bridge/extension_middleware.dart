@@ -90,6 +90,8 @@ Middleware originCheckMiddleware() {
 }
 
 /// Rejects requests whose Content-Length exceeds [_maxBodyBytes].
+/// For chunked transfers without Content-Length, the body is read with a
+/// hard byte limit to prevent unbounded memory usage.
 Middleware requestSizeLimitMiddleware() {
   return (Handler innerHandler) {
     return (Request request) async {
@@ -99,6 +101,17 @@ Middleware requestSizeLimitMiddleware() {
         if (size > _maxBodyBytes) {
           return _errorResponse(413, 'Request body too large (max 200 MB)');
         }
+      } else if (request.method == 'POST' || request.method == 'PUT') {
+        int totalBytes = 0;
+        final chunks = <List<int>>[];
+        await for (final chunk in request.read()) {
+          totalBytes += chunk.length;
+          if (totalBytes > _maxBodyBytes) {
+            return _errorResponse(413, 'Request body too large (max 200 MB)');
+          }
+          chunks.add(chunk);
+        }
+        return innerHandler(request.change(body: Stream.fromIterable(chunks)));
       }
       return innerHandler(request);
     };

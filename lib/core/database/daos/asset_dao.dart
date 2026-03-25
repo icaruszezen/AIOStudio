@@ -97,6 +97,14 @@ class AssetDao extends DatabaseAccessor<AppDatabase> with _$AssetDaoMixin {
     return result.read(count) ?? 0;
   }
 
+  Stream<int> watchCountByProject(String projectId) {
+    final count = countAll();
+    final query = selectOnly(assets)
+      ..addColumns([count])
+      ..where(assets.projectId.equals(projectId));
+    return query.watchSingle().map((row) => row.read(count) ?? 0);
+  }
+
   Future<int> countByProjectAndType(String projectId, String type) async {
     final count = countAll();
     final query = selectOnly(assets)

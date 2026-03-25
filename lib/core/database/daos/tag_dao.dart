@@ -78,6 +78,17 @@ class TagDao extends DatabaseAccessor<AppDatabase> with _$TagDaoMixin {
         }
       });
 
+  Future<void> batchAddTagsToAsset(String assetId, List<String> tagIds) =>
+      batch((b) {
+        for (final tagId in tagIds) {
+          b.insert(
+            assetTags,
+            AssetTagsCompanion.insert(assetId: assetId, tagId: tagId),
+            onConflict: DoNothing(),
+          );
+        }
+      });
+
   Stream<List<AssetTag>> watchAllAssetTags() => select(assetTags).watch();
 
   Future<void> removeAllTagsForAsset(String assetId) =>

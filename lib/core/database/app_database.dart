@@ -55,23 +55,29 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
+          await customStatement('PRAGMA journal_mode = WAL');
+          await customStatement('PRAGMA synchronous = NORMAL');
+          await customStatement('PRAGMA busy_timeout = 5000');
         },
         onCreate: (m) async {
           await m.createAll();
           await _createIndexesV1(customStatement);
           await _createIndexesV2(customStatement);
+          await _createIndexesV3(customStatement);
         },
         onUpgrade: (m, from, to) async {
           for (var target = from + 1; target <= to; target++) {
             switch (target) {
               case 2:
                 await _createIndexesV2(customStatement);
+              case 3:
+                await _createIndexesV3(customStatement);
             }
           }
         },
@@ -106,6 +112,22 @@ class AppDatabase extends _$AppDatabase {
     await exec(
         'CREATE UNIQUE INDEX IF NOT EXISTS idx_ai_provider_configs_name_type '
         'ON ai_provider_configs(name, type)');
+  }
+
+  static Future<void> _createIndexesV3(
+      Future<void> Function(String, [List<dynamic>?]) exec) async {
+    await exec(
+        'CREATE INDEX IF NOT EXISTS idx_projects_archived_updated '
+        'ON projects(is_archived, updated_at)');
+    await exec(
+        'CREATE INDEX IF NOT EXISTS idx_prompts_favorite_updated '
+        'ON prompts(is_favorite, updated_at)');
+    await exec(
+        'CREATE INDEX IF NOT EXISTS idx_ai_tasks_type_created '
+        'ON ai_tasks(type, created_at)');
+    await exec(
+        'CREATE INDEX IF NOT EXISTS idx_ai_tasks_provider '
+        'ON ai_tasks(provider)');
   }
 }
 

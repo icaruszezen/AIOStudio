@@ -440,13 +440,13 @@ class VideoGenNotifier extends Notifier<VideoGenState> {
 // Auxiliary providers
 // ---------------------------------------------------------------------------
 
-final videoGenHistoryProvider = StreamProvider<List<AiTask>>((ref) {
+final videoGenHistoryProvider = StreamProvider.autoDispose<List<AiTask>>((ref) {
   final dao = ref.watch(aiTaskDaoProvider);
-  return dao.watchByType('video');
+  return dao.watchByType('video', limit: 50);
 });
 
 final videoGenTaskDetailProvider =
-    FutureProvider.family<AiTask?, String>((ref, id) {
+    FutureProvider.autoDispose.family<AiTask?, String>((ref, id) {
   final dao = ref.watch(aiTaskDaoProvider);
   return dao.getTaskById(id);
 });

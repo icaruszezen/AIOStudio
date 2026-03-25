@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:dio/dio.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -92,6 +93,7 @@ class ChatNotifier extends Notifier<ChatState> {
   static const _jsonVersion = 1;
 
   StreamSubscription<String>? _activeSubscription;
+  CancelToken? _activeCancelToken;
   Timer? _idleTimer;
 
   AiServiceManager get _serviceManager =>
@@ -101,6 +103,7 @@ class ChatNotifier extends Notifier<ChatState> {
   ChatState build() {
     ref.onDispose(() {
       _activeSubscription?.cancel();
+      _activeCancelToken?.cancel();
       _idleTimer?.cancel();
     });
     _initialize();
@@ -241,6 +244,8 @@ class ChatNotifier extends Notifier<ChatState> {
 
     _activeSubscription?.cancel();
     _activeSubscription = null;
+    _activeCancelToken?.cancel();
+    _activeCancelToken = null;
     _idleTimer?.cancel();
 
     var conv = state.currentConversation;
@@ -306,7 +311,11 @@ class ChatNotifier extends Notifier<ChatState> {
     final startedAt = DateTime.now();
 
     try {
-      final stream = service.chatCompletionStream(request);
+      _activeCancelToken = CancelToken();
+      final stream = service.chatCompletionStream(
+        request,
+        cancelToken: _activeCancelToken,
+      );
       _resetIdleTimer(convId, assistantMsgId);
 
       _activeSubscription = stream.listen(
@@ -352,6 +361,8 @@ class ChatNotifier extends Notifier<ChatState> {
   void stopGeneration() {
     _activeSubscription?.cancel();
     _activeSubscription = null;
+    _activeCancelToken?.cancel();
+    _activeCancelToken = null;
     _idleTimer?.cancel();
     _idleTimer = null;
 

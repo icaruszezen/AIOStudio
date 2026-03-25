@@ -20,6 +20,7 @@ Dio createAiDio({
   final dio = Dio(BaseOptions(
     baseUrl: baseUrl,
     connectTimeout: const Duration(seconds: 30),
+    sendTimeout: const Duration(seconds: 60),
     receiveTimeout: const Duration(seconds: 120),
     headers: {
       'Content-Type': 'application/json',
@@ -103,8 +104,9 @@ class AiRetryInterceptor extends QueuedInterceptor {
           '(status ${lastError.response?.statusCode})');
       await Future<void>.delayed(delay);
 
+      Dio? retryDio;
       try {
-        final retryDio = Dio(BaseOptions(
+        retryDio = Dio(BaseOptions(
           headers: options.headers,
           connectTimeout: options.connectTimeout,
           receiveTimeout: options.receiveTimeout,
@@ -117,6 +119,8 @@ class AiRetryInterceptor extends QueuedInterceptor {
       } on DioException catch (e) {
         lastError = e;
         if (!_isRetryable(e)) break;
+      } finally {
+        retryDio?.close();
       }
     }
 

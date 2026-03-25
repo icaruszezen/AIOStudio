@@ -278,6 +278,7 @@ class _VideoGenParamsPanelState extends ConsumerState<VideoGenParamsPanel> {
                   child: Image.file(
                     File(genState.inputImagePath!),
                     fit: BoxFit.contain,
+                    cacheWidth: 400,
                     errorBuilder: (_, __, ___) => Center(
                       child: Icon(FluentIcons.photo2,
                           size: 48,

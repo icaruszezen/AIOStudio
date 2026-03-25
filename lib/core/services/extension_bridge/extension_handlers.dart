@@ -175,11 +175,11 @@ class ExtensionHandlers {
     Map<String, String>? tagCache,
   }) async {
     final tagMap = tagCache ?? await _buildTagCache();
+    final tagIdsToLink = <String>[];
 
     for (final name in tagNames) {
-      String tagId;
       if (tagMap.containsKey(name)) {
-        tagId = tagMap[name]!;
+        tagIdsToLink.add(tagMap[name]!);
       } else {
         final newTag = TagsCompanion.insert(
           id: _uuid.v4(),
@@ -187,10 +187,14 @@ class ExtensionHandlers {
           createdAt: DateTime.now().millisecondsSinceEpoch,
         );
         await _tagDao.insertTag(newTag);
-        tagId = newTag.id.value;
+        final tagId = newTag.id.value;
         tagMap[name] = tagId;
+        tagIdsToLink.add(tagId);
       }
-      await _tagDao.addTagToAsset(assetId, tagId);
+    }
+
+    if (tagIdsToLink.isNotEmpty) {
+      await _tagDao.batchAddTagsToAsset(assetId, tagIdsToLink);
     }
   }
 

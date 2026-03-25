@@ -6,8 +6,6 @@ import 'package:uuid/uuid.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/database_provider.dart';
 import '../../../core/utils/epoch_utils.dart';
-import '../../assets/providers/assets_provider.dart';
-import '../../prompts/providers/prompts_provider.dart';
 
 export '../../../core/providers/database_provider.dart'
     show activeProjectsProvider;
@@ -21,12 +19,12 @@ final archivedProjectsProvider = StreamProvider<List<Project>>((ref) {
 });
 
 final projectDetailProvider =
-    StreamProvider.family<Project?, String>((ref, id) {
+    StreamProvider.autoDispose.family<Project?, String>((ref, id) {
   return ref.watch(projectDaoProvider).watchProjectById(id);
 });
 
 final projectAiTasksProvider =
-    StreamProvider.family<List<AiTask>, String>((ref, projectId) {
+    StreamProvider.autoDispose.family<List<AiTask>, String>((ref, projectId) {
   return ref.watch(aiTaskDaoProvider).watchByProject(projectId);
 });
 
@@ -34,7 +32,7 @@ final projectAiTasksProvider =
 // Future providers
 // ---------------------------------------------------------------------------
 
-final searchProjectsProvider = FutureProvider.family<List<Project>,
+final searchProjectsProvider = FutureProvider.autoDispose.family<List<Project>,
     (String query, bool archivedOnly)>((ref, params) {
   final (query, archivedOnly) = params;
   if (query.isEmpty) return Future.value([]);
@@ -43,33 +41,43 @@ final searchProjectsProvider = FutureProvider.family<List<Project>,
       .searchByName(query, archivedOnly: archivedOnly);
 });
 
-final projectStatsProvider =
-    FutureProvider.family<ProjectStats, String>((ref, projectId) async {
-  // Depend on stream providers so stats auto-refresh when data changes.
-  await ref.watch(assetsByProjectProvider(projectId).future);
-  await ref.watch(promptsByProjectProvider(projectId).future);
-  await ref.watch(projectAiTasksProvider(projectId).future);
+/// Lightweight count-only streams for reactive stats updates.
+final _assetCountTrigger =
+    StreamProvider.autoDispose.family<int, String>((ref, projectId) {
+  return ref.watch(assetDaoProvider).watchCountByProject(projectId);
+});
 
+final _promptCountTrigger =
+    StreamProvider.autoDispose.family<int, String>((ref, projectId) {
+  return ref.watch(promptDaoProvider).watchCountByProject(projectId);
+});
+
+final _taskCountTrigger =
+    StreamProvider.autoDispose.family<int, String>((ref, projectId) {
+  return ref.watch(aiTaskDaoProvider).watchCountByProject(projectId);
+});
+
+final projectStatsProvider =
+    FutureProvider.autoDispose.family<ProjectStats, String>((ref, projectId) async {
   final assetDao = ref.watch(assetDaoProvider);
-  final promptDao = ref.watch(promptDaoProvider);
   final aiTaskDao = ref.watch(aiTaskDaoProvider);
 
-  final results = await Future.wait([
-    assetDao.countByProject(projectId),
+  final counts = await Future.wait([
+    ref.watch(_assetCountTrigger(projectId).future),
+    ref.watch(_promptCountTrigger(projectId).future),
+    ref.watch(_taskCountTrigger(projectId).future),
     assetDao.countByProjectAndType(projectId, 'image'),
     assetDao.countByProjectAndType(projectId, 'video'),
-    promptDao.countByProject(projectId),
-    aiTaskDao.countByProject(projectId),
     aiTaskDao.sumTokenUsageByProject(projectId),
   ]);
 
   return ProjectStats(
-    totalAssets: results[0],
-    imageCount: results[1],
-    videoCount: results[2],
-    promptCount: results[3],
-    aiTaskCount: results[4],
-    totalTokenUsage: results[5],
+    totalAssets: counts[0],
+    imageCount: counts[3],
+    videoCount: counts[4],
+    promptCount: counts[1],
+    aiTaskCount: counts[2],
+    totalTokenUsage: counts[5],
   );
 });
 

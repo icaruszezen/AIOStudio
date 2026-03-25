@@ -77,6 +77,14 @@ class PromptDao extends DatabaseAccessor<AppDatabase> with _$PromptDaoMixin {
     return result.read(count) ?? 0;
   }
 
+  Stream<int> watchCountByProject(String projectId) {
+    final count = countAll();
+    final query = selectOnly(prompts)
+      ..addColumns([count])
+      ..where(prompts.projectId.equals(projectId));
+    return query.watchSingle().map((row) => row.read(count) ?? 0);
+  }
+
   Future<List<Prompt>> searchPrompts(String query) => (select(prompts)
         ..where(
             (t) => likeEscaped(t.title, query) | likeEscaped(t.content, query))

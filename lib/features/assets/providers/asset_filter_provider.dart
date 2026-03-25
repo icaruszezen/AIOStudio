@@ -149,11 +149,28 @@ class AssetFilterNotifier extends Notifier<AssetFilterState> {
 // SQL-backed filtered assets stream
 // ---------------------------------------------------------------------------
 
-final filteredAssetsProvider = StreamProvider<List<Asset>>((ref) {
-  final filter = ref.watch(assetFilterProvider);
+final filteredAssetsProvider = StreamProvider.autoDispose<List<Asset>>((ref) {
+  final typeFilter = ref.watch(
+    assetFilterProvider.select((s) => s.typeFilter),
+  );
+  final projectFilter = ref.watch(
+    assetFilterProvider.select((s) => s.projectFilter),
+  );
+  final tagFilters = ref.watch(
+    assetFilterProvider.select((s) => s.tagFilters),
+  );
+  final searchQuery = ref.watch(
+    assetFilterProvider.select((s) => s.searchQuery),
+  );
+  final sortField = ref.watch(
+    assetFilterProvider.select((s) => s.sortField),
+  );
+  final sortAscending = ref.watch(
+    assetFilterProvider.select((s) => s.sortAscending),
+  );
   final dao = ref.watch(assetDaoProvider);
 
-  final sortColumn = switch (filter.sortField) {
+  final sortColumn = switch (sortField) {
     AssetSortField.name => 'name',
     AssetSortField.createdAt => 'createdAt',
     AssetSortField.fileSize => 'fileSize',
@@ -161,11 +178,11 @@ final filteredAssetsProvider = StreamProvider<List<Asset>>((ref) {
   };
 
   return dao.watchFiltered(
-    typeFilter: filter.typeFilter,
-    projectFilter: filter.projectFilter,
-    tagIds: filter.tagFilters,
-    searchQuery: filter.searchQuery,
+    typeFilter: typeFilter,
+    projectFilter: projectFilter,
+    tagIds: tagFilters,
+    searchQuery: searchQuery,
     sortColumn: sortColumn,
-    sortAscending: filter.sortAscending,
+    sortAscending: sortAscending,
   );
 });

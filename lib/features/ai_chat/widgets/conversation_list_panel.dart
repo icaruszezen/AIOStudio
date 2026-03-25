@@ -29,8 +29,12 @@ class _ConversationListPanelState
   @override
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
-    final chatState = ref.watch(chatProvider);
-    final allConversations = chatState.conversations;
+    final allConversations = ref.watch(
+      chatProvider.select((s) => s.conversations),
+    );
+    final currentConversationId = ref.watch(
+      chatProvider.select((s) => s.currentConversationId),
+    );
 
     final filtered = _searchQuery.isEmpty
         ? allConversations
@@ -53,7 +57,7 @@ class _ConversationListPanelState
                       ? '点击"新建对话"开始聊天'
                       : '尝试其他关键词',
                 )
-              : _buildList(filtered, chatState.currentConversationId),
+              : _buildList(filtered, currentConversationId),
         ),
       ],
     );

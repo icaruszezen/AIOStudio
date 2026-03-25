@@ -272,6 +272,7 @@ class _HistoryCardState extends ConsumerState<_HistoryCard> {
       return Image.network(
         image.url!,
         fit: BoxFit.cover,
+        cacheWidth: 200,
         errorBuilder: (_, __, ___) =>
             const Center(child: Icon(FluentIcons.photo2)),
       );

@@ -24,16 +24,22 @@ class ImageGenResultArea extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final genState = ref.watch(imageGenProvider);
+    final isGenerating = ref.watch(
+      imageGenProvider.select((s) => s.isGenerating),
+    );
 
-    if (genState.isGenerating) {
+    if (isGenerating) {
       return const LoadingIndicator(message: '正在生成图片，请稍候...');
     }
 
-    if (genState.errorMessage != null) {
-      return ErrorState(title: '生成失败', message: genState.errorMessage);
+    final errorMessage = ref.watch(
+      imageGenProvider.select((s) => s.errorMessage),
+    );
+    if (errorMessage != null) {
+      return ErrorState(title: '生成失败', message: errorMessage);
     }
 
+    final genState = ref.watch(imageGenProvider);
     final result = genState.currentResult;
     if (result == null || result.images.isEmpty) {
       return const EmptyState(
@@ -207,6 +213,7 @@ class ImageGenResultArea extends ConsumerWidget {
       return Image.network(
         image.url!,
         fit: BoxFit.contain,
+        cacheWidth: 1024,
         loadingBuilder: (_, child, progress) {
           if (progress == null) return child;
           return Center(

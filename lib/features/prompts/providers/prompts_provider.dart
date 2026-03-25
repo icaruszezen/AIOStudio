@@ -16,12 +16,12 @@ final allPromptsProvider = StreamProvider<List<Prompt>>((ref) {
 });
 
 final promptsByCategoryProvider =
-    StreamProvider.family<List<Prompt>, String>((ref, category) {
+    StreamProvider.autoDispose.family<List<Prompt>, String>((ref, category) {
   return ref.watch(promptDaoProvider).watchPrompts(category: category);
 });
 
 final promptsByProjectProvider =
-    StreamProvider.family<List<Prompt>, String>((ref, projectId) {
+    StreamProvider.autoDispose.family<List<Prompt>, String>((ref, projectId) {
   return ref.watch(promptDaoProvider).watchPrompts(projectId: projectId);
 });
 
@@ -34,7 +34,7 @@ final favoritePromptsProvider = StreamProvider<List<Prompt>>((ref) {
 // ---------------------------------------------------------------------------
 
 final promptDetailProvider =
-    StreamProvider.family<Prompt?, String>((ref, id) {
+    StreamProvider.autoDispose.family<Prompt?, String>((ref, id) {
   return ref.watch(promptDaoProvider).watchPromptById(id);
 });
 
@@ -91,7 +91,7 @@ class _FavoriteFilterNotifier extends Notifier<bool> {
 }
 
 /// Combined provider: applies category, favorite, and search filters.
-final filteredPromptsProvider = StreamProvider<List<Prompt>>((ref) {
+final filteredPromptsProvider = StreamProvider.autoDispose<List<Prompt>>((ref) {
   final category = ref.watch(promptCategoryFilterProvider);
   final query = ref.watch(promptSearchQueryProvider);
   final favoritesOnly = ref.watch(promptFavoriteFilterProvider);
