@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../../../shared/widgets/resizable_divider.dart';
@@ -225,7 +226,7 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
 
     return promptsAsync.when(
       loading: () => const LoadingIndicator(),
-      error: (e, _) => Center(child: Text('加载失败: $e')),
+      error: (e, _) => Center(child: Text(formatUserError(e))),
       data: (prompts) {
         if (prompts.isEmpty) {
           return EmptyState(

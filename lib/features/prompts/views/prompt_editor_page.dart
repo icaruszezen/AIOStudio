@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../../../core/providers/database_provider.dart'
     show activeProjectsProvider;
 import '../providers/prompts_provider.dart';
@@ -233,7 +234,7 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
 
     return promptAsync.when(
       loading: () => const Center(child: ProgressRing()),
-      error: (e, _) => Center(child: Text('加载失败: $e')),
+      error: (e, _) => Center(child: Text(formatUserError(e))),
       data: (prompt) {
         if (prompt == null) {
           return const Center(child: Text('提示词不存在'));

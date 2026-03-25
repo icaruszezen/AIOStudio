@@ -6,6 +6,7 @@ import '../../../core/providers/ai_providers.dart';
 import '../../../core/providers/database_provider.dart';
 import '../../../core/services/ai/provider_presets.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../views/ai_provider_dialog.dart';
 
 final _allProvidersProvider = StreamProvider.autoDispose<List<AiProviderConfig>>((ref) {
@@ -50,7 +51,7 @@ class AiProvidersSection extends ConsumerWidget {
           ),
           error: (e, _) => InfoBar(
             title: const Text('加载失败'),
-            content: Text('$e'),
+            content: Text(formatUserError(e)),
             severity: InfoBarSeverity.error,
           ),
           data: (providers) {
@@ -265,7 +266,7 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
           context,
           builder: (ctx, close) => InfoBar(
             title: const Text('连接失败'),
-            content: Text('$e'),
+            content: Text(formatUserError(e)),
             severity: InfoBarSeverity.error,
             onClose: close,
           ),

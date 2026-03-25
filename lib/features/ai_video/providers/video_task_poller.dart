@@ -148,7 +148,8 @@ class VideoTaskPoller extends Notifier<VideoPollerState> {
             remoteTaskId: remoteTaskId,
             providerId: service.providerId,
           );
-        } catch (_) {
+        } catch (e) {
+          _log.w('[Poller] Failed to restore task ${task.id}', error: e);
           continue;
         }
       }

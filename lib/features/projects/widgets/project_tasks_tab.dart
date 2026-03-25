@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../../../shared/utils/format_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
@@ -22,7 +23,7 @@ class ProjectTasksTab extends ConsumerWidget {
       error: (e, _) => Center(
         child: InfoBar(
           title: const Text('加载失败'),
-          content: Text('$e'),
+          content: Text(formatUserError(e)),
           severity: InfoBarSeverity.error,
         ),
       ),

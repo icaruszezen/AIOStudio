@@ -62,9 +62,9 @@ class AccentColorNotifier extends Notifier<AccentColor> {
   }
 
   Future<void> setAccentColor(AccentColor color) async {
-    state = color;
     final prefs = ref.read(sharedPreferencesProvider);
     await prefs.setString(_accentColorKey, _accentColorName(color));
+    state = color;
   }
 }
 
@@ -87,9 +87,9 @@ class LocaleNotifier extends Notifier<Locale> {
   }
 
   Future<void> setLocale(Locale locale) async {
-    state = locale;
     final prefs = ref.read(sharedPreferencesProvider);
     await prefs.setString(_localeKey, locale.toLanguageTag());
+    state = locale;
   }
 }
 
@@ -108,9 +108,10 @@ class AutoSaveChatNotifier extends Notifier<bool> {
   }
 
   Future<void> toggle() async {
-    state = !state;
+    final newValue = !state;
     final prefs = ref.read(sharedPreferencesProvider);
-    await prefs.setBool(_autoSaveChatKey, state);
+    await prefs.setBool(_autoSaveChatKey, newValue);
+    state = newValue;
   }
 }
 
@@ -167,7 +168,6 @@ class WindowEffectNotifier extends Notifier<AppWindowEffect> {
   }
 
   Future<void> setEffect(AppWindowEffect effect) async {
-    state = effect;
     final prefs = ref.read(sharedPreferencesProvider);
     await prefs.setString(_windowEffectKey, effect.name);
     if (PlatformUtils.isDesktop) {
@@ -176,6 +176,7 @@ class WindowEffectNotifier extends Notifier<AppWindowEffect> {
         color: const Color(0x00000000),
       );
     }
+    state = effect;
   }
 }
 
@@ -194,13 +195,13 @@ class GithubMirrorNotifier extends Notifier<String> {
   }
 
   Future<void> setMirror(String prefix) async {
-    state = prefix;
     final prefs = ref.read(sharedPreferencesProvider);
     if (prefix.isEmpty) {
       await prefs.remove(_githubMirrorKey);
     } else {
       await prefs.setString(_githubMirrorKey, prefix);
     }
+    state = prefix;
   }
 }
 

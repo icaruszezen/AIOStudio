@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:fluent_ui/fluent_ui.dart';
 
 import '../../../core/theme/design_tokens.dart';
+import '../../../shared/utils/error_utils.dart';
 
 class TextPreviewWidget extends StatefulWidget {
   const TextPreviewWidget({super.key, required this.filePath});
@@ -57,7 +58,7 @@ class _TextPreviewWidgetState extends State<TextPreviewWidget> {
       _content = (lines.length > _maxLines ? lines.take(_maxLines) : lines)
           .join('\n');
     } catch (e) {
-      _error = e.toString();
+      _error = formatUserError(e);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

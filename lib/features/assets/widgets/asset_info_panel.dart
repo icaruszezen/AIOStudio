@@ -13,6 +13,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/providers/database_provider.dart'
     show activeProjectsProvider;
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../../../core/utils/platform_utils.dart';
 import '../../../shared/utils/format_utils.dart';
 import '../providers/assets_provider.dart';
@@ -100,7 +101,7 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
         await displayInfoBar(context, builder: (_, close) {
           return InfoBar(
             title: Text(PlatformUtils.isMobile ? '分享失败' : '无法打开文件管理器'),
-            content: Text('$e'),
+            content: Text(formatUserError(e)),
             severity: InfoBarSeverity.error,
             onClose: close,
           );
@@ -131,7 +132,7 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
         await displayInfoBar(context, builder: (_, close) {
           return InfoBar(
             title: const Text('导出失败'),
-            content: Text('$e'),
+            content: Text(formatUserError(e)),
             severity: InfoBarSeverity.error,
             onClose: close,
           );

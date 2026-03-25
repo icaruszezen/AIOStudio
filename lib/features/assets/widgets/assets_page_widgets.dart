@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../providers/tags_provider.dart';
 import 'asset_tag_editor.dart';
 
@@ -94,7 +95,7 @@ class BatchTagSelector extends ConsumerWidget {
 
     return tagsAsync.when(
       loading: () => const Center(child: ProgressRing()),
-      error: (e, _) => Text('$e'),
+      error: (e, _) => Text(formatUserError(e)),
       data: (tags) {
         if (tags.isEmpty) {
           return Text('暂无标签，请先创建标签', style: theme.typography.body);

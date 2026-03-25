@@ -8,6 +8,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
+import '../../../shared/utils/error_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/error_state.dart';
 import '../../ai_image/widgets/save_to_asset_dialog.dart';
@@ -112,7 +113,7 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
     final taskAsync = ref.watch(videoGenTaskDetailProvider(taskId));
     return taskAsync.when(
       loading: () => _buildPollingState(context, taskId),
-      error: (e, _) => ErrorState(title: '生成失败', message: e.toString()),
+      error: (e, _) => ErrorState(title: '生成失败', message: formatUserError(e)),
       data: (task) {
         if (task == null) {
           return const EmptyState(
@@ -348,7 +349,7 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
       if (context.mounted) {
         await displayInfoBar(context, builder: (ctx, close) {
           return InfoBar(
-            title: Text('保存失败: $e'),
+            title: Text('保存失败: ${formatUserError(e)}'),
             severity: InfoBarSeverity.error,
             onClose: close,
           );

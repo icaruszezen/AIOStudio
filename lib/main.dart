@@ -12,6 +12,7 @@ import 'package:window_manager/window_manager.dart';
 
 import 'app.dart';
 import 'core/providers/database_provider.dart';
+import 'core/providers/provider_observer.dart';
 import 'core/services/extension_bridge/extension_providers.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/platform_utils.dart';
@@ -32,6 +33,16 @@ Future<void> main() async {
         stackTrace: details.stack,
       );
     };
+
+    if (kReleaseMode) {
+      ErrorWidget.builder = (details) => const Center(
+        child: Text(
+          '出现了一些问题，请重试',
+          style: TextStyle(fontSize: 14, color: Color(0xFF666666)),
+          textDirection: TextDirection.ltr,
+        ),
+      );
+    }
 
     PlatformDispatcher.instance.onError = (error, stack) {
       _log.e('PlatformDispatcher error', error: error, stackTrace: stack);
@@ -69,6 +80,7 @@ Future<void> main() async {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
+      observers: [AppProviderObserver()],
     );
 
     final secureKeys = container.read(secureKeyServiceProvider);

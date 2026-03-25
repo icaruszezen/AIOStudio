@@ -9,6 +9,7 @@ import '../../../core/providers/database_provider.dart'
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/platform_utils.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../providers/asset_filter_provider.dart';
@@ -837,7 +838,7 @@ class _AssetsContent extends ConsumerWidget {
       error: (e, _) => Center(
         child: InfoBar(
           title: const Text('加载失败'),
-          content: Text('$e'),
+          content: Text(formatUserError(e)),
           severity: InfoBarSeverity.error,
         ),
       ),

@@ -9,6 +9,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/platform_utils.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../../../shared/utils/format_utils.dart';
 import '../../../shared/widgets/breadcrumb_navigation.dart';
 import '../../../shared/widgets/empty_state.dart';
@@ -45,7 +46,7 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
           context,
           builder: (context, close) => InfoBar(
             title: const Text('操作失败'),
-            content: Text('$e'),
+            content: Text(formatUserError(e)),
             severity: InfoBarSeverity.error,
             action: IconButton(
               icon: const Icon(FluentIcons.clear),
@@ -93,7 +94,7 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
             context,
             builder: (context, close) => InfoBar(
               title: const Text('删除失败'),
-              content: Text('$e'),
+              content: Text(formatUserError(e)),
               severity: InfoBarSeverity.error,
               action: IconButton(
                 icon: const Icon(FluentIcons.clear),
@@ -118,7 +119,7 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
         content: Center(
           child: InfoBar(
             title: const Text('加载失败'),
-            content: Text('$e'),
+            content: Text(formatUserError(e)),
             severity: InfoBarSeverity.error,
           ),
         ),
@@ -327,7 +328,7 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
       error: (e, _) => Center(
         child: InfoBar(
           title: const Text('加载统计失败'),
-          content: Text('$e'),
+          content: Text(formatUserError(e)),
           severity: InfoBarSeverity.error,
         ),
       ),

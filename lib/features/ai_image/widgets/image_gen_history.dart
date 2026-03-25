@@ -7,6 +7,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/ai/ai_models.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/format_utils.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../providers/image_gen_provider.dart';
@@ -23,7 +24,7 @@ class ImageGenHistory extends ConsumerWidget {
       error: (e, _) => EmptyState(
         icon: FluentIcons.error_badge,
         title: '加载失败',
-        description: e.toString(),
+        description: formatUserError(e),
       ),
       data: (tasks) {
         if (tasks.isEmpty) {

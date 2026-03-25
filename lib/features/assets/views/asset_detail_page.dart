@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/router/app_router.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../../../shared/widgets/breadcrumb_navigation.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../../../shared/widgets/resizable_divider.dart';
@@ -101,7 +102,7 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
       onKeyEvent: _onKeyEvent,
       child: assetAsync.when(
         loading: () => const LoadingIndicator(),
-        error: (e, _) => Center(child: Text('加载失败: $e')),
+        error: (e, _) => Center(child: Text(formatUserError(e))),
         data: (asset) {
           if (asset == null) {
             return Center(

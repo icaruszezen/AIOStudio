@@ -8,8 +8,8 @@ import 'package:uuid/uuid.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/ai_providers.dart';
 import '../../../core/providers/database_provider.dart';
-import '../../../core/services/ai/ai_exceptions.dart';
 import '../../../core/services/ai/ai_models.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../../../core/services/ai/ai_service.dart';
 import '../../../core/services/ai/ai_service_manager.dart';
 
@@ -360,7 +360,7 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
         return;
       }
 
-      final userMsg = _userFriendlyError(e);
+      final userMsg = formatUserError(e);
       await dao.updateTaskFields(taskId, AiTasksCompanion(
         status: const Value('failed'),
         errorMessage: Value(e.toString()),
@@ -376,17 +376,6 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
     }
   }
 
-  static String _userFriendlyError(Object e) {
-    if (e is AiServiceException) return e.userMessage;
-    final msg = e.toString();
-    if (msg.contains('SocketException') || msg.contains('Connection refused')) {
-      return '网络连接失败，请检查网络设置或代理配置';
-    }
-    if (msg.contains('TimeoutException') || msg.contains('timed out')) {
-      return '请求超时，请稍后重试';
-    }
-    return '图片生成失败，请检查参数后重试';
-  }
 
   // -- Save to asset --------------------------------------------------------
 
@@ -456,7 +445,8 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
     try {
       final json = jsonDecode(outputText) as Map<String, dynamic>;
       return ((json['_savedAssetIds'] as List<dynamic>?) ?? []).cast<String>();
-    } catch (_) {
+    } catch (e) {
+      _log.w('[ImageGen] Failed to parse saved asset IDs', error: e);
       return [];
     }
   }
@@ -477,7 +467,9 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
     if (task.inputParams != null) {
       try {
         params = jsonDecode(task.inputParams!) as Map<String, dynamic>;
-      } catch (_) {}
+      } catch (e) {
+        _log.w('[ImageGen] Failed to parse task inputParams', error: e);
+      }
     }
 
     final providers = getAvailableProviders();

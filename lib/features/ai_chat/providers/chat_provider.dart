@@ -16,8 +16,8 @@ import 'package:uuid/uuid.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/ai_providers.dart';
 import '../../../core/providers/database_provider.dart';
-import '../../../core/services/ai/ai_exceptions.dart';
 import '../../../core/services/ai/ai_models.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../../../core/services/ai/ai_service.dart';
 import '../../../core/services/ai/ai_service_manager.dart';
 import '../../../core/theme/app_theme.dart' show sharedPreferencesProvider;
@@ -331,7 +331,7 @@ class ChatNotifier extends Notifier<ChatState> {
           _activeSubscription = null;
           _updateMessage(convId, assistantMsgId, (msg) => msg.copyWith(
                 isStreaming: false,
-                error: _formatError(error),
+                error: formatUserError(error),
               ));
           state = state.copyWith(isGenerating: false);
           _saveToDisk();
@@ -352,7 +352,7 @@ class ChatNotifier extends Notifier<ChatState> {
       _log.e('[ChatNotifier] Failed to start stream: $e');
       _updateMessage(convId, assistantMsgId, (msg) => msg.copyWith(
             isStreaming: false,
-            error: _formatError(e),
+            error: formatUserError(e),
           ));
       state = state.copyWith(isGenerating: false);
     }
@@ -525,17 +525,6 @@ class ChatNotifier extends Notifier<ChatState> {
     }
   }
 
-  String _formatError(Object error) {
-    if (error is AiServiceException) return error.userMessage;
-    final msg = error.toString();
-    if (msg.contains('SocketException')) {
-      return '网络连接失败，请检查网络设置';
-    }
-    if (msg.contains('TimeoutException')) {
-      return '请求超时，请稍后重试';
-    }
-    return '请求失败: $msg';
-  }
 
   static int _estimateTokens(String text) {
     if (text.isEmpty) return 0;
@@ -740,13 +729,17 @@ class ChatNotifier extends Notifier<ChatState> {
           selectedModel: parts[1],
         );
       }
-    } catch (_) {}
+    } catch (e) {
+      _log.w('[ChatNotifier] Failed to restore last model', error: e);
+    }
   }
 
   Future<void> _saveLastModel(String providerId, String modelId) async {
     try {
       final prefs = ref.read(sharedPreferencesProvider);
       await prefs.setString(_prefsLastModelKey, '$providerId::$modelId');
-    } catch (_) {}
+    } catch (e) {
+      _log.w('[ChatNotifier] Failed to save last model', error: e);
+    }
   }
 }

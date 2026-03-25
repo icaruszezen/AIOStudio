@@ -12,6 +12,7 @@ import '../../../core/providers/database_provider.dart';
 import '../../../core/services/ai/ai_models.dart';
 import '../../../core/services/ai/provider_presets.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../widgets/ai_provider_widgets.dart';
 import 'model_capability_dialog.dart';
 
@@ -571,7 +572,7 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
           context,
           builder: (ctx, close) => InfoBar(
             title: Text(_isEditing ? '保存失败' : '添加失败'),
-            content: Text('$e'),
+            content: Text(formatUserError(e)),
             severity: InfoBarSeverity.error,
             onClose: close,
           ),

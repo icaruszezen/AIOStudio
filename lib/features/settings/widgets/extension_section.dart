@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/services/extension_bridge/extension_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../providers/settings_provider.dart';
 import 'about_section.dart' show packageInfoProvider;
 
@@ -68,7 +69,7 @@ class ExtensionSection extends ConsumerWidget {
               if (serverState.hasError) ...[
                 const SizedBox(height: 8),
                 Text(
-                  '错误：${serverState.error}',
+                  '错误：${formatUserError(serverState.error!)}',
                   style: theme.typography.body
                       ?.copyWith(color: AppColors.error(b)),
                 ),

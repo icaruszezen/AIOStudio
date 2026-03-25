@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../providers/projects_provider.dart';
 
 class ProjectCreateDialog extends ConsumerStatefulWidget {
@@ -111,7 +112,7 @@ class _ProjectCreateDialogState extends ConsumerState<ProjectCreateDialog> {
           context,
           builder: (context, close) => InfoBar(
             title: Text(_isEditing ? '保存失败' : '创建失败'),
-            content: Text('$e'),
+            content: Text(formatUserError(e)),
             severity: InfoBarSeverity.error,
             action: IconButton(
               icon: const Icon(FluentIcons.clear),

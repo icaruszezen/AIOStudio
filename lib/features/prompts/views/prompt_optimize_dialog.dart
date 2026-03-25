@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/ai_providers.dart';
 import '../../../core/services/ai/ai_models.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../providers/prompts_provider.dart';
 
 class PromptOptimizeDialog extends ConsumerStatefulWidget {
@@ -58,20 +59,13 @@ class _PromptOptimizeDialogState extends ConsumerState<PromptOptimizeDialog> {
     } catch (e) {
       if (mounted && !_cancelled) {
         setState(() {
-          _error = _friendlyError(e);
+          _error = formatUserError(e);
           _isLoading = false;
         });
       }
     }
   }
 
-  static String _friendlyError(Object e) {
-    final msg = e.toString();
-    if (e is StateError) return e.message;
-    const prefix = 'Exception: ';
-    if (msg.startsWith(prefix)) return msg.substring(prefix.length);
-    return msg;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -138,7 +132,7 @@ class _PromptOptimizeDialogState extends ConsumerState<PromptOptimizeDialog> {
       ),
       error: (e, _) => InfoLabel(
         label: '选择模型',
-        child: Text('加载模型失败: $e',
+        child: Text(formatUserError(e),
             style: TextStyle(color: AppColors.error(theme.brightness))),
       ),
       data: (models) {

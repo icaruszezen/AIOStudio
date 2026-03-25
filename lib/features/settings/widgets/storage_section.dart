@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/providers/database_provider.dart';
 import '../../../core/services/storage/local_storage_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../../../shared/utils/format_utils.dart';
 import '../providers/settings_provider.dart';
 
@@ -64,7 +65,7 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
               const SizedBox(height: 8),
               pathAsync.when(
                 loading: () => const ProgressRing(),
-                error: (e, _) => Text('$e'),
+                error: (e, _) => Text(formatUserError(e)),
                 data: (path) => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -182,7 +183,7 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
                 ),
                 error: (e, _) => InfoBar(
                   title: const Text('加载失败'),
-                  content: Text('$e'),
+                  content: Text(formatUserError(e)),
                   severity: InfoBarSeverity.error,
                 ),
                 data: (stats) => _buildStats(context, stats),
@@ -416,7 +417,7 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
       if (mounted) {
         displayInfoBar(context, builder: (_, close) => InfoBar(
           title: const Text('迁移失败'),
-          content: Text('$e'),
+          content: Text(formatUserError(e)),
           severity: InfoBarSeverity.error,
           onClose: close,
         ));
@@ -453,7 +454,7 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
       if (mounted) {
         displayInfoBar(context, builder: (_, close) => InfoBar(
           title: const Text('清理失败'),
-          content: Text('$e'),
+          content: Text(formatUserError(e)),
           severity: InfoBarSeverity.error,
           onClose: close,
         ));

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../providers/tags_provider.dart';
 
 /// Inline tag editor: shows current tags as chips with an add button.
@@ -197,7 +198,7 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
       if (mounted) {
         await displayInfoBar(context, builder: (_, close) => InfoBar(
           title: const Text('添加标签失败'),
-          content: Text('$e'),
+          content: Text(formatUserError(e)),
           severity: InfoBarSeverity.error,
           action: IconButton(
             icon: const Icon(FluentIcons.clear),
@@ -223,7 +224,7 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
       if (mounted) {
         await displayInfoBar(context, builder: (_, close) => InfoBar(
           title: const Text('创建标签失败'),
-          content: Text('$e'),
+          content: Text(formatUserError(e)),
           severity: InfoBarSeverity.error,
           action: IconButton(
             icon: const Icon(FluentIcons.clear),
@@ -247,7 +248,7 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
       if (mounted) {
         await displayInfoBar(context, builder: (_, close) => InfoBar(
           title: const Text('移除标签失败'),
-          content: Text('$e'),
+          content: Text(formatUserError(e)),
           severity: InfoBarSeverity.error,
           action: IconButton(
             icon: const Icon(FluentIcons.clear),
@@ -277,7 +278,7 @@ class TagSelectorPanel extends ConsumerWidget {
 
     return tagsAsync.when(
       loading: () => const Center(child: ProgressRing(strokeWidth: 2)),
-      error: (e, _) => Text('$e'),
+      error: (e, _) => Text(formatUserError(e)),
       data: (tags) {
         if (tags.isEmpty) {
           return Padding(

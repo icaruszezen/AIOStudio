@@ -10,6 +10,7 @@ import '../../../core/providers/ai_providers.dart';
 import '../../../core/providers/database_provider.dart';
 import '../../../core/services/ai/ai_models.dart';
 import '../../../core/services/ai/ai_service.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../../../core/services/ai/ai_service_manager.dart';
 import 'video_task_poller.dart';
 
@@ -339,19 +340,18 @@ class VideoGenNotifier extends Notifier<VideoGenState> {
 
       _log.i('Video generation submitted: $taskId');
     } catch (e) {
-      final errorMsg = e.toString();
       await dao.updateTaskFields(taskId, AiTasksCompanion(
         status: const Value('failed'),
-        errorMessage: Value(errorMsg),
+        errorMessage: Value(e.toString()),
         completedAt: Value(DateTime.now().millisecondsSinceEpoch),
       ));
 
       state = state.copyWith(
         isSubmitting: false,
-        errorMessage: errorMsg,
+        errorMessage: formatUserError(e),
       );
 
-      _log.e('Video generation failed: $errorMsg');
+      _log.e('Video generation failed: $e');
     }
   }
 
@@ -400,7 +400,9 @@ class VideoGenNotifier extends Notifier<VideoGenState> {
     if (task.inputParams != null) {
       try {
         params = jsonDecode(task.inputParams!) as Map<String, dynamic>;
-      } catch (_) {}
+      } catch (e) {
+        _log.w('[VideoGen] Failed to parse task inputParams', error: e);
+      }
     }
 
     final mode = params['mode'] == 'image2video'
