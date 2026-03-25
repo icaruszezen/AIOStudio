@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -18,9 +18,9 @@ jobs:
   flutter-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046 # v2.19.0
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
@@ -34,25 +34,43 @@ jobs:
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
 
+      - name: Check formatting
+        run: dart format --set-exit-if-changed .
+
       - name: Analyze
         run: flutter analyze
 
+      - name: Dependency audit
+        run: dart pub audit
+        continue-on-error: true
+
       - name: Test
-        run: flutter test
+        run: flutter test --coverage
 
   extension-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: extension/package-lock.json
 
-      - name: Install and build extension
+      - name: Install dependencies
         working-directory: extension
-        run: |
-          npm ci
-          npm run build
+        run: npm ci
+
+      - name: Type check
+        working-directory: extension
+        run: npx tsc --noEmit
+
+      - name: Build
+        working-directory: extension
+        run: npm run build
+
+      - name: Dependency audit
+        working-directory: extension
+        run: npm audit --audit-level=high
+        continue-on-error: true

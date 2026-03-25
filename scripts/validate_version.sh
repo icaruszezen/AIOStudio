@@ -46,7 +46,8 @@ fi
 MSIX_VERSION=$(grep 'msix_version:' pubspec.yaml | sed 's/.*msix_version: *//')
 EXPECTED_MSIX="${VERSION}.0"
 if [[ "$MSIX_VERSION" != "$EXPECTED_MSIX" ]]; then
-  echo "::warning::msix_config version ($MSIX_VERSION) != expected ($EXPECTED_MSIX)"
+  echo "::error::msix_config version ($MSIX_VERSION) != expected ($EXPECTED_MSIX)"
+  ERRORS=$((ERRORS + 1))
 else
   echo "  msix_config: $MSIX_VERSION"
 fi

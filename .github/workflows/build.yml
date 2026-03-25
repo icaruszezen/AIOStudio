@@ -10,9 +10,6 @@ on:
         description: 'Version to release (e.g. 1.2.0, must match pubspec.yaml)'
         required: false
 
-permissions:
-  contents: write
-
 env:
   FLUTTER_VERSION: '3.41.4'
   NODE_VERSION: '20'
@@ -24,7 +21,7 @@ jobs:
     outputs:
       version: ${{ steps.check.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Validate version consistency
         id: check
@@ -39,9 +36,9 @@ jobs:
     needs: [validate-version]
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046 # v2.19.0
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
@@ -50,11 +47,9 @@ jobs:
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter build windows --release
-
       - run: dart run msix:create
-        continue-on-error: true
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: windows-release
           path: build/windows/x64/runner/Release/
@@ -63,9 +58,9 @@ jobs:
     needs: [validate-version]
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046 # v2.19.0
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
@@ -75,7 +70,7 @@ jobs:
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter build macos --release
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: macos-release
           path: build/macos/Build/Products/Release/*.app
@@ -84,9 +79,9 @@ jobs:
     needs: [validate-version]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046 # v2.19.0
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
@@ -106,7 +101,7 @@ jobs:
           cd build/linux/x64/release/bundle
           tar czf ../../../../../aio-studio-linux-x64.tar.gz .
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: linux-release
           path: aio-studio-linux-x64.tar.gz
@@ -115,24 +110,43 @@ jobs:
     needs: [validate-version]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: temurin
           java-version: '17'
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046 # v2.19.0
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
+      - name: Setup Android signing
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "::warning::Android signing secrets not configured, using debug signing"
+            exit 0
+          fi
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          cat > android/key.properties <<PROPS
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          keyPassword=$ANDROID_KEY_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          storeFile=upload-keystore.jks
+          PROPS
+
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter build apk --release
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: android-release
           path: build/app/outputs/flutter-apk/app-release.apk
@@ -141,9 +155,9 @@ jobs:
     needs: [validate-version]
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046 # v2.19.0
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
@@ -153,7 +167,7 @@ jobs:
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter build ipa --no-codesign
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ios-release
           path: build/ios/ipa/*.ipa
@@ -163,9 +177,9 @@ jobs:
     needs: [validate-version]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -182,7 +196,7 @@ jobs:
           cd extension/dist
           zip -r ../../aio-studio-extension.zip .
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: extension-release
           path: aio-studio-extension.zip
@@ -199,8 +213,10 @@ jobs:
       - build-extension
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           path: artifacts
 
@@ -213,10 +229,11 @@ jobs:
           zip -r "../aio-studio-macos-v${VERSION}.zip" macos-release/
           cp "linux-release/aio-studio-linux-x64.tar.gz" "../aio-studio-linux-x64-v${VERSION}.tar.gz"
           cp "android-release/app-release.apk" "../aio-studio-android-v${VERSION}.apk"
+          cp ios-release/*.ipa "../aio-studio-ios-v${VERSION}.ipa" 2>/dev/null || echo "::warning::iOS IPA not found in artifacts"
           cp "extension-release/aio-studio-extension.zip" "../aio-studio-extension-v${VERSION}.zip"
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
         with:
           name: AIO Studio v${{ needs.validate-version.outputs.version }}
           files: |
@@ -224,5 +241,6 @@ jobs:
             aio-studio-macos-v${{ needs.validate-version.outputs.version }}.zip
             aio-studio-linux-x64-v${{ needs.validate-version.outputs.version }}.tar.gz
             aio-studio-android-v${{ needs.validate-version.outputs.version }}.apk
+            aio-studio-ios-v${{ needs.validate-version.outputs.version }}.ipa
             aio-studio-extension-v${{ needs.validate-version.outputs.version }}.zip
           generate_release_notes: true

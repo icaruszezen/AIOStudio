@@ -71,9 +71,11 @@ flutter_native_splash:
 msix_config:
   display_name: AIO Studio
   publisher_display_name: AIO Studio
+  publisher: CN=AIO Studio
   identity_name: com.aiostudio.app
   msix_version: 1.0.5.0
   logo_path: assets/logo.png
+  capabilities: internetClient, internetClientServer
 
 flutter:
   uses-material-design: true
