@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/design_tokens.dart';
 import '../providers/settings_provider.dart';
 
 class NetworkSection extends ConsumerStatefulWidget {
@@ -35,7 +36,7 @@ class _NetworkSectionState extends ConsumerState<NetworkSection> {
   String get _comboValue {
     final current = ref.watch(githubMirrorProvider);
     if (githubMirrors.containsKey(current)) return current;
-    return kCustomMirrorValue;
+    return customMirrorValue;
   }
 
   @override
@@ -47,12 +48,12 @@ class _NetworkSectionState extends ConsumerState<NetworkSection> {
       children: [
         Row(
           children: [
-            const Icon(FluentIcons.globe, size: 20),
-            const SizedBox(width: 8),
+            const Icon(FluentIcons.globe, size: DesignTokens.iconLG),
+            const SizedBox(width: DesignTokens.spacingSM),
             Text('网络加速', style: theme.typography.subtitle),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: DesignTokens.spacingMD),
         Card(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,7 +64,7 @@ class _NetworkSectionState extends ConsumerState<NetworkSection> {
                   color: theme.resources.textFillColorSecondary,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: DesignTokens.spacingLG),
               Text('GitHub 加速站', style: theme.typography.bodyStrong),
               const SizedBox(height: 10),
               ComboBox<String>(
@@ -73,13 +74,13 @@ class _NetworkSectionState extends ConsumerState<NetworkSection> {
                     (e) => ComboBoxItem(value: e.key, child: Text(e.value)),
                   ),
                   const ComboBoxItem(
-                    value: kCustomMirrorValue,
+                    value: customMirrorValue,
                     child: Text('自定义'),
                   ),
                 ],
                 onChanged: (val) {
                   if (val == null) return;
-                  if (val == kCustomMirrorValue) {
+                  if (val == customMirrorValue) {
                     setState(() => _isCustom = true);
                     final text = _customController.text.trim();
                     if (text.isNotEmpty) {
@@ -101,7 +102,7 @@ class _NetworkSectionState extends ConsumerState<NetworkSection> {
                 isExpanded: true,
               ),
               if (_isCustom) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: DesignTokens.spacingMD),
                 InfoLabel(
                   label: '自定义加速站地址',
                   child: TextBox(
@@ -125,8 +126,8 @@ class _NetworkSectionState extends ConsumerState<NetworkSection> {
                   ),
                 ),
               ],
-              const SizedBox(height: 12),
-              _MirrorPreview(),
+              const SizedBox(height: DesignTokens.spacingMD),
+              const _MirrorPreview(),
             ],
           ),
         ),
@@ -136,6 +137,8 @@ class _NetworkSectionState extends ConsumerState<NetworkSection> {
 }
 
 class _MirrorPreview extends ConsumerWidget {
+  const _MirrorPreview();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = FluentTheme.of(context);

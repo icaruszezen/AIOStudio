@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/services/extension_bridge/extension_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/design_tokens.dart';
 import '../../../shared/utils/error_utils.dart';
 import '../providers/settings_provider.dart';
 import 'about_section.dart' show packageInfoProvider;
@@ -29,12 +30,12 @@ class ExtensionSection extends ConsumerWidget {
       children: [
         Row(
           children: [
-            const Icon(FluentIcons.plug, size: 20),
-            const SizedBox(width: 8),
+            const Icon(FluentIcons.plug, size: DesignTokens.iconLG),
+            const SizedBox(width: DesignTokens.spacingSM),
             Text('浏览器扩展', style: theme.typography.subtitle),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: DesignTokens.spacingMD),
         Card(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,14 +68,14 @@ class ExtensionSection extends ConsumerWidget {
                 ],
               ),
               if (serverState.hasError) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: DesignTokens.spacingSM),
                 Text(
                   '错误：${formatUserError(serverState.error!)}',
                   style: theme.typography.body
                       ?.copyWith(color: AppColors.error(b)),
                 ),
               ],
-              const SizedBox(height: 16),
+              const SizedBox(height: DesignTokens.spacingLG),
 
               // Port config
               InfoLabel(
@@ -97,7 +98,7 @@ class ExtensionSection extends ConsumerWidget {
                 ),
               ),
               if (isRunning && port != actualPort) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: DesignTokens.spacingSM),
                 InfoBar(
                   title: const Text('端口已更改，需重启服务生效'),
                   severity: InfoBarSeverity.warning,
@@ -109,7 +110,7 @@ class ExtensionSection extends ConsumerWidget {
                   ),
                 ),
               ],
-              const SizedBox(height: 16),
+              const SizedBox(height: DesignTokens.spacingLG),
 
               // Connection status
               Row(
@@ -132,7 +133,7 @@ class ExtensionSection extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: DesignTokens.spacingLG),
 
               // Actions
               Row(
@@ -154,7 +155,7 @@ class ExtensionSection extends ConsumerWidget {
                           },
                     content: Text(isRunning ? '已启用' : '已停用'),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: DesignTokens.spacingLG),
                   Button(
                     onPressed: serverState.isLoading
                         ? null
@@ -166,7 +167,7 @@ class ExtensionSection extends ConsumerWidget {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(FluentIcons.refresh, size: 14),
+                        Icon(FluentIcons.refresh, size: DesignTokens.iconSM),
                         SizedBox(width: 6),
                         Text('重启服务'),
                       ],
@@ -174,20 +175,20 @@ class ExtensionSection extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: DesignTokens.spacingLG),
               const Divider(),
-              const SizedBox(height: 16),
+              const SizedBox(height: DesignTokens.spacingLG),
 
               // Download links
               Text('扩展下载', style: theme.typography.bodyStrong),
-              const SizedBox(height: 8),
+              const SizedBox(height: DesignTokens.spacingSM),
               Text(
                 '下载编译好的浏览器扩展，解压后在浏览器扩展页面启用「开发者模式」并「加载已解压的扩展程序」。',
                 style: theme.typography.caption?.copyWith(
                   color: theme.resources.textFillColorSecondary,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: DesignTokens.spacingSM),
               Row(
                 children: [
                   Button(
@@ -205,13 +206,13 @@ class ExtensionSection extends ConsumerWidget {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(FluentIcons.download, size: 14),
+                        Icon(FluentIcons.download, size: DesignTokens.iconSM),
                         SizedBox(width: 6),
                         Text('下载扩展'),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: DesignTokens.spacingMD),
                   HyperlinkButton(
                     onPressed: () => launchUrl(
                       Uri.parse('$githubBaseUrl/releases'),

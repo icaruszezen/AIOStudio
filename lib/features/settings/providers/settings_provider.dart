@@ -4,6 +4,7 @@ import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart' show sharedPreferencesProvider;
 import '../../../core/utils/platform_utils.dart';
 
@@ -19,9 +20,9 @@ const _autoSaveChatKey = 'auto_save_chat';
 const _windowEffectKey = 'window_effect';
 const _githubMirrorKey = 'github_mirror';
 
-const githubBaseUrl = 'https://github.com/icaruszezen/AIOStudio';
+const githubBaseUrl = AppConstants.githubRepoUrl;
 
-const kCustomMirrorValue = '__custom__';
+const customMirrorValue = '__custom__';
 
 const githubMirrors = <String, String>{
   '': '直连（不加速）',
@@ -40,7 +41,7 @@ String resolveGithubUrl(String fileUrl, String mirrorPrefix) {
 /// Build the GitHub Releases asset download URL for a given [version] and [assetName].
 /// Example: `https://github.com/.../releases/download/v1.0.4/aio-studio-extension-v1.0.4.zip`
 String githubReleaseAssetUrl(String version, String assetName) {
-  return '$githubBaseUrl/releases/download/v$version/$assetName';
+  return '${AppConstants.githubRepoUrl}/releases/download/v$version/$assetName';
 }
 
 String extensionAssetName(String version) =>
@@ -82,7 +83,7 @@ class LocaleNotifier extends Notifier<Locale> {
     final tag = prefs.getString(_localeKey);
     return switch (tag) {
       'en' => const Locale('en'),
-      _ => const Locale('zh', 'CN'),
+      _ => const Locale('zh'),
     };
   }
 

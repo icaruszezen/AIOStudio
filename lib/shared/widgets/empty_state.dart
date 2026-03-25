@@ -1,5 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
 
+import '../../core/theme/design_tokens.dart';
+
+/// Placeholder when a list or view has no data: icon, title, optional description and action.
 class EmptyState extends StatelessWidget {
   const EmptyState({
     super.key,
@@ -20,7 +23,7 @@ class EmptyState extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(DesignTokens.spacingXXL),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -29,14 +32,14 @@ class EmptyState extends StatelessWidget {
               size: 48,
               color: theme.resources.textFillColorSecondary,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: DesignTokens.spacingLG),
             Text(
               title,
               style: theme.typography.subtitle,
               textAlign: TextAlign.center,
             ),
             if (description != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: DesignTokens.spacingSM),
               Text(
                 description!,
                 style: theme.typography.body?.copyWith(
@@ -46,7 +49,7 @@ class EmptyState extends StatelessWidget {
               ),
             ],
             if (action != null) ...[
-              const SizedBox(height: 24),
+              const SizedBox(height: DesignTokens.spacingXL),
               action!,
             ],
           ],

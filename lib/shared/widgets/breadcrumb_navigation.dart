@@ -1,5 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
 
+/// A single breadcrumb segment; taps are forwarded when a handler is provided.
 class BreadcrumbEntry {
   const BreadcrumbEntry({required this.label, this.onTap});
 
@@ -7,6 +8,7 @@ class BreadcrumbEntry {
   final VoidCallback? onTap;
 }
 
+/// Builds a Fluent [BreadcrumbBar] from a list of entries and invokes their tap handlers.
 class BreadcrumbNavigation extends StatelessWidget {
   const BreadcrumbNavigation({
     super.key,

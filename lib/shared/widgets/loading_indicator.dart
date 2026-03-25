@@ -1,5 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
 
+import '../../core/theme/design_tokens.dart';
+
+/// Centered progress ring for async or loading UI, with an optional status message.
 class LoadingIndicator extends StatelessWidget {
   const LoadingIndicator({
     super.key,
@@ -18,7 +21,7 @@ class LoadingIndicator extends StatelessWidget {
         children: [
           const ProgressRing(),
           if (message != null) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: DesignTokens.spacingLG),
             Text(
               message!,
               style: theme.typography.body?.copyWith(

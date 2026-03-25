@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/theme/design_tokens.dart';
 import '../../../shared/utils/format_utils.dart';
 import 'asset_context_menu.dart';
 import 'asset_thumbnail.dart';
@@ -55,7 +56,7 @@ class _AssetGridItemState extends State<AssetGridItem> {
               color: widget.isSelected
                   ? theme.accentColor.withValues(alpha: 0.08)
                   : theme.cardColor,
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: DesignTokens.borderRadiusMD,
               border: Border.all(
                 color: widget.isSelected
                     ? theme.accentColor
@@ -90,7 +91,7 @@ class _AssetGridItemState extends State<AssetGridItem> {
                   flex: 1,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
+                      horizontal: DesignTokens.spacingSM,
                       vertical: 6,
                     ),
                     child: Column(

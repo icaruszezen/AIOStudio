@@ -347,19 +347,19 @@ AiService? createServiceForType(
       return OpenAiService(
         providerId: id,
         apiKey: apiKey,
-        baseUrl: baseUrl ?? 'https://api.openai.com',
+        baseUrl: baseUrl ?? ProviderPresets.openai.defaultBaseUrl,
       );
     case 'anthropic':
       return AnthropicService(
         providerId: id,
         apiKey: apiKey,
-        baseUrl: baseUrl ?? 'https://api.anthropic.com',
+        baseUrl: baseUrl ?? ProviderPresets.anthropic.defaultBaseUrl,
       );
     case 'stability':
       return StabilityService(
         providerId: id,
         apiKey: apiKey,
-        baseUrl: baseUrl ?? 'https://api.stability.ai',
+        baseUrl: baseUrl ?? ProviderPresets.stability.defaultBaseUrl,
       );
     case 'custom':
       if (baseUrl == null || baseUrl.isEmpty) return null;

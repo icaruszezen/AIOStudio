@@ -3,8 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../core/router/app_router.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/utils/platform_utils.dart';
+import '../../l10n/app_localizations.dart';
 
+/// Root layout shell with navigation pane, title bar, and desktop window controls.
+/// Wraps routed content and drives primary section navigation via [go_router].
 class AppShell extends StatefulWidget {
   const AppShell({super.key, required this.child});
 
@@ -15,30 +19,42 @@ class AppShell extends StatefulWidget {
 }
 
 class _NavItem {
-  const _NavItem({required this.route, required this.icon, required this.title});
+  const _NavItem({required this.route, required this.icon});
   final String route;
   final IconData icon;
-  final String title;
 }
 
 class _AppShellState extends State<AppShell> with WindowListener {
   static const _topItems = [
-    _NavItem(route: AppRoutes.projects, icon: FluentIcons.project_management, title: '项目管理'),
-    _NavItem(route: AppRoutes.assets, icon: FluentIcons.photo_collection, title: '资产库'),
-    _NavItem(route: AppRoutes.prompts, icon: FluentIcons.text_document, title: '提示词库'),
+    _NavItem(route: AppRoutes.projects, icon: FluentIcons.project_management),
+    _NavItem(route: AppRoutes.assets, icon: FluentIcons.photo_collection),
+    _NavItem(route: AppRoutes.prompts, icon: FluentIcons.text_document),
   ];
 
   static const _aiItems = [
-    _NavItem(route: AppRoutes.aiChat, icon: FluentIcons.chat, title: 'AI 对话'),
-    _NavItem(route: AppRoutes.aiImage, icon: FluentIcons.image_search, title: '图片生成'),
-    _NavItem(route: AppRoutes.aiVideo, icon: FluentIcons.video, title: '视频生成'),
+    _NavItem(route: AppRoutes.aiChat, icon: FluentIcons.chat),
+    _NavItem(route: AppRoutes.aiImage, icon: FluentIcons.image_search),
+    _NavItem(route: AppRoutes.aiVideo, icon: FluentIcons.video),
   ];
 
   static const _footerNavItems = [
-    _NavItem(route: AppRoutes.settings, icon: FluentIcons.settings, title: '设置'),
+    _NavItem(route: AppRoutes.settings, icon: FluentIcons.settings),
   ];
 
   static final _allSelectableItems = [..._topItems, ..._aiItems, ..._footerNavItems];
+
+  static String _navTitle(_NavItem item, S l) {
+    return switch (item.route) {
+      AppRoutes.projects => l.navProjects,
+      AppRoutes.assets => l.navAssets,
+      AppRoutes.prompts => l.navPrompts,
+      AppRoutes.aiChat => l.navChat,
+      AppRoutes.aiImage => l.navImageGen,
+      AppRoutes.aiVideo => l.navVideoGen,
+      AppRoutes.settings => l.navSettings,
+      _ => '',
+    };
+  }
 
   bool _isMaximized = false;
   bool _isPaneExpanded = true;
@@ -80,6 +96,7 @@ class _AppShellState extends State<AppShell> with WindowListener {
   @override
   Widget build(BuildContext context) {
     final selectedIndex = _calculateSelectedIndex(context);
+    final l = S.of(context);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -115,14 +132,14 @@ class _AppShellState extends State<AppShell> with WindowListener {
               for (final item in _topItems)
                 PaneItem(
                   icon: Icon(item.icon),
-                  title: Text(item.title),
+                  title: Text(_navTitle(item, l)),
                   body: const SizedBox.shrink(),
                 ),
               PaneItemSeparator(),
               for (final item in _aiItems)
                 PaneItem(
                   icon: Icon(item.icon),
-                  title: Text(item.title),
+                  title: Text(_navTitle(item, l)),
                   body: const SizedBox.shrink(),
                 ),
             ],
@@ -130,7 +147,7 @@ class _AppShellState extends State<AppShell> with WindowListener {
               for (final item in _footerNavItems)
                 PaneItem(
                   icon: Icon(item.icon),
-                  title: Text(item.title),
+                  title: Text(_navTitle(item, l)),
                   body: const SizedBox.shrink(),
                 ),
             ],
@@ -237,12 +254,12 @@ class _WindowButtonState extends State<_WindowButton> {
 
     if (_isHovered) {
       if (widget.isClose) {
-        background = Colors.red;
-        iconColor = Colors.white;
+        background = AppColors.error(theme.brightness);
+        iconColor = AppColors.onAccent;
       } else {
         background = isDark
-            ? Colors.white.withValues(alpha: 0.08)
-            : Colors.black.withValues(alpha: 0.04);
+            ? AppColors.overlayLight(0.08)
+            : AppColors.overlayDark(0.04);
         iconColor = theme.resources.textFillColorPrimary;
       }
     } else {

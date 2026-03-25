@@ -8,6 +8,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
+import '../../../core/constants/app_constants.dart';
 import '../../../shared/utils/error_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/error_state.dart';
@@ -25,7 +26,7 @@ class VideoGenResultArea extends ConsumerStatefulWidget {
 
 class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
   final _dio = Dio(BaseOptions(
-    connectTimeout: const Duration(seconds: 30),
+    connectTimeout: AppConstants.defaultConnectTimeout,
     receiveTimeout: const Duration(minutes: 10),
   ));
   Timer? _elapsedTimer;
@@ -88,7 +89,6 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
       );
     }
 
-    // Check if this task is still being polled
     final isPolling = activeTasks.containsKey(taskId);
 
     if (isPolling) {
@@ -104,12 +104,10 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
 
     final genState = ref.watch(videoGenProvider);
 
-    // Task finished – check for video
     if (genState.currentVideoPath != null) {
       return _buildVideoResult(context, genState);
     }
 
-    // Load task from DB to check result
     final taskAsync = ref.watch(videoGenTaskDetailProvider(taskId));
     return taskAsync.when(
       loading: () => _buildPollingState(context, taskId),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/design_tokens.dart';
 import '../../../shared/utils/error_utils.dart';
 import '../../../shared/utils/format_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
@@ -36,7 +37,10 @@ class ProjectTasksTab extends ConsumerWidget {
           );
         }
         return ListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+          padding: const EdgeInsets.symmetric(
+            vertical: DesignTokens.spacingXS,
+            horizontal: DesignTokens.spacingLG,
+          ),
           itemCount: tasks.length,
           itemBuilder: (context, index) =>
               _AiTaskListItem(task: tasks[index]),
@@ -61,7 +65,10 @@ class _AiTaskListItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Card(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(
+          horizontal: DesignTokens.spacingMD,
+          vertical: 10,
+        ),
         child: Row(
           children: [
             Container(
@@ -69,15 +76,15 @@ class _AiTaskListItem extends StatelessWidget {
               height: 32,
               decoration: BoxDecoration(
                 color: typeColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: DesignTokens.borderRadiusMD,
               ),
               child: Icon(
                 _typeIcon(task.type),
-                size: 14,
+                size: DesignTokens.iconSM,
                 color: typeColor,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: DesignTokens.spacingMD),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,13 +98,13 @@ class _AiTaskListItem extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: DesignTokens.spacingSM),
                       _StatusBadge(status: task.status),
                     ],
                   ),
                   if (task.inputPrompt != null &&
                       task.inputPrompt!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: DesignTokens.spacingXS),
                     Text(
                       task.inputPrompt!,
                       style: theme.typography.caption?.copyWith(
@@ -110,10 +117,10 @@ class _AiTaskListItem extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: DesignTokens.spacingMD),
             if (task.model != null)
               Padding(
-                padding: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.only(right: DesignTokens.spacingMD),
                 child: Text(
                   task.model!,
                   style: theme.typography.caption?.copyWith(
@@ -123,16 +130,16 @@ class _AiTaskListItem extends StatelessWidget {
               ),
             if (task.tokenUsage != null && task.tokenUsage! > 0)
               Padding(
-                padding: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.only(right: DesignTokens.spacingMD),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       FluentIcons.diagnostic,
-                      size: 12,
+                      size: DesignTokens.iconXS,
                       color: theme.resources.textFillColorTertiary,
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: DesignTokens.spacingXS),
                     Text(
                       '${task.tokenUsage}',
                       style: theme.typography.caption?.copyWith(
@@ -198,7 +205,7 @@ class _StatusBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: DesignTokens.borderRadiusSM,
       ),
       child: Text(
         label,

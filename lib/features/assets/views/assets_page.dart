@@ -547,7 +547,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
               border: Border.all(color: theme.accentColor, width: 2),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: AppColors.overlayDark(0.1),
                   blurRadius: 20,
                 ),
               ],

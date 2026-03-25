@@ -7,11 +7,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/providers/database_provider.dart'
+    show activeProjectsProvider;
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/error_utils.dart';
-import '../../../core/providers/database_provider.dart'
-    show activeProjectsProvider;
 import '../providers/prompts_provider.dart';
 import 'prompt_optimize_dialog.dart';
 
@@ -38,11 +38,12 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
 
   final _variableRegex = RegExp(r'\{\{(\w+)\}\}');
   List<_PromptVariable> _variables = [];
+  ProviderSubscription<AsyncValue<Prompt?>>? _promptSub;
 
   @override
   void initState() {
     super.initState();
-    ref.listenManual(
+    _promptSub = ref.listenManual(
       promptDetailProvider(widget.promptId),
       (_, next) {
         next.whenData((prompt) {
@@ -55,6 +56,7 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
 
   @override
   void dispose() {
+    _promptSub?.close();
     _autoSaveTimer?.cancel();
     if (_isDirty) _saveSync();
     _titleController.dispose();

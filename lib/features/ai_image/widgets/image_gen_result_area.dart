@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/services/ai/ai_models.dart';
 import '../../../shared/widgets/empty_state.dart';
@@ -325,8 +326,8 @@ class ImageGenResultArea extends ConsumerWidget {
         await File(savePath).writeAsBytes(image.bytes!);
       } else if (image.url != null) {
         final dio = Dio(BaseOptions(
-          connectTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 120),
+          connectTimeout: AppConstants.defaultConnectTimeout,
+          receiveTimeout: AppConstants.defaultReceiveTimeout,
         ));
         try {
           await dio.download(image.url!, savePath);

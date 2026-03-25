@@ -437,11 +437,12 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
   }
 
   Widget _buildSearchResults() {
-    if (_debouncedSearchQuery.isEmpty) {
+    final query = _debouncedSearchQuery;
+    if (query.isEmpty) {
       return const LoadingIndicator(message: '搜索中...');
     }
     final asyncResults = ref.watch(
-      searchProjectsProvider((_debouncedSearchQuery, _showArchived)),
+      searchProjectsProvider((query, _showArchived)),
     );
 
     return asyncResults.when(

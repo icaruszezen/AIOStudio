@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/design_tokens.dart';
 import '../../../core/utils/platform_utils.dart';
 import '../providers/settings_provider.dart';
 
@@ -18,35 +19,35 @@ class AppearanceSection extends ConsumerWidget {
       children: [
         Row(
           children: [
-            const Icon(FluentIcons.color, size: 20),
-            const SizedBox(width: 8),
+            const Icon(FluentIcons.color, size: DesignTokens.iconLG),
+            const SizedBox(width: DesignTokens.spacingSM),
             Text('外观设置', style: theme.typography.subtitle),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: DesignTokens.spacingMD),
         Card(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _ThemeModeSelector(),
+              const _ThemeModeSelector(),
               const SizedBox(height: 20),
               const Divider(),
               const SizedBox(height: 20),
-              _AccentColorSelector(),
+              const _AccentColorSelector(),
               const SizedBox(height: 20),
               const Divider(),
               const SizedBox(height: 20),
-              _LocaleSelector(),
+              const _LocaleSelector(),
               if (PlatformUtils.isDesktop) ...[
                 const SizedBox(height: 20),
                 const Divider(),
                 const SizedBox(height: 20),
-                _WindowEffectSelector(),
+                const _WindowEffectSelector(),
               ],
               const SizedBox(height: 20),
               const Divider(),
               const SizedBox(height: 20),
-              _AutoSaveChatToggle(),
+              const _AutoSaveChatToggle(),
             ],
           ),
         ),
@@ -56,6 +57,8 @@ class AppearanceSection extends ConsumerWidget {
 }
 
 class _ThemeModeSelector extends ConsumerWidget {
+  const _ThemeModeSelector();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = FluentTheme.of(context);
@@ -74,14 +77,14 @@ class _ThemeModeSelector extends ConsumerWidget {
                   ref.read(themeNotifierProvider.notifier).setThemeMode(ThemeMode.system),
               child: const Text('跟随系统'),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: DesignTokens.spacingSM),
             ToggleButton(
               checked: themeMode == ThemeMode.light,
               onChanged: (_) =>
                   ref.read(themeNotifierProvider.notifier).setThemeMode(ThemeMode.light),
               child: const Text('亮色'),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: DesignTokens.spacingSM),
             ToggleButton(
               checked: themeMode == ThemeMode.dark,
               onChanged: (_) =>
@@ -96,6 +99,8 @@ class _ThemeModeSelector extends ConsumerWidget {
 }
 
 class _AccentColorSelector extends ConsumerWidget {
+  const _AccentColorSelector();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = FluentTheme.of(context);
@@ -108,8 +113,8 @@ class _AccentColorSelector extends ConsumerWidget {
         Text('强调色', style: theme.typography.bodyStrong),
         const SizedBox(height: 10),
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: DesignTokens.spacingSM,
+          runSpacing: DesignTokens.spacingSM,
           children: colors.map((color) {
             final isSelected = color == current;
             return HoverButton(
@@ -123,20 +128,17 @@ class _AccentColorSelector extends ConsumerWidget {
                   height: 36,
                   decoration: BoxDecoration(
                     color: color,
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(DesignTokens.radiusMD),
                     border: isSelected
                         ? Border.all(
-                            color: theme.brightness == Brightness.dark
-                                ? Colors.white
-                                : Colors.black,
+                            color: AppColors.selectionBorder(theme.brightness),
                             width: 2,
                           )
                         : hovered
                             ? Border.all(
-                                color: (theme.brightness == Brightness.dark
-                                        ? Colors.white
-                                        : Colors.black)
-                                    .withValues(alpha: 0.5),
+                                color: AppColors.selectionBorderSubtle(
+                                  theme.brightness,
+                                ),
                                 width: 1.5,
                               )
                             : null,
@@ -144,7 +146,7 @@ class _AccentColorSelector extends ConsumerWidget {
                   child: isSelected
                       ? const Icon(
                           FluentIcons.check_mark,
-                          size: 16,
+                          size: DesignTokens.iconMD,
                           color: AppColors.onAccent,
                         )
                       : null,
@@ -159,6 +161,8 @@ class _AccentColorSelector extends ConsumerWidget {
 }
 
 class _LocaleSelector extends ConsumerWidget {
+  const _LocaleSelector();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = FluentTheme.of(context);
@@ -172,18 +176,14 @@ class _LocaleSelector extends ConsumerWidget {
         SizedBox(
           width: 200,
           child: ComboBox<String>(
-            value: locale.toLanguageTag(),
+            value: locale.languageCode,
             items: const [
-              ComboBoxItem(value: 'zh-CN', child: Text('简体中文')),
+              ComboBoxItem(value: 'zh', child: Text('简体中文')),
               ComboBoxItem(value: 'en', child: Text('English')),
             ],
-            onChanged: (tag) {
-              if (tag == null) return;
-              final parts = tag.split('-');
-              final newLocale = parts.length > 1
-                  ? Locale(parts[0], parts[1])
-                  : Locale(parts[0]);
-              ref.read(localeProvider.notifier).setLocale(newLocale);
+            onChanged: (code) {
+              if (code == null) return;
+              ref.read(localeProvider.notifier).setLocale(Locale(code));
             },
             isExpanded: true,
           ),
@@ -194,6 +194,8 @@ class _LocaleSelector extends ConsumerWidget {
 }
 
 class _WindowEffectSelector extends ConsumerWidget {
+  const _WindowEffectSelector();
+
   static const _effectLabels = <AppWindowEffect, String>{
     AppWindowEffect.none: '无',
     AppWindowEffect.acrylic: 'Acrylic',
@@ -221,7 +223,7 @@ class _WindowEffectSelector extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('窗口效果', style: theme.typography.bodyStrong),
-        const SizedBox(height: 4),
+        const SizedBox(height: DesignTokens.spacingXS),
         Text(
           isWindows
               ? 'Acrylic 半透明模糊，Mica 基于壁纸取色，Tabbed 基于 Mica 增强'
@@ -232,7 +234,7 @@ class _WindowEffectSelector extends ConsumerWidget {
         ),
         const SizedBox(height: 10),
         Wrap(
-          spacing: 8,
+          spacing: DesignTokens.spacingSM,
           children: [
             for (final effect in effects)
               ToggleButton(
@@ -250,6 +252,8 @@ class _WindowEffectSelector extends ConsumerWidget {
 }
 
 class _AutoSaveChatToggle extends ConsumerWidget {
+  const _AutoSaveChatToggle();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = FluentTheme.of(context);

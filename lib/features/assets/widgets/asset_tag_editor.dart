@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/design_tokens.dart';
 import '../../../shared/utils/error_utils.dart';
 import '../providers/tags_provider.dart';
 
@@ -62,10 +63,13 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
         tag.color != null ? Color(tag.color!) : theme.accentColor;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: DesignTokens.spacingSM,
+        vertical: DesignTokens.spacingXS,
+      ),
       decoration: BoxDecoration(
         color: chipColor.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: DesignTokens.borderRadiusXL,
         border: Border.all(color: chipColor.withValues(alpha: 0.3)),
       ),
       child: Row(
@@ -86,7 +90,7 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: DesignTokens.spacingXS),
           GestureDetector(
             onTap: () => _removeTag(tag.id),
             child: Icon(
@@ -104,9 +108,12 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
     return GestureDetector(
       onTap: () => setState(() => _isAdding = true),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(
+          horizontal: DesignTokens.spacingSM,
+          vertical: DesignTokens.spacingXS,
+        ),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: DesignTokens.borderRadiusXL,
           border: Border.all(
             color: theme.resources.cardStrokeColorDefault,
           ),
@@ -119,7 +126,7 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
               size: 10,
               color: theme.resources.textFillColorSecondary,
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: DesignTokens.spacingXS),
             Text(
               '添加标签',
               style: theme.typography.caption?.copyWith(
@@ -168,11 +175,11 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
             ),
           ),
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: DesignTokens.spacingXS),
         SizedBox(
           height: 28,
           child: IconButton(
-            icon: const Icon(FluentIcons.check_mark, size: 12),
+            icon: const Icon(FluentIcons.check_mark, size: DesignTokens.iconXS),
             onPressed: () {
               final text = _textController.text.trim();
               if (text.isEmpty) return;
@@ -282,7 +289,7 @@ class TagSelectorPanel extends ConsumerWidget {
       data: (tags) {
         if (tags.isEmpty) {
           return Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(DesignTokens.spacingLG),
             child: Text(
               '暂无标签',
               style: theme.typography.caption?.copyWith(
@@ -339,7 +346,7 @@ class TagSelectorPanel extends ConsumerWidget {
                       ),
                     ),
                     if (isSelected) ...[
-                      const SizedBox(width: 4),
+                      const SizedBox(width: DesignTokens.spacingXS),
                       Icon(
                         FluentIcons.check_mark,
                         size: 10,

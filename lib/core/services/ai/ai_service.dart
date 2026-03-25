@@ -47,13 +47,20 @@ abstract class AiService {
   /// provider/model names. See [ImageGenCap] for well-known keys.
   Set<String> get imageGenCapabilities => const {};
 
+  /// Whether this provider implements [chatCompletion] / [chatCompletionStream].
   bool get supportsChatCompletion;
+
+  /// Whether this provider implements [generateImage].
   bool get supportsImageGeneration;
+
+  /// Whether this provider implements [generateVideo] and [checkVideoStatus].
   bool get supportsVideoGeneration;
 
+  /// Non-streaming chat completion for [request].
   Future<AiChatResponse> chatCompletion(AiChatRequest request) async =>
       throw UnsupportedError('$providerName 不支持对话补全');
 
+  /// Streams assistant text chunks for [request]; optional [cancelToken] aborts the HTTP call.
   Stream<String> chatCompletionStream(
     AiChatRequest request, {
     CancelToken? cancelToken,
@@ -61,12 +68,15 @@ abstract class AiService {
     throw UnsupportedError('$providerName 不支持流式对话');
   }
 
+  /// Generates one or more images from [request].
   Future<AiImageResponse> generateImage(AiImageRequest request) async =>
       throw UnsupportedError('$providerName 不支持图片生成');
 
+  /// Starts video generation from [request] (may return a task id for polling).
   Future<AiVideoResponse> generateVideo(AiVideoRequest request) async =>
       throw UnsupportedError('$providerName 不支持视频生成');
 
+  /// Polls async video job status for [taskId].
   Future<AiVideoResponse> checkVideoStatus(String taskId) async =>
       throw UnsupportedError('$providerName 不支持视频任务查询');
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+/// Metadata and feature flags for one model id exposed by a provider.
 class AiModelInfo {
   final String id;
   final int? contextWindow;
@@ -195,6 +196,7 @@ class AiModelInfo {
   }
 }
 
+/// A single turn in a chat: role, text content, optional image URLs, and time.
 class AiChatMessage {
   final String role;
   final String content;
@@ -227,6 +229,7 @@ class AiChatMessage {
       );
 }
 
+/// Request payload for chat completion: messages, model, sampling, and stream flag.
 class AiChatRequest {
   final List<AiChatMessage> messages;
   final String model;
@@ -251,6 +254,7 @@ class AiChatRequest {
       };
 }
 
+/// Assistant reply plus token usage from a completed chat call.
 class AiChatResponse {
   final String content;
   final String model;
@@ -288,6 +292,7 @@ class AiChatResponse {
       };
 }
 
+/// Image generation input: prompt, model, size, count, and optional tuning fields.
 class AiImageRequest {
   final String prompt;
   final String? negativePrompt;
@@ -330,6 +335,7 @@ class AiImageRequest {
       };
 }
 
+/// One generated image as a URL, base64 payload, and/or provider-revised prompt.
 class AiGeneratedImage {
   final String? url;
   final String? base64;
@@ -359,6 +365,7 @@ class AiGeneratedImage {
       };
 }
 
+/// Batch result wrapping a list of [AiGeneratedImage] entries.
 class AiImageResponse {
   final List<AiGeneratedImage> images;
 
@@ -378,6 +385,7 @@ class AiImageResponse {
       };
 }
 
+/// Video generation input: prompt, model, dimensions, duration, optional image-to-video URL.
 class AiVideoRequest {
   final String prompt;
   final String model;
@@ -405,6 +413,7 @@ class AiVideoRequest {
       };
 }
 
+/// Video job outcome: playable URL, async task id, status, and optional error text.
 class AiVideoResponse {
   final String? videoUrl;
   final String? taskId;

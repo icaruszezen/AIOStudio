@@ -1,7 +1,10 @@
 import 'package:fluent_ui/fluent_ui.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/design_tokens.dart';
+import '../../l10n/app_localizations.dart';
 
+/// Centered error presentation with title, optional detail message, and optional retry action.
 class ErrorState extends StatelessWidget {
   const ErrorState({
     super.key,
@@ -20,7 +23,7 @@ class ErrorState extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(DesignTokens.spacingXXL),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -29,14 +32,14 @@ class ErrorState extends StatelessWidget {
               size: 48,
               color: AppColors.error(theme.brightness),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: DesignTokens.spacingLG),
             Text(
               title,
               style: theme.typography.subtitle,
               textAlign: TextAlign.center,
             ),
             if (message != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: DesignTokens.spacingSM),
               Text(
                 message!,
                 style: theme.typography.body?.copyWith(
@@ -48,10 +51,10 @@ class ErrorState extends StatelessWidget {
               ),
             ],
             if (onRetry != null) ...[
-              const SizedBox(height: 24),
+              const SizedBox(height: DesignTokens.spacingXL),
               Button(
                 onPressed: onRetry,
-                child: const Text('重试'),
+                child: Text(S.of(context).actionRetry),
               ),
             ],
           ],

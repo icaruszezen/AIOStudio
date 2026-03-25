@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/ai_providers.dart';
+import '../../../core/theme/design_tokens.dart';
 import '../providers/chat_provider.dart';
 
 class ModelSelector extends ConsumerWidget {
@@ -57,7 +58,7 @@ class ModelSelector extends ConsumerWidget {
         items.add(ComboBoxItem<String>(
           value: key,
           child: Padding(
-            padding: const EdgeInsets.only(left: 12),
+            padding: const EdgeInsets.only(left: DesignTokens.spacingMD),
             child: Text(model, style: const TextStyle(fontSize: 13)),
           ),
         ));
@@ -98,7 +99,7 @@ class _EmptySelector extends StatelessWidget {
       children: [
         Icon(
           FluentIcons.warning,
-          size: 14,
+          size: DesignTokens.iconSM,
           color: theme.resources.textFillColorSecondary,
         ),
         const SizedBox(width: 6),

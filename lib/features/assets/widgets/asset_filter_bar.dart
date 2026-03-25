@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/theme/design_tokens.dart';
 import '../providers/asset_filter_provider.dart';
 import '../providers/tags_provider.dart';
 import 'asset_type_helpers.dart';
@@ -24,19 +25,24 @@ class AssetFilterBar extends ConsumerWidget {
     if (!filter.hasActiveFilters) return const SizedBox.shrink();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+      padding: const EdgeInsets.fromLTRB(
+        DesignTokens.spacingXL,
+        0,
+        DesignTokens.spacingXL,
+        DesignTokens.spacingSM,
+      ),
       child: Row(
         children: [
           Icon(
             FluentIcons.filter,
-            size: 12,
+            size: DesignTokens.iconXS,
             color: theme.resources.textFillColorSecondary,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: DesignTokens.spacingSM),
           Expanded(
             child: Wrap(
               spacing: 6,
-              runSpacing: 4,
+              runSpacing: DesignTokens.spacingXS,
               children: [
                 if (filter.typeFilter != null)
                   _FilterChip(
@@ -61,7 +67,7 @@ class AssetFilterBar extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: DesignTokens.spacingSM),
           HyperlinkButton(
             onPressed: () => notifier.clearAll(),
             child: const Text('清除全部'),
@@ -96,10 +102,13 @@ class _FilterChip extends StatelessWidget {
     final theme = FluentTheme.of(context);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(
+        horizontal: DesignTokens.spacingSM,
+        vertical: 3,
+      ),
       decoration: BoxDecoration(
         color: theme.accentColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: DesignTokens.borderRadiusXL,
         border: Border.all(
           color: theme.accentColor.withValues(alpha: 0.3),
         ),
@@ -113,7 +122,7 @@ class _FilterChip extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: DesignTokens.spacingXS),
           GestureDetector(
             onTap: onRemove,
             child: Icon(

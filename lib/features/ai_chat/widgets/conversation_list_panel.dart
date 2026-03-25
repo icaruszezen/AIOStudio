@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/design_tokens.dart';
 import '../../../shared/utils/format_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../models/chat_models.dart';
@@ -65,7 +66,12 @@ class _ConversationListPanelState
 
   Widget _buildHeader(FluentThemeData theme) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      padding: const EdgeInsets.fromLTRB(
+        DesignTokens.spacingLG,
+        DesignTokens.spacingLG,
+        DesignTokens.spacingLG,
+        DesignTokens.spacingMD,
+      ),
       child: Row(
         children: [
           Text('对话列表', style: theme.typography.subtitle),
@@ -77,7 +83,7 @@ class _ConversationListPanelState
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(FluentIcons.add, size: 12),
+                Icon(FluentIcons.add, size: DesignTokens.iconXS),
                 SizedBox(width: 6),
                 Text('新建对话'),
               ],
@@ -90,13 +96,18 @@ class _ConversationListPanelState
 
   Widget _buildSearchBox(FluentThemeData theme) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      padding: const EdgeInsets.fromLTRB(
+        DesignTokens.spacingLG,
+        0,
+        DesignTokens.spacingLG,
+        DesignTokens.spacingSM,
+      ),
       child: TextBox(
         controller: _searchController,
         placeholder: '搜索对话...',
         prefix: const Padding(
-          padding: EdgeInsets.only(left: 8),
-          child: Icon(FluentIcons.search, size: 14),
+          padding: EdgeInsets.only(left: DesignTokens.spacingSM),
+          child: Icon(FluentIcons.search, size: DesignTokens.iconSM),
         ),
         suffix: _searchQuery.isNotEmpty
             ? IconButton(
@@ -114,7 +125,7 @@ class _ConversationListPanelState
 
   Widget _buildList(List<Conversation> conversations, String? currentId) {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: DesignTokens.spacingXS),
       itemCount: conversations.length,
       itemBuilder: (context, index) {
         final conv = conversations[index];
@@ -236,14 +247,15 @@ class _ConversationTileState extends State<_ConversationTile> {
         return MenuFlyout(
           items: [
             MenuFlyoutItem(
-              leading: const Icon(FluentIcons.rename, size: 14),
+              leading: const Icon(FluentIcons.rename, size: DesignTokens.iconSM),
               text: const Text('重命名'),
               onPressed: widget.onRename,
             ),
             const MenuFlyoutSeparator(),
             MenuFlyoutItem(
               leading: Icon(FluentIcons.delete,
-                  size: 14, color: AppColors.error(theme.brightness)),
+                  size: DesignTokens.iconSM,
+                  color: AppColors.error(theme.brightness)),
               text: Text('删除',
                   style:
                       TextStyle(color: AppColors.error(theme.brightness))),
@@ -271,15 +283,18 @@ class _ConversationTileState extends State<_ConversationTile> {
         onSecondaryTapUp: (details) =>
             _showContextMenu(context, position: details.globalPosition),
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          margin: const EdgeInsets.symmetric(horizontal: DesignTokens.spacingSM, vertical: 2),
+          padding: const EdgeInsets.symmetric(
+            horizontal: DesignTokens.spacingMD,
+            vertical: 10,
+          ),
           decoration: BoxDecoration(
             color: widget.isSelected
                 ? theme.accentColor
                     .defaultBrushFor(theme.brightness)
                     .withValues(alpha: 0.15)
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: DesignTokens.borderRadiusMD,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -298,7 +313,7 @@ class _ConversationTileState extends State<_ConversationTile> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: DesignTokens.spacingSM),
                   Text(
                     timeStr,
                     style: theme.typography.caption?.copyWith(
@@ -308,7 +323,7 @@ class _ConversationTileState extends State<_ConversationTile> {
                 ],
               ),
               if (lastMsg != null) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: DesignTokens.spacingXS),
                 Text(
                   lastMsg.content.isNotEmpty
                       ? lastMsg.content.replaceAll('\n', ' ')

@@ -50,9 +50,11 @@ class VideoPollerState {
 // ---------------------------------------------------------------------------
 
 final videoTaskPollerProvider =
-    NotifierProvider<VideoTaskPoller, VideoPollerState>(VideoTaskPoller.new);
+    NotifierProvider<VideoTaskPollerNotifier, VideoPollerState>(
+  VideoTaskPollerNotifier.new,
+);
 
-class VideoTaskPoller extends Notifier<VideoPollerState> {
+class VideoTaskPollerNotifier extends Notifier<VideoPollerState> {
   static final _log = Logger(printer: PrettyPrinter(methodCount: 0));
   static const _pollInterval = Duration(seconds: 5);
   static const _maxPollDuration = Duration(minutes: 30);

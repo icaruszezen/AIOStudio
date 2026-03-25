@@ -13,8 +13,9 @@ import '../../../core/database/app_database.dart';
 import '../../../core/providers/database_provider.dart'
     show activeProjectsProvider;
 import '../../../core/theme/app_theme.dart';
-import '../../../shared/utils/error_utils.dart';
+import '../../../core/theme/design_tokens.dart';
 import '../../../core/utils/platform_utils.dart';
+import '../../../shared/utils/error_utils.dart';
 import '../../../shared/utils/format_utils.dart';
 import '../providers/assets_provider.dart';
 import 'asset_tag_editor.dart';
@@ -181,20 +182,42 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
     final projectsAsync = ref.watch(activeProjectsProvider);
     final projects = projectsAsync.value ?? <Project>[];
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(DesignTokens.spacingLG),
       children: [
-        // Name
-        TextBox(
-          controller: _nameController,
-          placeholder: '资产名称',
-          onChanged: _onNameChanged,
-          style: theme.typography.bodyStrong,
-        ),
-        const SizedBox(height: 16),
+        _buildNameField(theme),
+        const SizedBox(height: DesignTokens.spacingLG),
+        _buildProjectSection(theme, projects),
+        const SizedBox(height: DesignTokens.spacingLG),
+        _buildTypeAndFavoriteRow(theme),
+        const SizedBox(height: DesignTokens.spacingLG),
+        _buildTagsSection(theme),
+        const SizedBox(height: 20),
+        _buildFileInfoExpander(theme),
+        const SizedBox(height: DesignTokens.spacingSM),
+        _buildSourceInfoExpander(theme),
+        const SizedBox(height: DesignTokens.spacingSM),
+        _buildTimeInfoExpander(theme),
+        const SizedBox(height: 20),
+        _buildActionButtons(theme),
+      ],
+    );
+  }
 
-        // Project
+  Widget _buildNameField(FluentThemeData theme) {
+    return TextBox(
+      controller: _nameController,
+      placeholder: '资产名称',
+      onChanged: _onNameChanged,
+      style: theme.typography.bodyStrong,
+    );
+  }
+
+  Widget _buildProjectSection(FluentThemeData theme, List<Project> projects) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
         Text('所属项目', style: theme.typography.caption),
-        const SizedBox(height: 4),
+        const SizedBox(height: DesignTokens.spacingXS),
         ComboBox<String?>(
           value: _asset.projectId,
           placeholder: const Text('无项目'),
@@ -213,152 +236,167 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
           ],
           onChanged: _onProjectChanged,
         ),
-        const SizedBox(height: 16),
+      ],
+    );
+  }
 
-        // Type
-        Row(
-          children: [
-            Icon(assetTypeIcon(_asset.type), size: 16),
-            const SizedBox(width: 8),
-            Text(
-              assetTypeLabel(_asset.type),
-              style: theme.typography.body,
-            ),
-            const Spacer(),
-            Tooltip(
-              message: _asset.isFavorite ? '取消收藏' : '收藏',
-              child: ToggleButton(
-                checked: _asset.isFavorite,
-                onChanged: (_) => _toggleFavorite(),
-                child: Icon(
-                  _asset.isFavorite
-                      ? FluentIcons.favorite_star_fill
-                      : FluentIcons.favorite_star,
-                  size: 16,
-                  color: _asset.isFavorite ? AppColors.warning(theme.brightness) : null,
-                ),
-              ),
-            ),
-          ],
+  Widget _buildTypeAndFavoriteRow(FluentThemeData theme) {
+    return Row(
+      children: [
+        Icon(assetTypeIcon(_asset.type), size: DesignTokens.iconMD),
+        const SizedBox(width: DesignTokens.spacingSM),
+        Text(
+          assetTypeLabel(_asset.type),
+          style: theme.typography.body,
         ),
-        const SizedBox(height: 16),
+        const Spacer(),
+        Tooltip(
+          message: _asset.isFavorite ? '取消收藏' : '收藏',
+          child: ToggleButton(
+            checked: _asset.isFavorite,
+            onChanged: (_) => _toggleFavorite(),
+            child: Icon(
+              _asset.isFavorite
+                  ? FluentIcons.favorite_star_fill
+                  : FluentIcons.favorite_star,
+              size: DesignTokens.iconMD,
+              color: _asset.isFavorite ? AppColors.warning(theme.brightness) : null,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-        // Tags
+  Widget _buildTagsSection(FluentThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
         Text('标签', style: theme.typography.caption),
-        const SizedBox(height: 4),
+        const SizedBox(height: DesignTokens.spacingXS),
         AssetTagEditor(assetId: _asset.id),
-        const SizedBox(height: 20),
+      ],
+    );
+  }
 
-        // File info
-        Expander(
-          header: const Text('文件信息'),
-          initiallyExpanded: true,
-          content: Column(
+  Widget _buildFileInfoExpander(FluentThemeData theme) {
+    return Expander(
+      header: const Text('文件信息'),
+      initiallyExpanded: true,
+      content: Column(
+        children: [
+          _infoRow(theme, '路径', _asset.filePath),
+          _infoRow(theme, '大小', formatFileSize(_asset.fileSize)),
+          if (_asset.width != null && _asset.height != null)
+            _infoRow(theme, '尺寸', '${_asset.width} × ${_asset.height}'),
+          if (_asset.duration != null)
+            _infoRow(
+              theme,
+              '时长',
+              formatDurationFromSeconds(_asset.duration!),
+            ),
+          _infoRow(
+            theme,
+            '格式',
+            p.extension(_asset.filePath).toUpperCase(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSourceInfoExpander(FluentThemeData theme) {
+    return Expander(
+      header: const Text('来源信息'),
+      content: Column(
+        children: [
+          _infoRow(theme, '来源', assetSourceLabel(_asset.sourceType)),
+          if (_asset.originalUrl != null && _asset.originalUrl!.isNotEmpty)
+            _infoRowWithAction(
+              theme,
+              '原始 URL',
+              _asset.originalUrl!,
+              '打开',
+              _openOriginalUrl,
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeInfoExpander(FluentThemeData theme) {
+    return Expander(
+      header: const Text('时间信息'),
+      content: Column(
+        children: [
+          _infoRow(
+            theme,
+            '创建时间',
+            formatDateTime(
+              DateTime.fromMillisecondsSinceEpoch(_asset.createdAt),
+            ),
+          ),
+          _infoRow(
+            theme,
+            '修改时间',
+            formatDateTime(
+              DateTime.fromMillisecondsSinceEpoch(_asset.updatedAt),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(FluentThemeData theme) {
+    return Wrap(
+      spacing: DesignTokens.spacingSM,
+      runSpacing: DesignTokens.spacingSM,
+      children: [
+        Button(
+          onPressed: _openOrShare,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              _infoRow(theme, '路径', _asset.filePath),
-              _infoRow(theme, '大小', formatFileSize(_asset.fileSize)),
-              if (_asset.width != null && _asset.height != null)
-                _infoRow(
-                    theme, '尺寸', '${_asset.width} × ${_asset.height}'),
-              if (_asset.duration != null)
-                _infoRow(theme, '时长',
-                    formatDurationFromSeconds(_asset.duration!)),
-              _infoRow(
-                  theme, '格式', p.extension(_asset.filePath).toUpperCase()),
+              Icon(
+                PlatformUtils.isMobile
+                    ? FluentIcons.share
+                    : FluentIcons.open_folder_horizontal,
+                size: DesignTokens.iconSM,
+              ),
+              const SizedBox(width: 6),
+              Text(PlatformUtils.isMobile ? '分享' : '在文件管理器中打开'),
             ],
           ),
         ),
-        const SizedBox(height: 8),
-
-        // Source info
-        Expander(
-          header: const Text('来源信息'),
-          content: Column(
+        Button(
+          onPressed: _exportFile,
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              _infoRow(
-                  theme, '来源', assetSourceLabel(_asset.sourceType)),
-              if (_asset.originalUrl != null &&
-                  _asset.originalUrl!.isNotEmpty)
-                _infoRowWithAction(
-                  theme,
-                  '原始 URL',
-                  _asset.originalUrl!,
-                  '打开',
-                  _openOriginalUrl,
-                ),
+              Icon(FluentIcons.download, size: DesignTokens.iconSM),
+              SizedBox(width: 6),
+              Text('导出'),
             ],
           ),
         ),
-        const SizedBox(height: 8),
-
-        // Time info
-        Expander(
-          header: const Text('时间信息'),
-          content: Column(
+        Button(
+          onPressed: _confirmDelete,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              _infoRow(
-                theme,
-                '创建时间',
-                formatDateTime(
-                  DateTime.fromMillisecondsSinceEpoch(_asset.createdAt),
-                ),
+              Icon(
+                FluentIcons.delete,
+                size: DesignTokens.iconSM,
+                color: AppColors.error(theme.brightness),
               ),
-              _infoRow(
-                theme,
-                '修改时间',
-                formatDateTime(
-                  DateTime.fromMillisecondsSinceEpoch(_asset.updatedAt),
-                ),
+              const SizedBox(width: 6),
+              Text(
+                '删除',
+                style: TextStyle(color: AppColors.error(theme.brightness)),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 20),
-
-        // Action buttons
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            Button(
-              onPressed: _openOrShare,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    PlatformUtils.isMobile
-                        ? FluentIcons.share
-                        : FluentIcons.open_folder_horizontal,
-                    size: 14,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(PlatformUtils.isMobile ? '分享' : '在文件管理器中打开'),
-                ],
-              ),
-            ),
-            Button(
-              onPressed: _exportFile,
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(FluentIcons.download, size: 14),
-                  SizedBox(width: 6),
-                  Text('导出'),
-                ],
-              ),
-            ),
-            Button(
-              onPressed: _confirmDelete,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(FluentIcons.delete, size: 14, color: AppColors.error(theme.brightness)),
-                  const SizedBox(width: 6),
-                  Text('删除', style: TextStyle(color: AppColors.error(theme.brightness))),
-                ],
-              ),
-            ),
-          ],
         ),
       ],
     );
@@ -366,7 +404,7 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
 
   Widget _infoRow(FluentThemeData theme, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: DesignTokens.spacingXS),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -398,7 +436,7 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
     VoidCallback onAction,
   ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: DesignTokens.spacingXS),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -418,7 +456,7 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
               maxLines: 2,
             ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: DesignTokens.spacingXS),
           HyperlinkButton(
             onPressed: onAction,
             child: Text(actionLabel),

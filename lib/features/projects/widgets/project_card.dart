@@ -6,6 +6,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/design_tokens.dart';
 import '../../../shared/utils/format_utils.dart';
 
 class ProjectCard extends StatefulWidget {
@@ -44,8 +45,9 @@ class _ProjectCardState extends State<ProjectCard> {
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
     final project = widget.project;
-    final updatedAt = DateTime.fromMillisecondsSinceEpoch(project.updatedAt);
-    final dateStr = formatDate(updatedAt);
+    final dateStr = formatDate(
+      DateTime.fromMillisecondsSinceEpoch(project.updatedAt),
+    );
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -54,79 +56,13 @@ class _ProjectCardState extends State<ProjectCard> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          decoration: BoxDecoration(
-            color: theme.cardColor,
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(
-              color: _isHovered
-                  ? theme.accentColor.withValues(alpha: 0.5)
-                  : theme.resources.cardStrokeColorDefault,
-            ),
-            boxShadow: _isHovered
-                ? [
-                    BoxShadow(
-                      color: theme.accentColor.withValues(alpha: 0.08),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : [],
-          ),
+          decoration: _buildCardDecoration(theme),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildCover(theme, project),
+              _buildCover(project),
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        project.name,
-                        style: theme.typography.bodyStrong,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (project.description != null &&
-                          project.description!.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          project.description!,
-                          style: theme.typography.caption?.copyWith(
-                            color: theme.resources.textFillColorSecondary,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                      const Spacer(),
-                      Row(
-                        children: [
-                          Icon(
-                            FluentIcons.photo_collection,
-                            size: 12,
-                            color: theme.resources.textFillColorSecondary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${widget.assetCount}',
-                            style: theme.typography.caption?.copyWith(
-                              color: theme.resources.textFillColorSecondary,
-                            ),
-                          ),
-                          const Spacer(),
-                          Text(
-                            dateStr,
-                            style: theme.typography.caption?.copyWith(
-                              color: theme.resources.textFillColorTertiary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                child: _buildDetailsSection(theme, project, dateStr),
               ),
             ],
           ),
@@ -135,7 +71,106 @@ class _ProjectCardState extends State<ProjectCard> {
     );
   }
 
-  Widget _buildCover(FluentThemeData theme, Project project) {
+  BoxDecoration _buildCardDecoration(FluentThemeData theme) {
+    return BoxDecoration(
+      color: theme.cardColor,
+      borderRadius: DesignTokens.borderRadiusMD,
+      border: Border.all(
+        color: _isHovered
+            ? theme.accentColor.withValues(alpha: 0.5)
+            : theme.resources.cardStrokeColorDefault,
+      ),
+      boxShadow: _isHovered
+          ? [
+              BoxShadow(
+                color: theme.accentColor.withValues(alpha: 0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ]
+          : [],
+    );
+  }
+
+  Widget _buildDetailsSection(
+    FluentThemeData theme,
+    Project project,
+    String dateStr,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        DesignTokens.spacingMD,
+        10,
+        DesignTokens.spacingMD,
+        10,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildTitleAndDescription(theme, project),
+          const Spacer(),
+          _buildMetadataRow(theme, dateStr),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTitleAndDescription(
+    FluentThemeData theme,
+    Project project,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          project.name,
+          style: theme.typography.bodyStrong,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        if (project.description != null &&
+            project.description!.isNotEmpty) ...[
+          const SizedBox(height: DesignTokens.spacingXS),
+          Text(
+            project.description!,
+            style: theme.typography.caption?.copyWith(
+              color: theme.resources.textFillColorSecondary,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildMetadataRow(FluentThemeData theme, String dateStr) {
+    return Row(
+      children: [
+        Icon(
+          FluentIcons.photo_collection,
+          size: DesignTokens.iconXS,
+          color: theme.resources.textFillColorSecondary,
+        ),
+        const SizedBox(width: DesignTokens.spacingXS),
+        Text(
+          '${widget.assetCount}',
+          style: theme.typography.caption?.copyWith(
+            color: theme.resources.textFillColorSecondary,
+          ),
+        ),
+        const Spacer(),
+        Text(
+          dateStr,
+          style: theme.typography.caption?.copyWith(
+            color: theme.resources.textFillColorTertiary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCover(Project project) {
     const height = 120.0;
     final hasCover =
         project.coverImagePath != null && project.coverImagePath!.isNotEmpty;
@@ -157,51 +192,57 @@ class _ProjectCardState extends State<ProjectCard> {
     return Stack(
       children: [
         ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(DesignTokens.radiusMD),
+          ),
           child: cover,
         ),
-        if (_isHovered)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(6)),
-              child: Container(
-                height: height,
-                color: AppColors.overlayDark(0.4),
-                child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _HoverIconButton(
-                        icon: FluentIcons.edit,
-                        tooltip: '编辑',
-                        onPressed: widget.onEdit,
-                      ),
-                      const SizedBox(width: 8),
-                      _HoverIconButton(
-                        icon: widget.archived
-                            ? FluentIcons.archive_undo
-                            : FluentIcons.archive,
-                        tooltip: widget.archived ? '取消归档' : '归档',
-                        onPressed: widget.onArchive,
-                      ),
-                      const SizedBox(width: 8),
-                      _HoverIconButton(
-                        icon: FluentIcons.delete,
-                        tooltip: '删除',
-                        onPressed: widget.onDelete,
-                        danger: true,
-                      ),
-                    ],
-                  ),
+        if (_isHovered) _buildCoverHoverOverlay(height),
+      ],
+    );
+  }
+
+  Widget _buildCoverHoverOverlay(double height) {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(DesignTokens.radiusMD),
+        ),
+        child: Container(
+          height: height,
+          color: AppColors.overlayDark(0.4),
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _HoverIconButton(
+                  icon: FluentIcons.edit,
+                  tooltip: '编辑',
+                  onPressed: widget.onEdit,
                 ),
-              ),
+                const SizedBox(width: DesignTokens.spacingSM),
+                _HoverIconButton(
+                  icon: widget.archived
+                      ? FluentIcons.archive_undo
+                      : FluentIcons.archive,
+                  tooltip: widget.archived ? '取消归档' : '归档',
+                  onPressed: widget.onArchive,
+                ),
+                const SizedBox(width: DesignTokens.spacingSM),
+                _HoverIconButton(
+                  icon: FluentIcons.delete,
+                  tooltip: '删除',
+                  onPressed: widget.onDelete,
+                  danger: true,
+                ),
+              ],
             ),
           ),
-      ],
+        ),
+      ),
     );
   }
 
@@ -256,7 +297,7 @@ class _HoverIconButton extends StatelessWidget {
     return Tooltip(
       message: tooltip,
       child: IconButton(
-        icon: Icon(icon, size: 16, color: iconColor),
+        icon: Icon(icon, size: DesignTokens.iconMD, color: iconColor),
         onPressed: onPressed,
         style: ButtonStyle(
           backgroundColor: WidgetStateProperty.resolveWith((states) {
@@ -265,7 +306,7 @@ class _HoverIconButton extends StatelessWidget {
             return AppColors.overlayLight(0.1);
           }),
           shape: WidgetStateProperty.all(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+            RoundedRectangleBorder(borderRadius: DesignTokens.borderRadiusSM),
           ),
         ),
       ),

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/design_tokens.dart';
 import '../../../shared/utils/format_utils.dart';
 import '../models/chat_models.dart';
 
@@ -36,14 +37,17 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     final theme = FluentTheme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: DesignTokens.spacingLG,
+        vertical: 6,
+      ),
       child: Row(
         mainAxisAlignment:
             _isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!_isUser) _buildAvatar(theme, isAi: true),
-          if (!_isUser) const SizedBox(width: 8),
+          if (!_isUser) const SizedBox(width: DesignTokens.spacingSM),
           Flexible(
             child: Column(
               crossAxisAlignment: _isUser
@@ -51,12 +55,12 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                   : CrossAxisAlignment.start,
               children: [
                 _buildBubble(theme),
-                const SizedBox(height: 4),
+                const SizedBox(height: DesignTokens.spacingXS),
                 _buildFooter(theme),
               ],
             ),
           ),
-          if (_isUser) const SizedBox(width: 8),
+          if (_isUser) const SizedBox(width: DesignTokens.spacingSM),
           if (_isUser) _buildAvatar(theme, isAi: false),
         ],
       ),
@@ -75,7 +79,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       ),
       child: Icon(
         isAi ? FluentIcons.robot : FluentIcons.contact,
-        size: 16,
+        size: DesignTokens.iconMD,
         color: isAi
             ? AppColors.onAccent
             : theme.resources.textFillColorPrimary,
@@ -101,19 +105,23 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.only(
-          topLeft: const Radius.circular(12),
-          topRight: const Radius.circular(12),
-          bottomLeft: Radius.circular(_isUser ? 12 : 2),
-          bottomRight: Radius.circular(_isUser ? 2 : 12),
+          topLeft: const Radius.circular(DesignTokens.radiusXL),
+          topRight: const Radius.circular(DesignTokens.radiusXL),
+          bottomLeft: Radius.circular(
+            _isUser ? DesignTokens.radiusXL : 2,
+          ),
+          bottomRight: Radius.circular(
+            _isUser ? 2 : DesignTokens.radiusXL,
+          ),
         ),
       ),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(DesignTokens.spacingMD),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (hasImages) _buildImagePreviews(),
           if (hasImages && widget.message.content.isNotEmpty)
-            const SizedBox(height: 8),
+            const SizedBox(height: DesignTokens.spacingSM),
           if (hasError)
             _buildErrorContent(theme)
           else if (_isUser)
@@ -163,7 +171,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         ),
         if (_isLong)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: DesignTokens.spacingSM),
             child: HyperlinkButton(
               onPressed: () => setState(() => _isExpanded = !_isExpanded),
               child: Text(_isExpanded ? '收起' : '展开全部'),
@@ -177,8 +185,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     return Row(
       children: [
         Icon(FluentIcons.error_badge,
-            size: 16, color: AppColors.error(theme.brightness)),
-        const SizedBox(width: 8),
+            size: DesignTokens.iconMD,
+            color: AppColors.error(theme.brightness)),
+        const SizedBox(width: DesignTokens.spacingSM),
         Flexible(
           child: SelectableText(
             widget.message.error!,
@@ -200,7 +209,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           height: 16,
           child: ProgressRing(strokeWidth: 2),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: DesignTokens.spacingSM),
         Text('思考中...', style: theme.typography.caption),
       ],
     );
@@ -209,13 +218,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   Widget _buildImagePreviews() {
     final paths = widget.message.imagePaths!;
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: DesignTokens.spacingSM,
+      runSpacing: DesignTokens.spacingSM,
       children: paths.map((path) {
         return GestureDetector(
           onTap: () => _showImageDialog(path),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: DesignTokens.borderRadiusLG,
             child: Image.file(
               File(path),
               width: 120,
@@ -271,7 +280,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           ),
         ),
         if (!_isUser && tokenInfo != null) ...[
-          const SizedBox(width: 8),
+          const SizedBox(width: DesignTokens.spacingSM),
           Text(
             '$tokenInfo tokens',
             style: theme.typography.caption?.copyWith(
@@ -279,7 +288,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             ),
           ),
         ],
-        const SizedBox(width: 4),
+        const SizedBox(width: DesignTokens.spacingXS),
         _CopyButton(
           content: widget.message.content,
           iconColor: theme.resources.textFillColorSecondary,
@@ -347,9 +356,9 @@ class _CodeBlockWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin: const EdgeInsets.symmetric(vertical: DesignTokens.spacingSM),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: DesignTokens.borderRadiusLG,
         border: Border.all(
           color: theme.resources.cardStrokeColorDefault,
         ),
@@ -358,7 +367,10 @@ class _CodeBlockWrapper extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(
+              horizontal: DesignTokens.spacingMD,
+              vertical: 6,
+            ),
             decoration: BoxDecoration(
               color: theme.resources.subtleFillColorTertiary,
               borderRadius:
@@ -416,7 +428,7 @@ class _CopyButtonState extends State<_CopyButton> {
     return IconButton(
       icon: Icon(
         _copied ? FluentIcons.check_mark : FluentIcons.copy,
-        size: 12,
+        size: DesignTokens.iconXS,
         color: _copied
             ? AppColors.success(FluentTheme.of(context).brightness)
             : widget.iconColor,

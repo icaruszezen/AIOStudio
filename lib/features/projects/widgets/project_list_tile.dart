@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/theme/design_tokens.dart';
 import '../../../shared/utils/format_utils.dart';
 
 class ProjectListTile extends StatefulWidget {
@@ -44,18 +45,21 @@ class _ProjectListTileState extends State<ProjectListTile> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.symmetric(
+            horizontal: DesignTokens.spacingLG,
+            vertical: 10,
+          ),
           decoration: BoxDecoration(
             color: _isHovered
                 ? theme.resources.subtleFillColorSecondary
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: DesignTokens.borderRadiusSM,
           ),
           child: Row(
             children: [
               Icon(
                 FluentIcons.project_management,
-                size: 20,
+                size: DesignTokens.iconLG,
                 color: theme.accentColor,
               ),
               const SizedBox(width: 14),
@@ -83,17 +87,17 @@ class _ProjectListTileState extends State<ProjectListTile> {
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: DesignTokens.spacingMD),
               SizedBox(
                 width: 60,
                 child: Row(
                   children: [
                     Icon(
                       FluentIcons.photo_collection,
-                      size: 12,
+                      size: DesignTokens.iconXS,
                       color: theme.resources.textFillColorSecondary,
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: DesignTokens.spacingXS),
                     Text(
                       '${widget.assetCount}',
                       style: theme.typography.caption?.copyWith(
@@ -116,7 +120,7 @@ class _ProjectListTileState extends State<ProjectListTile> {
                 Tooltip(
                   message: '编辑',
                   child: IconButton(
-                    icon: const Icon(FluentIcons.edit, size: 14),
+                    icon: const Icon(FluentIcons.edit, size: DesignTokens.iconSM),
                     onPressed: widget.onEdit,
                   ),
                 ),
@@ -127,7 +131,7 @@ class _ProjectListTileState extends State<ProjectListTile> {
                       widget.archived
                           ? FluentIcons.archive_undo
                           : FluentIcons.archive,
-                      size: 14,
+                      size: DesignTokens.iconSM,
                     ),
                     onPressed: widget.onArchive,
                   ),
@@ -135,7 +139,7 @@ class _ProjectListTileState extends State<ProjectListTile> {
                 Tooltip(
                   message: '删除',
                   child: IconButton(
-                    icon: const Icon(FluentIcons.delete, size: 14),
+                    icon: const Icon(FluentIcons.delete, size: DesignTokens.iconSM),
                     onPressed: widget.onDelete,
                   ),
                 ),

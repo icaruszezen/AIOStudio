@@ -87,6 +87,19 @@ class AppColors {
   static Color overlayLight([double alpha = 0.9]) =>
       Colors.white.withValues(alpha: alpha);
 
+  // -- Selection border (accent color picker, thumbnail overlays) --
+
+  static Color selectionBorder(Brightness b) =>
+      b == Brightness.dark ? Colors.white : Colors.black;
+
+  static Color selectionBorderSubtle(Brightness b) =>
+      selectionBorder(b).withValues(alpha: 0.5);
+
+  // -- Barrier / scrim --
+
+  static Color barrierColor([double alpha = 0.3]) =>
+      Colors.black.withValues(alpha: alpha);
+
   // -- Content on accent / media overlay backgrounds --
 
   static const Color onAccent = Color(0xFFFFFFFF);

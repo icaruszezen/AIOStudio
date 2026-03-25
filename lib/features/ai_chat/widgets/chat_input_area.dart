@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/design_tokens.dart';
 import '../../prompts/providers/prompts_provider.dart';
 import '../providers/chat_provider.dart';
 
@@ -116,7 +117,12 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
         children: [
           if (_attachedImages.isNotEmpty) _buildImageBar(theme),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            padding: const EdgeInsets.fromLTRB(
+              DesignTokens.spacingLG,
+              DesignTokens.spacingSM,
+              DesignTokens.spacingLG,
+              DesignTokens.spacingSM,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -128,15 +134,20 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
                   ),
                   onPressed: isGenerating ? null : _pickImages,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: DesignTokens.spacingSM),
                 Expanded(child: _buildTextInput(theme, isGenerating)),
-                const SizedBox(width: 8),
+                const SizedBox(width: DesignTokens.spacingSM),
                 _buildSendButton(theme, isGenerating),
               ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            padding: const EdgeInsets.fromLTRB(
+              DesignTokens.spacingLG,
+              0,
+              DesignTokens.spacingLG,
+              DesignTokens.spacingSM,
+            ),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -173,7 +184,7 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
         child: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(FluentIcons.stop_solid, size: 12),
+            Icon(FluentIcons.stop_solid, size: DesignTokens.iconXS),
             SizedBox(width: 6),
             Text('停止'),
           ],
@@ -191,7 +202,7 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(FluentIcons.send, size: 12),
+              Icon(FluentIcons.send, size: DesignTokens.iconXS),
               SizedBox(width: 6),
               Text('发送'),
             ],
@@ -203,18 +214,24 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
 
   Widget _buildImageBar(FluentThemeData theme) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: const EdgeInsets.fromLTRB(
+        DesignTokens.spacingLG,
+        DesignTokens.spacingSM,
+        DesignTokens.spacingLG,
+        0,
+      ),
       child: SizedBox(
         height: 72,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: _attachedImages.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 8),
+          separatorBuilder: (_, __) =>
+              const SizedBox(width: DesignTokens.spacingSM),
           itemBuilder: (context, index) {
             return Stack(
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: DesignTokens.borderRadiusLG,
                   child: Image.file(
                     File(_attachedImages[index]),
                     width: 64,
@@ -224,7 +241,10 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
                       width: 64,
                       height: 64,
                       color: theme.resources.subtleFillColorSecondary,
-                      child: const Icon(FluentIcons.photo2, size: 24),
+                      child: const Icon(
+                        FluentIcons.photo2,
+                        size: DesignTokens.iconXL,
+                      ),
                     ),
                   ),
                 ),

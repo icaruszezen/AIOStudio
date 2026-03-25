@@ -119,7 +119,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       PageRouteBuilder(
         opaque: false,
         barrierDismissible: true,
-        barrierColor: Colors.black.withValues(alpha: 0.3),
+        barrierColor: AppColors.barrierColor(),
         pageBuilder: (ctx, animation, secondaryAnimation) {
           return Align(
             alignment: AlignmentDirectional.centerStart,
@@ -136,7 +136,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                   color: theme.micaBackgroundColor,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
+                      color: AppColors.overlayDark(0.2),
                       blurRadius: 16,
                     ),
                   ],

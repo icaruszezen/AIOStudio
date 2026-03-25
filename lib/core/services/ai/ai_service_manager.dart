@@ -20,6 +20,7 @@ class AiServiceManager {
 
   static final _log = Logger(printer: PrettyPrinter(methodCount: 0));
 
+  /// Creates a manager that builds [AiService] instances from [dao] and [secureKeys].
   AiServiceManager({
     required AiProviderConfigDao dao,
     required SecureKeyService secureKeys,
@@ -53,6 +54,7 @@ class AiServiceManager {
     }
   }
 
+  /// Disposes every loaded service and clears the registry.
   void disposeAll() {
     for (final service in _services.values) {
       service.dispose();
@@ -60,27 +62,34 @@ class AiServiceManager {
     _services.clear();
   }
 
+  /// Returns the service for [providerId], or null if not loaded.
   AiService? getService(String providerId) => _services[providerId];
 
+  /// First loaded service that supports chat completion, or null.
   AiService? getDefaultChatService() => _services.values
       .where((s) => s.supportsChatCompletion)
       .firstOrNull;
 
+  /// First loaded service that supports image generation, or null.
   AiService? getDefaultImageService() => _services.values
       .where((s) => s.supportsImageGeneration)
       .firstOrNull;
 
+  /// First loaded service that supports video generation, or null.
   AiService? getDefaultVideoService() => _services.values
       .where((s) => s.supportsVideoGeneration)
       .firstOrNull;
 
+  /// All currently loaded services, in an unmodifiable list.
   List<AiService> getAllEnabledServices() =>
       List.unmodifiable(_services.values);
 
+  /// Loaded services that support image generation.
   List<AiService> getImageServices() => _services.values
       .where((s) => s.supportsImageGeneration)
       .toList(growable: false);
 
+  /// Loaded services that support video generation.
   List<AiService> getVideoServices() => _services.values
       .where((s) => s.supportsVideoGeneration)
       .toList(growable: false);

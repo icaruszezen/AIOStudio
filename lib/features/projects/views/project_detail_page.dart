@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/design_tokens.dart';
 import '../../../core/utils/platform_utils.dart';
 import '../../../shared/utils/error_utils.dart';
 import '../../../shared/utils/format_utils.dart';
@@ -152,7 +153,12 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+            padding: const EdgeInsets.fromLTRB(
+              DesignTokens.spacingXL,
+              DesignTokens.spacingMD,
+              DesignTokens.spacingXL,
+              0,
+            ),
             child: BreadcrumbNavigation(
               items: [
                 BreadcrumbEntry(
@@ -175,12 +181,17 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
 
   Widget _buildHeader(FluentThemeData theme, Project project) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+      padding: const EdgeInsets.fromLTRB(
+        DesignTokens.spacingXL,
+        DesignTokens.spacingMD,
+        DesignTokens.spacingXL,
+        DesignTokens.spacingMD,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildCoverThumbnail(theme, project),
-          const SizedBox(width: 16),
+          const SizedBox(width: DesignTokens.spacingLG),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,7 +199,7 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
                 Text(project.name, style: theme.typography.subtitle),
                 if (project.description != null &&
                     project.description!.isNotEmpty) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: DesignTokens.spacingXS),
                   Text(
                     project.description!,
                     style: theme.typography.body?.copyWith(
@@ -201,20 +212,20 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: DesignTokens.spacingMD),
           Button(
             onPressed: () =>
                 ProjectCreateDialog.show(context, existing: project),
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(FluentIcons.edit, size: 14),
+                Icon(FluentIcons.edit, size: DesignTokens.iconSM),
                 SizedBox(width: 6),
                 Text('编辑'),
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: DesignTokens.spacingSM),
           Button(
             onPressed: () => _toggleArchive(project),
             child: Row(
@@ -224,14 +235,14 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
                   project.isArchived
                       ? FluentIcons.archive_undo
                       : FluentIcons.archive,
-                  size: 14,
+                  size: DesignTokens.iconSM,
                 ),
                 const SizedBox(width: 6),
                 Text(project.isArchived ? '取消归档' : '归档'),
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: DesignTokens.spacingSM),
           Button(
             onPressed: () => _confirmDelete(project),
             style: ButtonStyle(
@@ -242,7 +253,7 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(FluentIcons.delete, size: 14),
+                Icon(FluentIcons.delete, size: DesignTokens.iconSM),
                 SizedBox(width: 6),
                 Text('删除'),
               ],
@@ -258,7 +269,7 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
         project.coverImagePath != null && project.coverImagePath!.isNotEmpty;
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: DesignTokens.borderRadiusMD,
       child: SizedBox(
         width: 80,
         height: 56,
@@ -280,7 +291,7 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
       child: Center(
         child: Icon(
           FluentIcons.project_management,
-          size: 20,
+          size: DesignTokens.iconLG,
           color: theme.accentColor,
         ),
       ),
@@ -298,22 +309,22 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
       tabs: [
         Tab(
           text: const Text('资产'),
-          icon: const Icon(FluentIcons.photo_collection, size: 14),
+          icon: const Icon(FluentIcons.photo_collection, size: DesignTokens.iconSM),
           body: ProjectAssetsTab(projectId: project.id),
         ),
         Tab(
           text: const Text('提示词'),
-          icon: const Icon(FluentIcons.text_document, size: 14),
+          icon: const Icon(FluentIcons.text_document, size: DesignTokens.iconSM),
           body: ProjectPromptsTab(projectId: project.id),
         ),
         Tab(
           text: const Text('AI 任务'),
-          icon: const Icon(FluentIcons.processing, size: 14),
+          icon: const Icon(FluentIcons.processing, size: DesignTokens.iconSM),
           body: ProjectTasksTab(projectId: project.id),
         ),
         Tab(
           text: const Text('统计'),
-          icon: const Icon(FluentIcons.chart, size: 14),
+          icon: const Icon(FluentIcons.chart, size: DesignTokens.iconSM),
           body: _buildStatsTab(theme, project),
         ),
       ],
@@ -334,10 +345,10 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
       ),
       data: (stats) {
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(DesignTokens.spacingXL),
           child: Wrap(
-            spacing: 16,
-            runSpacing: 16,
+            spacing: DesignTokens.spacingLG,
+            runSpacing: DesignTokens.spacingLG,
             children: [
               _StatCard(
                 icon: FluentIcons.photo_collection,
@@ -404,7 +415,7 @@ class _StatCard extends StatelessWidget {
     return SizedBox(
       width: 180,
       child: Card(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(DesignTokens.spacingLG),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -415,14 +426,14 @@ class _StatCard extends StatelessWidget {
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     color: accentColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: DesignTokens.borderRadiusMD,
                   ),
-                  child: Icon(icon, size: 16, color: accentColor),
+                  child: Icon(icon, size: DesignTokens.iconMD, color: accentColor),
                 ),
                 const Spacer(),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: DesignTokens.spacingMD),
             Text(
               value,
               style: theme.typography.subtitle?.copyWith(

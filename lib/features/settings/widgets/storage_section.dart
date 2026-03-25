@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/providers/database_provider.dart';
 import '../../../core/services/storage/local_storage_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/design_tokens.dart';
 import '../../../shared/utils/error_utils.dart';
 import '../../../shared/utils/format_utils.dart';
 import '../providers/settings_provider.dart';
@@ -42,154 +43,207 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            const Icon(FluentIcons.folder_open, size: 20),
-            const SizedBox(width: 8),
-            Text('存储管理', style: theme.typography.subtitle),
-          ],
-        ),
-        const SizedBox(height: 12),
+        _buildSectionHeader(theme),
+        const SizedBox(height: DesignTokens.spacingMD),
         Card(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('缓存目录', style: theme.typography.bodyStrong),
-              const SizedBox(height: 4),
-              Text(
-                '缩略图和下载的资产文件将保存在此目录中',
-                style: theme.typography.caption?.copyWith(
-                  color: theme.resources.textFillColorSecondary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              pathAsync.when(
-                loading: () => const ProgressRing(),
-                error: (e, _) => Text(formatUserError(e)),
-                data: (path) => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: theme.resources.subtleFillColorSecondary,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    path,
-                                    style: theme.typography.caption,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                if (customDir != null)
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 6),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                        vertical: 1,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: theme.accentColor
-                                            .withValues(alpha: 0.15),
-                                        borderRadius:
-                                            BorderRadius.circular(4),
-                                      ),
-                                      child: Text(
-                                        '自定义',
-                                        style:
-                                            theme.typography.caption?.copyWith(
-                                          color: theme.accentColor,
-                                          fontSize: 11,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        Button(
-                          onPressed: _isMigrating ? null : _selectDirectory,
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(FluentIcons.fabric_folder, size: 14),
-                              SizedBox(width: 6),
-                              Text('选择目录'),
-                            ],
-                          ),
-                        ),
-                        if (customDir != null)
-                          Button(
-                            onPressed: _isMigrating ? null : _resetToDefault,
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(FluentIcons.reset, size: 14),
-                                SizedBox(width: 6),
-                                Text('恢复默认'),
-                              ],
-                            ),
-                          ),
-                        Button(
-                          onPressed: () => _openDirectory(path),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(FluentIcons.open_folder_horizontal, size: 14),
-                              SizedBox(width: 6),
-                              Text('打开目录'),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              if (_isMigrating) ...[
-                const SizedBox(height: 12),
-                _buildMigrationProgress(theme),
-              ],
-
-              const SizedBox(height: 16),
+              _buildCacheDirectoryIntro(theme),
+              _buildPathPickerArea(theme, pathAsync, customDir),
+              ..._buildMigrationSection(theme),
+              const SizedBox(height: DesignTokens.spacingLG),
               const Divider(),
-              const SizedBox(height: 16),
-
-              Text('存储统计', style: theme.typography.bodyStrong),
-              const SizedBox(height: 12),
-              statsAsync.when(
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(12),
-                  child: Center(child: ProgressRing()),
-                ),
-                error: (e, _) => InfoBar(
-                  title: const Text('加载失败'),
-                  content: Text(formatUserError(e)),
-                  severity: InfoBarSeverity.error,
-                ),
-                data: (stats) => _buildStats(context, stats),
-              ),
+              const SizedBox(height: DesignTokens.spacingLG),
+              _buildStatsUsageSection(context, theme, statsAsync),
             ],
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(FluentThemeData theme) {
+    return Row(
+      children: [
+        const Icon(FluentIcons.folder_open, size: DesignTokens.iconLG),
+        const SizedBox(width: DesignTokens.spacingSM),
+        Text('存储管理', style: theme.typography.subtitle),
+      ],
+    );
+  }
+
+  Widget _buildCacheDirectoryIntro(FluentThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('缓存目录', style: theme.typography.bodyStrong),
+        const SizedBox(height: DesignTokens.spacingXS),
+        Text(
+          '缩略图和下载的资产文件将保存在此目录中',
+          style: theme.typography.caption?.copyWith(
+            color: theme.resources.textFillColorSecondary,
+          ),
+        ),
+        const SizedBox(height: DesignTokens.spacingSM),
+      ],
+    );
+  }
+
+  Widget _buildPathPickerArea(
+    FluentThemeData theme,
+    AsyncValue<String> pathAsync,
+    String? customDir,
+  ) {
+    return pathAsync.when(
+      loading: () => const ProgressRing(),
+      error: (e, _) => Text(formatUserError(e)),
+      data: (path) => _buildPathPickerContent(theme, path, customDir),
+    );
+  }
+
+  Widget _buildPathPickerContent(
+    FluentThemeData theme,
+    String path,
+    String? customDir,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildPathDisplayRow(theme, path, customDir),
+        const SizedBox(height: DesignTokens.spacingSM),
+        _buildPathActionButtons(path, customDir),
+      ],
+    );
+  }
+
+  Widget _buildPathDisplayRow(
+    FluentThemeData theme,
+    String path,
+    String? customDir,
+  ) {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 6,
+            ),
+            decoration: BoxDecoration(
+              color: theme.resources.subtleFillColorSecondary,
+              borderRadius: DesignTokens.borderRadiusSM,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    path,
+                    style: theme.typography.caption,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (customDir != null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.accentColor.withValues(alpha: 0.15),
+                        borderRadius: DesignTokens.borderRadiusSM,
+                      ),
+                      child: Text(
+                        '自定义',
+                        style: theme.typography.caption?.copyWith(
+                          color: theme.accentColor,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPathActionButtons(String path, String? customDir) {
+    return Wrap(
+      spacing: DesignTokens.spacingSM,
+      runSpacing: DesignTokens.spacingSM,
+      children: [
+        Button(
+          onPressed: _isMigrating ? null : _selectDirectory,
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(FluentIcons.fabric_folder, size: DesignTokens.iconSM),
+              SizedBox(width: 6),
+              Text('选择目录'),
+            ],
+          ),
+        ),
+        if (customDir != null)
+          Button(
+            onPressed: _isMigrating ? null : _resetToDefault,
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(FluentIcons.reset, size: DesignTokens.iconSM),
+                SizedBox(width: 6),
+                Text('恢复默认'),
+              ],
+            ),
+          ),
+        Button(
+          onPressed: () => _openDirectory(path),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(FluentIcons.open_folder_horizontal, size: DesignTokens.iconSM),
+              SizedBox(width: 6),
+              Text('打开目录'),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<Widget> _buildMigrationSection(FluentThemeData theme) {
+    if (!_isMigrating) return const [];
+    return [
+      const SizedBox(height: DesignTokens.spacingMD),
+      _buildMigrationProgress(theme),
+    ];
+  }
+
+  Widget _buildStatsUsageSection(
+    BuildContext context,
+    FluentThemeData theme,
+    AsyncValue<DetailedStorageStats> statsAsync,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('存储统计', style: theme.typography.bodyStrong),
+        const SizedBox(height: DesignTokens.spacingMD),
+        statsAsync.when(
+          loading: () => const Padding(
+            padding: EdgeInsets.all(DesignTokens.spacingMD),
+            child: Center(child: ProgressRing()),
+          ),
+          error: (e, _) => InfoBar(
+            title: const Text('加载失败'),
+            content: Text(formatUserError(e)),
+            severity: InfoBarSeverity.error,
+          ),
+          data: (stats) => _buildStats(context, stats),
         ),
       ],
     );
@@ -208,7 +262,7 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
               height: 16,
               child: ProgressRing(strokeWidth: 2),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: DesignTokens.spacingSM),
             Text(
               _migrationTotal > 0
                   ? '正在迁移... $_migrationCurrent / $_migrationTotal'
@@ -236,14 +290,14 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
         Row(
           children: [
             _StatItem(label: '总文件数量', value: '${stats.totalFiles} 个'),
-            const SizedBox(width: 24),
+            const SizedBox(width: DesignTokens.spacingXL),
             _StatItem(
               label: '总占用空间',
               value: formatFileSize(stats.totalSizeBytes),
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: DesignTokens.spacingLG),
         _StorageBar(
           imageBytes: stats.imagesSizeBytes,
           videoBytes: stats.videosSizeBytes,
@@ -253,26 +307,26 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
           videoColor: videoColor,
           otherColor: otherColor,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: DesignTokens.spacingSM),
         Row(
           children: [
             _LegendDot(
               color: imageColor,
               label: '图片 ${formatFileSize(stats.imagesSizeBytes)}',
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: DesignTokens.spacingLG),
             _LegendDot(
               color: videoColor,
               label: '视频 ${formatFileSize(stats.videosSizeBytes)}',
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: DesignTokens.spacingLG),
             _LegendDot(
               color: otherColor,
               label: '其他 ${formatFileSize(stats.othersSizeBytes)}',
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: DesignTokens.spacingLG),
         Row(
           children: [
             Button(
@@ -280,7 +334,7 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(FluentIcons.delete, size: 14),
+                  Icon(FluentIcons.delete, size: DesignTokens.iconSM),
                   SizedBox(width: 6),
                   Text('清理缩略图缓存'),
                 ],
@@ -519,7 +573,7 @@ class _StorageBar extends StatelessWidget {
     final otherFrac = otherBytes / totalBytes;
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: DesignTokens.borderRadiusSM,
       child: SizedBox(
         height: 8,
         child: Row(
@@ -561,7 +615,7 @@ class _LegendDot extends StatelessWidget {
           height: 8,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: DesignTokens.spacingXS),
         Text(label, style: FluentTheme.of(context).typography.caption),
       ],
     );

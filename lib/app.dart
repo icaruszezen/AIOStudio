@@ -8,6 +8,7 @@ import 'core/services/notification_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/platform_utils.dart';
 import 'features/settings/providers/settings_provider.dart';
+import 'l10n/app_localizations.dart';
 
 class AioStudioApp extends ConsumerStatefulWidget {
   const AioStudioApp({super.key});
@@ -40,14 +41,15 @@ class _AioStudioAppState extends ConsumerState<AioStudioApp> {
 
       final router = ref.read(appRouterProvider);
 
+      final l = S.of(context);
       ref.read(notificationServiceProvider).show(
-        title: '已从浏览器保存：${asset.name}',
+        title: l.extensionImportSaved(asset.name),
         actionBuilder: (close) => Button(
           onPressed: () {
             close();
             router.go('/assets/${asset.id}');
           },
-          child: const Text('查看'),
+          child: Text(l.actionView),
         ),
       );
     });
@@ -69,11 +71,9 @@ class _AioStudioAppState extends ConsumerState<AioStudioApp> {
       theme: AppTheme.light(accentColor, transparent: transparentTheme),
       darkTheme: AppTheme.dark(accentColor, transparent: transparentTheme),
       locale: locale,
-      supportedLocales: const [
-        Locale('zh', 'CN'),
-        Locale('en'),
-      ],
+      supportedLocales: S.supportedLocales,
       localizationsDelegates: const [
+        ...S.localizationsDelegates,
         FluentLocalizations.delegate,
       ],
       routerConfig: router,

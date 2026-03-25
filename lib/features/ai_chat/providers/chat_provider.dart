@@ -17,10 +17,10 @@ import '../../../core/database/app_database.dart';
 import '../../../core/providers/ai_providers.dart';
 import '../../../core/providers/database_provider.dart';
 import '../../../core/services/ai/ai_models.dart';
-import '../../../shared/utils/error_utils.dart';
 import '../../../core/services/ai/ai_service.dart';
 import '../../../core/services/ai/ai_service_manager.dart';
 import '../../../core/theme/app_theme.dart' show sharedPreferencesProvider;
+import '../../../shared/utils/error_utils.dart';
 import '../models/chat_models.dart';
 
 // ---------------------------------------------------------------------------

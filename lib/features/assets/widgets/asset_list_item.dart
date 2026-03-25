@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/design_tokens.dart';
 import '../../../shared/utils/format_utils.dart';
 import 'asset_context_menu.dart';
 import 'asset_thumbnail.dart';
@@ -53,124 +54,159 @@ class _AssetListItemState extends State<AssetListItem> {
         child: MouseRegion(
           onEnter: (_) => setState(() => _isHovered = true),
           onExit: (_) => setState(() => _isHovered = false),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            margin: const EdgeInsets.symmetric(vertical: 1),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: widget.isSelected
-                  ? theme.accentColor.withValues(alpha: 0.1)
-                  : _isHovered
-                      ? theme.resources.subtleFillColorSecondary
-                      : Colors.transparent,
-              borderRadius: BorderRadius.circular(4),
-              border: widget.isSelected
-                  ? Border.all(color: theme.accentColor.withValues(alpha: 0.4))
-                  : null,
-            ),
-            child: Row(
-              children: [
-                if (widget.isSelected)
-                  Container(
-                    width: 20,
-                    height: 20,
-                    margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(
-                      color: theme.accentColor,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      FluentIcons.check_mark,
-                      size: 10,
-                      color: Colors.white,
-                    ),
-                  )
-                else
-                  const SizedBox(width: 28),
-                SizedBox(
-                  width: 36,
-                  height: 36,
-                  child: AssetThumbnail(
-                    asset: widget.asset,
-                    showFavorite: false,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 3,
-                  child: Text(
-                    widget.asset.name,
-                    style: theme.typography.body?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 60,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        assetTypeIcon(widget.asset.type),
-                        size: 12,
-                        color: theme.resources.textFillColorSecondary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        assetTypeLabel(widget.asset.type),
-                        style: theme.typography.caption?.copyWith(
-                          color: theme.resources.textFillColorSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 80,
-                  child: Text(
-                    formatFileSize(widget.asset.fileSize),
-                    style: theme.typography.caption?.copyWith(
-                      color: theme.resources.textFillColorSecondary,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 60,
-                  child: Text(
-                    assetSourceLabel(widget.asset.sourceType),
-                    style: theme.typography.caption?.copyWith(
-                      color: theme.resources.textFillColorSecondary,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 130,
-                  child: Text(
-                    dateStr,
-                    style: theme.typography.caption?.copyWith(
-                      color: theme.resources.textFillColorTertiary,
-                    ),
-                  ),
-                ),
-                if (widget.asset.isFavorite)
-                  const Padding(
-                    padding: EdgeInsets.only(left: 8),
-                    child: Icon(
-                      FluentIcons.heart_fill,
-                      size: 12,
-                      color: AppColors.favorite,
-                    ),
-                  ),
-              ],
+          child: _buildListItemSurface(theme, dateStr),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildListItemSurface(FluentThemeData theme, String dateStr) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      margin: const EdgeInsets.symmetric(vertical: 1),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: widget.isSelected
+            ? theme.accentColor.withValues(alpha: 0.1)
+            : _isHovered
+                ? theme.resources.subtleFillColorSecondary
+                : Colors.transparent,
+        borderRadius: DesignTokens.borderRadiusSM,
+        border: widget.isSelected
+            ? Border.all(color: theme.accentColor.withValues(alpha: 0.4))
+            : null,
+      ),
+      child: Row(
+        children: [
+          _buildSelectionIndicator(theme),
+          _buildThumbnailArea(),
+          const SizedBox(width: 12),
+          _buildNameCell(theme),
+          const SizedBox(width: 12),
+          _buildTypeCell(theme),
+          const SizedBox(width: 12),
+          _buildFileSizeCell(theme),
+          const SizedBox(width: 12),
+          _buildSourceCell(theme),
+          const SizedBox(width: 12),
+          _buildDateCell(theme, dateStr),
+          if (widget.asset.isFavorite) _buildFavoriteIndicator(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSelectionIndicator(FluentThemeData theme) {
+    if (widget.isSelected) {
+      return Container(
+        width: 20,
+        height: 20,
+        margin: const EdgeInsets.only(right: 8),
+        decoration: BoxDecoration(
+          color: theme.accentColor,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(
+          FluentIcons.check_mark,
+          size: 10,
+          color: AppColors.onAccent,
+        ),
+      );
+    }
+    return const SizedBox(width: 28);
+  }
+
+  Widget _buildThumbnailArea() {
+    return SizedBox(
+      width: 36,
+      height: 36,
+      child: AssetThumbnail(
+        asset: widget.asset,
+        showFavorite: false,
+      ),
+    );
+  }
+
+  Widget _buildNameCell(FluentThemeData theme) {
+    return Expanded(
+      flex: 3,
+      child: Text(
+        widget.asset.name,
+        style: theme.typography.body?.copyWith(
+          fontWeight: FontWeight.w500,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  Widget _buildTypeCell(FluentThemeData theme) {
+    return SizedBox(
+      width: 60,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            assetTypeIcon(widget.asset.type),
+            size: DesignTokens.iconXS,
+            color: theme.resources.textFillColorSecondary,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            assetTypeLabel(widget.asset.type),
+            style: theme.typography.caption?.copyWith(
+              color: theme.resources.textFillColorSecondary,
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFileSizeCell(FluentThemeData theme) {
+    return SizedBox(
+      width: 80,
+      child: Text(
+        formatFileSize(widget.asset.fileSize),
+        style: theme.typography.caption?.copyWith(
+          color: theme.resources.textFillColorSecondary,
         ),
+      ),
+    );
+  }
+
+  Widget _buildSourceCell(FluentThemeData theme) {
+    return SizedBox(
+      width: 60,
+      child: Text(
+        assetSourceLabel(widget.asset.sourceType),
+        style: theme.typography.caption?.copyWith(
+          color: theme.resources.textFillColorSecondary,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateCell(FluentThemeData theme, String dateStr) {
+    return SizedBox(
+      width: 130,
+      child: Text(
+        dateStr,
+        style: theme.typography.caption?.copyWith(
+          color: theme.resources.textFillColorTertiary,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFavoriteIndicator() {
+    return const Padding(
+      padding: EdgeInsets.only(left: 8),
+      child: Icon(
+        FluentIcons.heart_fill,
+        size: DesignTokens.iconXS,
+        color: AppColors.favorite,
       ),
     );
   }
@@ -186,5 +222,4 @@ class _AssetListItemState extends State<AssetListItem> {
       onDelete: widget.onDelete,
     );
   }
-
 }
