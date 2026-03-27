@@ -1,5 +1,5 @@
 ; AIO Studio — Inno Setup 6 installer script
-; Usage:  ISCC.exe installer\aio_studio.iss /DAppVersion=1.0.5
+; Usage:  ISCC.exe installer\aio_studio.iss /DAppVersion=1.0.6
 ;         (run from the repository root after `flutter build windows --release`)
 
 #ifndef AppVersion
@@ -12,8 +12,8 @@ AppName=AIO Studio
 AppVersion={#AppVersion}
 AppVerName=AIO Studio {#AppVersion}
 AppPublisher=AIO Studio
-AppPublisherURL=https://github.com/Latias94/AIO-Studio
-AppSupportURL=https://github.com/Latias94/AIO-Studio/issues
+AppPublisherURL=https://github.com/icaruszezen/AIOStudio
+AppSupportURL=https://github.com/icaruszezen/AIOStudio/issues
 DefaultDirName={autopf}\AIO Studio
 DefaultGroupName=AIO Studio
 UninstallDisplayIcon={app}\aio_studio.exe
