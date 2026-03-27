@@ -136,7 +136,7 @@ dart run msix:create
 
 # Windows 安装包（需本机安装 Inno Setup 6）
 flutter build windows --release
-& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\aio_studio.iss /DAppVersion=1.0.6
+& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\aio_studio.iss /DAppVersion=1.0.7
 
 # Android APK
 flutter build apk --release

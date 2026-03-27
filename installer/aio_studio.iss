@@ -1,5 +1,5 @@
 ; AIO Studio — Inno Setup 6 installer script
-; Usage:  ISCC.exe installer\aio_studio.iss /DAppVersion=1.0.6
+; Usage:  ISCC.exe installer\aio_studio.iss /DAppVersion=1.0.7
 ;         (run from the repository root after `flutter build windows --release`)
 
 #ifndef AppVersion
