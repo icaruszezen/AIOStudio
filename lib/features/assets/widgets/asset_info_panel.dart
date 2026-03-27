@@ -70,10 +70,9 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
       if (value.trim().isNotEmpty && value.trim() != _asset.name) {
-        ref.read(assetActionsProvider).updateAsset(
-              id: _asset.id,
-              name: value.trim(),
-            );
+        ref
+            .read(assetActionsProvider)
+            .updateAsset(id: _asset.id, name: value.trim());
       }
     });
   }
@@ -99,14 +98,17 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
       }
     } catch (e) {
       if (mounted) {
-        await displayInfoBar(context, builder: (_, close) {
-          return InfoBar(
-            title: Text(PlatformUtils.isMobile ? '分享失败' : '无法打开文件管理器'),
-            content: Text(formatUserError(e)),
-            severity: InfoBarSeverity.error,
-            onClose: close,
-          );
-        });
+        await displayInfoBar(
+          context,
+          builder: (_, close) {
+            return InfoBar(
+              title: Text(PlatformUtils.isMobile ? '分享失败' : '无法打开文件管理器'),
+              content: Text(formatUserError(e)),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            );
+          },
+        );
       }
     }
   }
@@ -120,24 +122,30 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
       if (result == null) return;
       await File(_asset.filePath).copy(result);
       if (mounted) {
-        await displayInfoBar(context, builder: (_, close) {
-          return InfoBar(
-            title: const Text('导出成功'),
-            severity: InfoBarSeverity.success,
-            onClose: close,
-          );
-        });
+        await displayInfoBar(
+          context,
+          builder: (_, close) {
+            return InfoBar(
+              title: const Text('导出成功'),
+              severity: InfoBarSeverity.success,
+              onClose: close,
+            );
+          },
+        );
       }
     } catch (e) {
       if (mounted) {
-        await displayInfoBar(context, builder: (_, close) {
-          return InfoBar(
-            title: const Text('导出失败'),
-            content: Text(formatUserError(e)),
-            severity: InfoBarSeverity.error,
-            onClose: close,
-          );
-        });
+        await displayInfoBar(
+          context,
+          builder: (_, close) {
+            return InfoBar(
+              title: const Text('导出失败'),
+              content: Text(formatUserError(e)),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            );
+          },
+        );
       }
     }
   }
@@ -155,7 +163,9 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
           ),
           FilledButton(
             style: ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll(AppColors.error(FluentTheme.of(context).brightness)),
+              backgroundColor: WidgetStatePropertyAll(
+                AppColors.error(FluentTheme.of(context).brightness),
+              ),
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text('删除'),
@@ -223,15 +233,10 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
           placeholder: const Text('无项目'),
           isExpanded: true,
           items: [
-            const ComboBoxItem<String?>(
-              value: null,
-              child: Text('无项目'),
-            ),
+            const ComboBoxItem<String?>(value: null, child: Text('无项目')),
             ...projects.map(
-              (proj) => ComboBoxItem<String?>(
-                value: proj.id,
-                child: Text(proj.name),
-              ),
+              (proj) =>
+                  ComboBoxItem<String?>(value: proj.id, child: Text(proj.name)),
             ),
           ],
           onChanged: _onProjectChanged,
@@ -245,10 +250,7 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
       children: [
         Icon(assetTypeIcon(_asset.type), size: DesignTokens.iconMD),
         const SizedBox(width: DesignTokens.spacingSM),
-        Text(
-          assetTypeLabel(_asset.type),
-          style: theme.typography.body,
-        ),
+        Text(assetTypeLabel(_asset.type), style: theme.typography.body),
         const Spacer(),
         Tooltip(
           message: _asset.isFavorite ? '取消收藏' : '收藏',
@@ -260,7 +262,9 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
                   ? FluentIcons.favorite_star_fill
                   : FluentIcons.favorite_star,
               size: DesignTokens.iconMD,
-              color: _asset.isFavorite ? AppColors.warning(theme.brightness) : null,
+              color: _asset.isFavorite
+                  ? AppColors.warning(theme.brightness)
+                  : null,
             ),
           ),
         ),
@@ -290,16 +294,8 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
           if (_asset.width != null && _asset.height != null)
             _infoRow(theme, '尺寸', '${_asset.width} × ${_asset.height}'),
           if (_asset.duration != null)
-            _infoRow(
-              theme,
-              '时长',
-              formatDurationFromSeconds(_asset.duration!),
-            ),
-          _infoRow(
-            theme,
-            '格式',
-            p.extension(_asset.filePath).toUpperCase(),
-          ),
+            _infoRow(theme, '时长', formatDurationFromSeconds(_asset.duration!)),
+          _infoRow(theme, '格式', p.extension(_asset.filePath).toUpperCase()),
         ],
       ),
     );
@@ -418,10 +414,7 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
             ),
           ),
           Expanded(
-            child: SelectableText(
-              value,
-              style: theme.typography.caption,
-            ),
+            child: SelectableText(value, style: theme.typography.caption),
           ),
         ],
       ),
@@ -457,13 +450,9 @@ class _AssetInfoPanelState extends ConsumerState<AssetInfoPanel> {
             ),
           ),
           const SizedBox(width: DesignTokens.spacingXS),
-          HyperlinkButton(
-            onPressed: onAction,
-            child: Text(actionLabel),
-          ),
+          HyperlinkButton(onPressed: onAction, child: Text(actionLabel)),
         ],
       ),
     );
   }
-
 }

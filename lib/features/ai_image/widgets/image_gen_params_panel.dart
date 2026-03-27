@@ -25,8 +25,7 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final pending =
-          ref.read(pendingPromptContentProvider.notifier).consume();
+      final pending = ref.read(pendingPromptContentProvider.notifier).consume();
       if (pending != null && pending.isNotEmpty) {
         _promptController.text = pending;
         ref.read(imageGenProvider.notifier).updatePrompt(pending);
@@ -91,10 +90,12 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
                 ComboBox<String>(
                   value: genState.selectedProviderId,
                   items: providers
-                      .map((s) => ComboBoxItem(
-                            value: s.providerId,
-                            child: Text(s.providerName),
-                          ))
+                      .map(
+                        (s) => ComboBoxItem(
+                          value: s.providerId,
+                          child: Text(s.providerName),
+                        ),
+                      )
                       .toList(),
                   onChanged: (v) {
                     if (v != null) notifier.selectProvider(v);
@@ -176,8 +177,10 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
                     return ToggleButton(
                       checked: selected,
                       onChanged: (_) => notifier.selectSizePreset(i),
-                      child: Text(preset.label,
-                          style: const TextStyle(fontSize: 12)),
+                      child: Text(
+                        preset.label,
+                        style: const TextStyle(fontSize: 12),
+                      ),
                     );
                   }),
                 ),
@@ -246,7 +249,9 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
                     items: const [
                       ComboBoxItem(value: 'vivid', child: Text('vivid (生动)')),
                       ComboBoxItem(
-                          value: 'natural', child: Text('natural (自然)')),
+                        value: 'natural',
+                        child: Text('natural (自然)'),
+                      ),
                     ],
                     onChanged: (v) => notifier.setStyle(v),
                     isExpanded: true,
@@ -260,7 +265,9 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
                     value: genState.quality ?? 'standard',
                     items: const [
                       ComboBoxItem(
-                          value: 'standard', child: Text('standard (标准)')),
+                        value: 'standard',
+                        child: Text('standard (标准)'),
+                      ),
                       ComboBoxItem(value: 'hd', child: Text('hd (高清)')),
                     ],
                     onChanged: (v) => notifier.setQuality(v),
@@ -277,22 +284,27 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (supportsCfgScale) ...[
-                          _sectionLabel(theme,
-                              'CFG Scale: ${(genState.cfgScale ?? 7.0).toStringAsFixed(1)}'),
+                          _sectionLabel(
+                            theme,
+                            'CFG Scale: ${(genState.cfgScale ?? 7.0).toStringAsFixed(1)}',
+                          ),
                           Slider(
                             value: genState.cfgScale ?? 7.0,
                             min: 1,
                             max: 30,
                             divisions: 58,
                             onChanged: (v) => notifier.setCfgScale(v),
-                            label:
-                                (genState.cfgScale ?? 7.0).toStringAsFixed(1),
+                            label: (genState.cfgScale ?? 7.0).toStringAsFixed(
+                              1,
+                            ),
                           ),
                           const SizedBox(height: 12),
                         ],
                         if (supportsSteps) ...[
                           _sectionLabel(
-                              theme, 'Steps: ${genState.steps ?? 30}'),
+                            theme,
+                            'Steps: ${genState.steps ?? 30}',
+                          ),
                           Slider(
                             value: (genState.steps ?? 30).toDouble(),
                             min: 10,
@@ -332,9 +344,7 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
             decoration: BoxDecoration(
               color: theme.resources.solidBackgroundFillColorBase,
               border: Border(
-                top: BorderSide(
-                  color: theme.resources.cardStrokeColorDefault,
-                ),
+                top: BorderSide(color: theme.resources.cardStrokeColorDefault),
               ),
             ),
             child: _buildGenerateButton(theme, genState, notifier),
@@ -345,7 +355,9 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
   }
 
   Widget _buildModelSelector(
-      ImageGenState genState, ImageGenNotifier notifier) {
+    ImageGenState genState,
+    ImageGenNotifier notifier,
+  ) {
     if (genState.selectedProviderId == null) {
       return const ComboBox<String>(
         items: [],
@@ -354,12 +366,12 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
       );
     }
 
-    final models = notifier.getProviderImageModels(genState.selectedProviderId!);
+    final models = notifier.getProviderImageModels(
+      genState.selectedProviderId!,
+    );
     return ComboBox<String>(
       value: genState.selectedModel,
-      items: models
-          .map((m) => ComboBoxItem(value: m, child: Text(m)))
-          .toList(),
+      items: models.map((m) => ComboBoxItem(value: m, child: Text(m))).toList(),
       onChanged: (v) {
         if (v != null) notifier.selectModel(v);
       },
@@ -399,7 +411,8 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
       );
     }
 
-    final canGenerate = genState.prompt.trim().isNotEmpty &&
+    final canGenerate =
+        genState.prompt.trim().isNotEmpty &&
         genState.selectedProviderId != null &&
         genState.selectedModel != null;
 
@@ -416,10 +429,7 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
   }
 
   Widget _sectionLabel(FluentThemeData theme, String text) {
-    return Text(
-      text,
-      style: theme.typography.bodyStrong,
-    );
+    return Text(text, style: theme.typography.bodyStrong);
   }
 
   Widget _smallButton({
@@ -441,17 +451,21 @@ class _ImageGenParamsPanelState extends ConsumerState<ImageGenParamsPanel> {
   }
 
   Future<void> _pickFromPromptLibrary(BuildContext context) async {
-    final prompts =
-        await ref.read(promptDaoProvider).filterByCategory('image_gen');
+    final prompts = await ref
+        .read(promptDaoProvider)
+        .filterByCategory('image_gen');
     if (!context.mounted || prompts.isEmpty) {
       if (context.mounted) {
-        await displayInfoBar(context, builder: (ctx, close) {
-          return InfoBar(
-            title: const Text('暂无图片生成分类的提示词'),
-            severity: InfoBarSeverity.info,
-            onClose: close,
-          );
-        });
+        await displayInfoBar(
+          context,
+          builder: (ctx, close) {
+            return InfoBar(
+              title: const Text('暂无图片生成分类的提示词'),
+              severity: InfoBarSeverity.info,
+              onClose: close,
+            );
+          },
+        );
       }
       return;
     }

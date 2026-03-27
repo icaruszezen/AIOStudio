@@ -89,9 +89,7 @@ void main() {
     test('maxTokens included when set', () {
       final request = AiChatRequest(
         model: 'gpt-4',
-        messages: [
-          AiChatMessage(role: 'user', content: 'Hi', timestamp: now),
-        ],
+        messages: [AiChatMessage(role: 'user', content: 'Hi', timestamp: now)],
         maxTokens: 256,
       );
 
@@ -102,9 +100,7 @@ void main() {
     test('stream flag propagated', () {
       final request = AiChatRequest(
         model: 'gpt-4',
-        messages: [
-          AiChatMessage(role: 'user', content: 'Hi', timestamp: now),
-        ],
+        messages: [AiChatMessage(role: 'user', content: 'Hi', timestamp: now)],
       );
 
       expect(
@@ -142,8 +138,8 @@ void main() {
         'model': 'gpt-4',
         'choices': [
           {
-            'message': {'content': 'Hello there!'}
-          }
+            'message': {'content': 'Hello there!'},
+          },
         ],
         'usage': {
           'prompt_tokens': 10,
@@ -189,8 +185,8 @@ void main() {
         'model': 'gpt-4',
         'choices': [
           {
-            'message': {'content': 'ok'}
-          }
+            'message': {'content': 'ok'},
+          },
         ],
       };
 
@@ -206,8 +202,8 @@ void main() {
         'model': 'gpt-4',
         'choices': [
           {
-            'message': {'content': null}
-          }
+            'message': {'content': null},
+          },
         ],
       };
 
@@ -220,19 +216,19 @@ void main() {
     test('parses normal SSE chunks', () async {
       final stream = _sseStream([
         'data: ${jsonEncode({
-              'choices': [
-                {
-                  'delta': {'content': 'Hello'}
-                }
-              ]
-            })}',
+          'choices': [
+            {
+              'delta': {'content': 'Hello'},
+            },
+          ],
+        })}',
         'data: ${jsonEncode({
-              'choices': [
-                {
-                  'delta': {'content': ' world'}
-                }
-              ]
-            })}',
+          'choices': [
+            {
+              'delta': {'content': ' world'},
+            },
+          ],
+        })}',
         'data: [DONE]',
       ]);
 
@@ -243,20 +239,20 @@ void main() {
     test('[DONE] terminates the stream', () async {
       final stream = _sseStream([
         'data: ${jsonEncode({
-              'choices': [
-                {
-                  'delta': {'content': 'A'}
-                }
-              ]
-            })}',
+          'choices': [
+            {
+              'delta': {'content': 'A'},
+            },
+          ],
+        })}',
         'data: [DONE]',
         'data: ${jsonEncode({
-              'choices': [
-                {
-                  'delta': {'content': 'B'}
-                }
-              ]
-            })}',
+          'choices': [
+            {
+              'delta': {'content': 'B'},
+            },
+          ],
+        })}',
       ]);
 
       final tokens = await service.parseOpenAiSseStream(stream).toList();
@@ -267,12 +263,12 @@ void main() {
       final stream = _sseStream([
         'data: {bad json',
         'data: ${jsonEncode({
-              'choices': [
-                {
-                  'delta': {'content': 'ok'}
-                }
-              ]
-            })}',
+          'choices': [
+            {
+              'delta': {'content': 'ok'},
+            },
+          ],
+        })}',
         'data: [DONE]',
       ]);
 
@@ -283,19 +279,19 @@ void main() {
     test('empty content is skipped', () async {
       final stream = _sseStream([
         'data: ${jsonEncode({
-              'choices': [
-                {
-                  'delta': {'content': ''}
-                }
-              ]
-            })}',
+          'choices': [
+            {
+              'delta': {'content': ''},
+            },
+          ],
+        })}',
         'data: ${jsonEncode({
-              'choices': [
-                {
-                  'delta': {'content': 'yes'}
-                }
-              ]
-            })}',
+          'choices': [
+            {
+              'delta': {'content': 'yes'},
+            },
+          ],
+        })}',
         'data: [DONE]',
       ]);
 
@@ -306,17 +302,17 @@ void main() {
     test('null content in delta is skipped', () async {
       final stream = _sseStream([
         'data: ${jsonEncode({
-              'choices': [
-                {'delta': <String, dynamic>{}}
-              ]
-            })}',
+          'choices': [
+            {'delta': <String, dynamic>{}},
+          ],
+        })}',
         'data: ${jsonEncode({
-              'choices': [
-                {
-                  'delta': {'content': 'hi'}
-                }
-              ]
-            })}',
+          'choices': [
+            {
+              'delta': {'content': 'hi'},
+            },
+          ],
+        })}',
         'data: [DONE]',
       ]);
 
@@ -328,12 +324,12 @@ void main() {
       final stream = _sseStream([
         'data: ${jsonEncode({'choices': <dynamic>[]})}',
         'data: ${jsonEncode({
-              'choices': [
-                {
-                  'delta': {'content': 'x'}
-                }
-              ]
-            })}',
+          'choices': [
+            {
+              'delta': {'content': 'x'},
+            },
+          ],
+        })}',
         'data: [DONE]',
       ]);
 
@@ -345,12 +341,12 @@ void main() {
       final stream = _sseStream([
         ': this is a comment',
         'data: ${jsonEncode({
-              'choices': [
-                {
-                  'delta': {'content': 'val'}
-                }
-              ]
-            })}',
+          'choices': [
+            {
+              'delta': {'content': 'val'},
+            },
+          ],
+        })}',
         'data: [DONE]',
       ]);
 
@@ -362,12 +358,12 @@ void main() {
       final stream = _sseStream([
         '',
         'data: ${jsonEncode({
-              'choices': [
-                {
-                  'delta': {'content': 'z'}
-                }
-              ]
-            })}',
+          'choices': [
+            {
+              'delta': {'content': 'z'},
+            },
+          ],
+        })}',
         '',
         'data: [DONE]',
       ]);

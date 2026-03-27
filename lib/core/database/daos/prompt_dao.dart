@@ -39,8 +39,7 @@ class PromptDao extends DatabaseAccessor<AppDatabase> with _$PromptDaoMixin {
       (select(prompts)..where((t) => t.id.equals(id))).getSingleOrNull();
 
   Stream<Prompt?> watchPromptById(String id) =>
-      (select(prompts)..where((t) => t.id.equals(id)))
-          .watchSingleOrNull();
+      (select(prompts)..where((t) => t.id.equals(id))).watchSingleOrNull();
 
   Future<int> insertPrompt(PromptsCompanion entry) =>
       into(prompts).insert(entry);
@@ -85,11 +84,14 @@ class PromptDao extends DatabaseAccessor<AppDatabase> with _$PromptDaoMixin {
     return query.watchSingle().map((row) => row.read(count) ?? 0);
   }
 
-  Future<List<Prompt>> searchPrompts(String query) => (select(prompts)
-        ..where(
-            (t) => likeEscaped(t.title, query) | likeEscaped(t.content, query))
-        ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
-      .get();
+  Future<List<Prompt>> searchPrompts(String query) =>
+      (select(prompts)
+            ..where(
+              (t) =>
+                  likeEscaped(t.title, query) | likeEscaped(t.content, query),
+            )
+            ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
+          .get();
 
   Stream<List<Prompt>> watchSearchPrompts(
     String query, {
@@ -98,7 +100,8 @@ class PromptDao extends DatabaseAccessor<AppDatabase> with _$PromptDaoMixin {
   }) {
     final q = select(prompts)
       ..where(
-          (t) => likeEscaped(t.title, query) | likeEscaped(t.content, query))
+        (t) => likeEscaped(t.title, query) | likeEscaped(t.content, query),
+      )
       ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]);
     if (category != null) {
       q.where((t) => t.category.equals(category));
@@ -124,16 +127,18 @@ class PromptDao extends DatabaseAccessor<AppDatabase> with _$PromptDaoMixin {
     if (prompt == null) throw StateError('Prompt $id not found');
     final now = epochNowMs();
     final newId = _uuid.v4();
-    await insertPrompt(PromptsCompanion(
-      id: Value(newId),
-      projectId: Value(prompt.projectId),
-      title: Value('${prompt.title} (副本)'),
-      content: Value(prompt.content),
-      category: Value(prompt.category),
-      variables: Value(prompt.variables),
-      createdAt: Value(now),
-      updatedAt: Value(now),
-    ));
+    await insertPrompt(
+      PromptsCompanion(
+        id: Value(newId),
+        projectId: Value(prompt.projectId),
+        title: Value('${prompt.title} (副本)'),
+        content: Value(prompt.content),
+        category: Value(prompt.category),
+        variables: Value(prompt.variables),
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ),
+    );
     return newId;
   }
 }

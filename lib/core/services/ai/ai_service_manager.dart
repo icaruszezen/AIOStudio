@@ -24,8 +24,8 @@ class AiServiceManager {
   AiServiceManager({
     required AiProviderConfigDao dao,
     required SecureKeyService secureKeys,
-  })  : _dao = dao,
-        _secureKeys = secureKeys;
+  }) : _dao = dao,
+       _secureKeys = secureKeys;
 
   /// Reads all enabled provider configs from the database and creates the
   /// corresponding service instances.  Safe to call multiple times – disposes
@@ -44,12 +44,16 @@ class AiServiceManager {
         final service = _createService(cfg, apiKey);
         if (service != null) {
           _services[cfg.id] = service;
-          _log.i('[AiServiceManager] Loaded ${service.providerName} '
-              '(${cfg.id})');
+          _log.i(
+            '[AiServiceManager] Loaded ${service.providerName} '
+            '(${cfg.id})',
+          );
         }
       } catch (e) {
-        _log.e('[AiServiceManager] Failed to load provider '
-            '${cfg.name} (${cfg.id}): $e');
+        _log.e(
+          '[AiServiceManager] Failed to load provider '
+          '${cfg.name} (${cfg.id}): $e',
+        );
       }
     }
   }
@@ -66,19 +70,16 @@ class AiServiceManager {
   AiService? getService(String providerId) => _services[providerId];
 
   /// First loaded service that supports chat completion, or null.
-  AiService? getDefaultChatService() => _services.values
-      .where((s) => s.supportsChatCompletion)
-      .firstOrNull;
+  AiService? getDefaultChatService() =>
+      _services.values.where((s) => s.supportsChatCompletion).firstOrNull;
 
   /// First loaded service that supports image generation, or null.
-  AiService? getDefaultImageService() => _services.values
-      .where((s) => s.supportsImageGeneration)
-      .firstOrNull;
+  AiService? getDefaultImageService() =>
+      _services.values.where((s) => s.supportsImageGeneration).firstOrNull;
 
   /// First loaded service that supports video generation, or null.
-  AiService? getDefaultVideoService() => _services.values
-      .where((s) => s.supportsVideoGeneration)
-      .firstOrNull;
+  AiService? getDefaultVideoService() =>
+      _services.values.where((s) => s.supportsVideoGeneration).firstOrNull;
 
   /// All currently loaded services, in an unmodifiable list.
   List<AiService> getAllEnabledServices() =>
@@ -96,19 +97,23 @@ class AiServiceManager {
 
   /// All model identifiers available for the given capability type.
   List<String> getAvailableModels(String type) {
-    final services = _services.values.where((s) => switch (type) {
-          'chat' => s.supportsChatCompletion,
-          'image' => s.supportsImageGeneration,
-          'video' => s.supportsVideoGeneration,
-          _ => false,
-        });
+    final services = _services.values.where(
+      (s) => switch (type) {
+        'chat' => s.supportsChatCompletion,
+        'image' => s.supportsImageGeneration,
+        'video' => s.supportsVideoGeneration,
+        _ => false,
+      },
+    );
 
     return services
-        .expand((s) => switch (type) {
-              'image' => s.imageModels,
-              'video' => s.videoModels,
-              _ => s.supportedModels,
-            })
+        .expand(
+          (s) => switch (type) {
+            'image' => s.imageModels,
+            'video' => s.videoModels,
+            _ => s.supportedModels,
+          },
+        )
         .toList();
   }
 
@@ -145,8 +150,10 @@ class AiServiceManager {
         );
       case 'custom':
         if (baseUrl == null || baseUrl.isEmpty) {
-          _log.w('[AiServiceManager] Skipping custom provider '
-              '${cfg.name}: missing baseUrl');
+          _log.w(
+            '[AiServiceManager] Skipping custom provider '
+            '${cfg.name}: missing baseUrl',
+          );
           return null;
         }
         final modelInfos = _parseModelInfos(extra, cfg.defaultModel);
@@ -206,8 +213,7 @@ class AiServiceManager {
 
   /// Returns the `discovered_models` list when present, or `null` so that
   /// non-custom services fall back to their hardcoded defaults.
-  static List<AiModelInfo>? _parseDiscoveredModels(
-      Map<String, dynamic> extra) {
+  static List<AiModelInfo>? _parseDiscoveredModels(Map<String, dynamic> extra) {
     final discovered = extra['discovered_models'] as List<dynamic>?;
     if (discovered != null && discovered.isNotEmpty) {
       return discovered
@@ -221,7 +227,9 @@ class AiServiceManager {
   /// `discovered_models` format and legacy `models` string-list format.
   /// Always returns a non-empty list (used by [CustomService]).
   static List<AiModelInfo> _parseModelInfos(
-      Map<String, dynamic> extra, String? defaultModel) {
+    Map<String, dynamic> extra,
+    String? defaultModel,
+  ) {
     // New format: discovered_models
     final discovered = extra['discovered_models'] as List<dynamic>?;
     if (discovered != null && discovered.isNotEmpty) {

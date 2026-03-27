@@ -10,10 +10,7 @@ class BreadcrumbEntry {
 
 /// Builds a Fluent [BreadcrumbBar] from a list of entries and invokes their tap handlers.
 class BreadcrumbNavigation extends StatelessWidget {
-  const BreadcrumbNavigation({
-    super.key,
-    required this.items,
-  });
+  const BreadcrumbNavigation({super.key, required this.items});
 
   final List<BreadcrumbEntry> items;
 

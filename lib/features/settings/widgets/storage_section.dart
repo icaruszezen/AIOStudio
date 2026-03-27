@@ -13,7 +13,9 @@ import '../../../shared/utils/error_utils.dart';
 import '../../../shared/utils/format_utils.dart';
 import '../providers/settings_provider.dart';
 
-final _storageStatsProvider = FutureProvider.autoDispose<DetailedStorageStats>((ref) {
+final _storageStatsProvider = FutureProvider.autoDispose<DetailedStorageStats>((
+  ref,
+) {
   return ref.watch(localStorageServiceProvider).getDetailedStorageStats();
 });
 
@@ -126,10 +128,7 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
       children: [
         Expanded(
           child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 6,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
               color: theme.resources.subtleFillColorSecondary,
               borderRadius: DesignTokens.borderRadiusSM,
@@ -205,7 +204,10 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(FluentIcons.open_folder_horizontal, size: DesignTokens.iconSM),
+              Icon(
+                FluentIcons.open_folder_horizontal,
+                size: DesignTokens.iconSM,
+              ),
               SizedBox(width: 6),
               Text('打开目录'),
             ],
@@ -250,8 +252,9 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
   }
 
   Widget _buildMigrationProgress(FluentThemeData theme) {
-    final progress =
-        _migrationTotal > 0 ? _migrationCurrent / _migrationTotal : null;
+    final progress = _migrationTotal > 0
+        ? _migrationCurrent / _migrationTotal
+        : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -352,7 +355,9 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
     );
     if (newPath == null || !mounted) return;
 
-    final oldPath = await ref.read(localStorageServiceProvider).getStoragePath();
+    final oldPath = await ref
+        .read(localStorageServiceProvider)
+        .getStoragePath();
 
     if (newPath == oldPath) return;
 
@@ -371,19 +376,25 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
       ..invalidate(_storageStatsProvider);
 
     if (mounted) {
-      displayInfoBar(context, builder: (_, close) => InfoBar(
-        title: Text(action == _MigrationAction.migrateAndSwitch
-            ? '缓存目录已迁移并切换'
-            : '缓存目录已切换'),
-        severity: InfoBarSeverity.success,
-        onClose: close,
-      ));
+      displayInfoBar(
+        context,
+        builder: (_, close) => InfoBar(
+          title: Text(
+            action == _MigrationAction.migrateAndSwitch
+                ? '缓存目录已迁移并切换'
+                : '缓存目录已切换',
+          ),
+          severity: InfoBarSeverity.success,
+          onClose: close,
+        ),
+      );
     }
   }
 
   Future<void> _resetToDefault() async {
-    final currentPath =
-        await ref.read(localStorageServiceProvider).getStoragePath();
+    final currentPath = await ref
+        .read(localStorageServiceProvider)
+        .getStoragePath();
     final defaultPath = await LocalStorageService.defaultCachePath;
 
     if (currentPath == defaultPath) return;
@@ -403,13 +414,18 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
       ..invalidate(_storageStatsProvider);
 
     if (mounted) {
-      displayInfoBar(context, builder: (_, close) => InfoBar(
-        title: Text(action == _MigrationAction.migrateAndSwitch
-            ? '已迁移并恢复默认目录'
-            : '已恢复默认目录'),
-        severity: InfoBarSeverity.success,
-        onClose: close,
-      ));
+      displayInfoBar(
+        context,
+        builder: (_, close) => InfoBar(
+          title: Text(
+            action == _MigrationAction.migrateAndSwitch
+                ? '已迁移并恢复默认目录'
+                : '已恢复默认目录',
+          ),
+          severity: InfoBarSeverity.success,
+          onClose: close,
+        ),
+      );
     }
   }
 
@@ -418,18 +434,19 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
       context: context,
       builder: (ctx) => ContentDialog(
         title: const Text('更改缓存目录'),
-        content: const Text('是否将当前缓存目录中的资源迁移到新目录？\n\n'
-            '选择「迁移并切换」会将所有缓存文件（缩略图、下载的资产等）'
-            '移动到新目录，并更新数据库中的路径。\n\n'
-            '选择「仅切换」会直接切换目录，旧缓存保留在原位置。'),
+        content: const Text(
+          '是否将当前缓存目录中的资源迁移到新目录？\n\n'
+          '选择「迁移并切换」会将所有缓存文件（缩略图、下载的资产等）'
+          '移动到新目录，并更新数据库中的路径。\n\n'
+          '选择「仅切换」会直接切换目录，旧缓存保留在原位置。',
+        ),
         actions: [
           Button(
             onPressed: () => Navigator.of(ctx).pop(null),
             child: const Text('取消'),
           ),
           Button(
-            onPressed: () =>
-                Navigator.of(ctx).pop(_MigrationAction.switchOnly),
+            onPressed: () => Navigator.of(ctx).pop(_MigrationAction.switchOnly),
             child: const Text('仅切换'),
           ),
           FilledButton(
@@ -469,12 +486,15 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
       return true;
     } catch (e) {
       if (mounted) {
-        displayInfoBar(context, builder: (_, close) => InfoBar(
-          title: const Text('迁移失败'),
-          content: Text(formatUserError(e)),
-          severity: InfoBarSeverity.error,
-          onClose: close,
-        ));
+        displayInfoBar(
+          context,
+          builder: (_, close) => InfoBar(
+            title: const Text('迁移失败'),
+            content: Text(formatUserError(e)),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          ),
+        );
       }
       return false;
     } finally {
@@ -498,20 +518,26 @@ class _StorageSectionState extends ConsumerState<StorageSection> {
       await ref.read(assetDaoProvider).clearAllThumbnailPaths();
       ref.invalidate(_storageStatsProvider);
       if (mounted) {
-        displayInfoBar(context, builder: (_, close) => InfoBar(
-          title: const Text('缓存已清理'),
-          severity: InfoBarSeverity.success,
-          onClose: close,
-        ));
+        displayInfoBar(
+          context,
+          builder: (_, close) => InfoBar(
+            title: const Text('缓存已清理'),
+            severity: InfoBarSeverity.success,
+            onClose: close,
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
-        displayInfoBar(context, builder: (_, close) => InfoBar(
-          title: const Text('清理失败'),
-          content: Text(formatUserError(e)),
-          severity: InfoBarSeverity.error,
-          onClose: close,
-        ));
+        displayInfoBar(
+          context,
+          builder: (_, close) => InfoBar(
+            title: const Text('清理失败'),
+            content: Text(formatUserError(e)),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          ),
+        );
       }
     }
   }
@@ -530,9 +556,12 @@ class _StatItem extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: theme.typography.caption?.copyWith(
-          color: theme.resources.textFillColorSecondary,
-        )),
+        Text(
+          label,
+          style: theme.typography.caption?.copyWith(
+            color: theme.resources.textFillColorSecondary,
+          ),
+        ),
         const SizedBox(height: 2),
         Text(value, style: theme.typography.bodyStrong),
       ],
@@ -562,10 +591,7 @@ class _StorageBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (totalBytes == 0) {
-      return const SizedBox(
-        height: 8,
-        child: ProgressBar(value: 0),
-      );
+      return const SizedBox(height: 8, child: ProgressBar(value: 0));
     }
 
     final imgFrac = imageBytes / totalBytes;

@@ -83,8 +83,10 @@ class _ChatPageState extends ConsumerState<ChatPage> {
           }
 
           final maxListWidth = totalWidth * _maxListFraction;
-          final clampedListWidth =
-              _listPanelWidth.clamp(_minListWidth, maxListWidth);
+          final clampedListWidth = _listPanelWidth.clamp(
+            _minListWidth,
+            maxListWidth,
+          );
 
           return Row(
             children: [
@@ -93,17 +95,20 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                   width: clampedListWidth,
                   child: const ConversationListPanel(),
                 ),
-                ResizableDivider(onDrag: (dx) {
-                  setState(() {
-                    _listPanelWidth += dx;
-                    final maxW = totalWidth * _maxListFraction;
-                    _listPanelWidth = _listPanelWidth.clamp(_minListWidth, maxW);
-                  });
-                }),
+                ResizableDivider(
+                  onDrag: (dx) {
+                    setState(() {
+                      _listPanelWidth += dx;
+                      final maxW = totalWidth * _maxListFraction;
+                      _listPanelWidth = _listPanelWidth.clamp(
+                        _minListWidth,
+                        maxW,
+                      );
+                    });
+                  },
+                ),
               ],
-              Expanded(
-                child: _buildChatArea(chatState, isMobileLayout: false),
-              ),
+              Expanded(child: _buildChatArea(chatState, isMobileLayout: false)),
             ],
           );
         },
@@ -170,9 +175,15 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         transitionsBuilder: (ctx, animation, secondaryAnimation, child) {
           return SlideTransition(
             position:
-                Tween<Offset>(begin: const Offset(-1, 0), end: Offset.zero)
-                    .animate(CurvedAnimation(
-                        parent: animation, curve: Curves.easeOutCubic)),
+                Tween<Offset>(
+                  begin: const Offset(-1, 0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
             child: child,
           );
         },
@@ -270,10 +281,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             ],
           ),
           const SizedBox(height: 4),
-          const SizedBox(
-            width: double.infinity,
-            child: ModelSelector(),
-          ),
+          const SizedBox(width: double.infinity, child: ModelSelector()),
         ],
       ),
     );
@@ -461,7 +469,8 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ButtonStyle(
               backgroundColor: WidgetStatePropertyAll(
-                  AppColors.error(FluentTheme.of(context).brightness)),
+                AppColors.error(FluentTheme.of(context).brightness),
+              ),
             ),
             child: const Text('删除'),
           ),

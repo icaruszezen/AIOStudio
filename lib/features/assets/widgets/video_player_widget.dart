@@ -131,8 +131,11 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(FluentIcons.error_badge,
-                size: 48, color: theme.resources.textFillColorSecondary),
+            Icon(
+              FluentIcons.error_badge,
+              size: 48,
+              color: theme.resources.textFillColorSecondary,
+            ),
             const SizedBox(height: 8),
             Text('无法播放视频', style: theme.typography.body),
             const SizedBox(height: 4),
@@ -178,20 +181,16 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   }
 
   Widget _buildControls(FluentThemeData theme) {
-    final progress =
-        _duration.inMilliseconds > 0
-            ? _position.inMilliseconds / _duration.inMilliseconds
-            : 0.0;
+    final progress = _duration.inMilliseconds > 0
+        ? _position.inMilliseconds / _duration.inMilliseconds
+        : 0.0;
 
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.bottomCenter,
           end: Alignment.topCenter,
-          colors: [
-            AppColors.overlayDark(0.8),
-            Colors.transparent,
-          ],
+          colors: [AppColors.overlayDark(0.8), Colors.transparent],
         ),
       ),
       padding: const EdgeInsets.fromLTRB(8, 24, 8, 8),
@@ -220,7 +219,10 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
               const SizedBox(width: 8),
               Text(
                 '${formatDuration(_position)} / ${formatDuration(_duration)}',
-                style: const TextStyle(color: AppColors.textOnMedia, fontSize: 12),
+                style: const TextStyle(
+                  color: AppColors.textOnMedia,
+                  fontSize: 12,
+                ),
               ),
               const Spacer(),
               _controlButton(
@@ -296,5 +298,4 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       child: Icon(icon, size: 16, color: AppColors.textOnMedia),
     );
   }
-
 }

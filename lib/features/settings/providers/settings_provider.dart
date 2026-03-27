@@ -9,10 +9,7 @@ import '../../../core/theme/app_theme.dart' show sharedPreferencesProvider;
 import '../../../core/utils/platform_utils.dart';
 
 export '../../../core/providers/app_config_provider.dart'
-    show
-        storageDirectoryProvider,
-        extensionPortProvider,
-        defaultExtensionPort;
+    show storageDirectoryProvider, extensionPortProvider, defaultExtensionPort;
 
 const _accentColorKey = 'accent_color';
 const _localeKey = 'locale';
@@ -51,8 +48,9 @@ String extensionAssetName(String version) =>
 // Accent Color
 // ---------------------------------------------------------------------------
 
-final accentColorProvider =
-    NotifierProvider<AccentColorNotifier, AccentColor>(AccentColorNotifier.new);
+final accentColorProvider = NotifierProvider<AccentColorNotifier, AccentColor>(
+  AccentColorNotifier.new,
+);
 
 class AccentColorNotifier extends Notifier<AccentColor> {
   @override
@@ -73,8 +71,9 @@ class AccentColorNotifier extends Notifier<AccentColor> {
 // Locale
 // ---------------------------------------------------------------------------
 
-final localeProvider =
-    NotifierProvider<LocaleNotifier, Locale>(LocaleNotifier.new);
+final localeProvider = NotifierProvider<LocaleNotifier, Locale>(
+  LocaleNotifier.new,
+);
 
 class LocaleNotifier extends Notifier<Locale> {
   @override
@@ -98,8 +97,9 @@ class LocaleNotifier extends Notifier<Locale> {
 // Auto-save chat history
 // ---------------------------------------------------------------------------
 
-final autoSaveChatProvider =
-    NotifierProvider<AutoSaveChatNotifier, bool>(AutoSaveChatNotifier.new);
+final autoSaveChatProvider = NotifierProvider<AutoSaveChatNotifier, bool>(
+  AutoSaveChatNotifier.new,
+);
 
 class AutoSaveChatNotifier extends Notifier<bool> {
   @override
@@ -134,12 +134,14 @@ WindowEffect resolveWindowEffect(AppWindowEffect effect) {
   return switch (effect) {
     AppWindowEffect.none => WindowEffect.disabled,
     AppWindowEffect.acrylic => WindowEffect.acrylic,
-    AppWindowEffect.mica => defaultTargetPlatform == TargetPlatform.windows
-        ? WindowEffect.mica
-        : WindowEffect.acrylic,
-    AppWindowEffect.tabbed => defaultTargetPlatform == TargetPlatform.windows
-        ? WindowEffect.tabbed
-        : WindowEffect.acrylic,
+    AppWindowEffect.mica =>
+      defaultTargetPlatform == TargetPlatform.windows
+          ? WindowEffect.mica
+          : WindowEffect.acrylic,
+    AppWindowEffect.tabbed =>
+      defaultTargetPlatform == TargetPlatform.windows
+          ? WindowEffect.tabbed
+          : WindowEffect.acrylic,
   };
 }
 
@@ -155,7 +157,8 @@ AppWindowEffect readSavedWindowEffect(SharedPreferences prefs) {
 
 final windowEffectProvider =
     NotifierProvider<WindowEffectNotifier, AppWindowEffect>(
-        WindowEffectNotifier.new);
+      WindowEffectNotifier.new,
+    );
 
 class WindowEffectNotifier extends Notifier<AppWindowEffect> {
   @override
@@ -185,8 +188,9 @@ class WindowEffectNotifier extends Notifier<AppWindowEffect> {
 // GitHub mirror / acceleration
 // ---------------------------------------------------------------------------
 
-final githubMirrorProvider =
-    NotifierProvider<GithubMirrorNotifier, String>(GithubMirrorNotifier.new);
+final githubMirrorProvider = NotifierProvider<GithubMirrorNotifier, String>(
+  GithubMirrorNotifier.new,
+);
 
 class GithubMirrorNotifier extends Notifier<String> {
   @override

@@ -26,11 +26,8 @@ class CustomService extends AiService with OpenAiCompatibleMixin {
     required String baseUrl,
     String? apiKey,
     required List<AiModelInfo> modelInfos,
-  })  : _modelInfos = List.unmodifiable(modelInfos),
-        _dio = createAiDio(
-          baseUrl: baseUrl,
-          apiKey: apiKey,
-        );
+  }) : _modelInfos = List.unmodifiable(modelInfos),
+       _dio = createAiDio(baseUrl: baseUrl, apiKey: apiKey);
 
   /// Legacy constructor for backward compatibility with plain string lists.
   factory CustomService.fromStringModels({
@@ -43,10 +40,12 @@ class CustomService extends AiService with OpenAiCompatibleMixin {
     bool imageEnabled = false,
   }) {
     final infos = models
-        .map((m) => AiModelInfo(
-              id: m,
-              mode: imageEnabled ? 'image_generation' : 'chat',
-            ))
+        .map(
+          (m) => AiModelInfo(
+            id: m,
+            mode: imageEnabled ? 'image_generation' : 'chat',
+          ),
+        )
         .toList();
     return CustomService(
       providerId: providerId,
@@ -72,9 +71,9 @@ class CustomService extends AiService with OpenAiCompatibleMixin {
 
   @override
   Set<String> get imageGenCapabilities => const {
-        ImageGenCap.style,
-        ImageGenCap.quality,
-      };
+    ImageGenCap.style,
+    ImageGenCap.quality,
+  };
 
   @override
   bool get supportsChatCompletion =>
@@ -167,10 +166,7 @@ class CustomService extends AiService with OpenAiCompatibleMixin {
     } on DioException catch (e) {
       throw OpenAiCompatibleMixin.unwrapDioError(e);
     } catch (e) {
-      throw AiServiceException(
-        message: e.toString(),
-        userMessage: '连接测试失败',
-      );
+      throw AiServiceException(message: e.toString(), userMessage: '连接测试失败');
     }
   }
 

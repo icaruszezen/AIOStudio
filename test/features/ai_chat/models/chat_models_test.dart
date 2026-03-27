@@ -118,8 +118,7 @@ void main() {
         systemPrompt: 'You are helpful',
         messages: [
           ChatMessage(id: 'msg-1', role: ChatRole.user, content: 'Hi'),
-          ChatMessage(
-              id: 'msg-2', role: ChatRole.assistant, content: 'Hello!'),
+          ChatMessage(id: 'msg-2', role: ChatRole.assistant, content: 'Hello!'),
         ],
       );
 
@@ -157,9 +156,9 @@ void main() {
       );
       expect(empty.lastMessage, isNull);
 
-      final withMsg = empty.copyWith(messages: [
-        ChatMessage(id: 'm1', role: ChatRole.user, content: 'Last'),
-      ]);
+      final withMsg = empty.copyWith(
+        messages: [ChatMessage(id: 'm1', role: ChatRole.user, content: 'Last')],
+      );
       expect(withMsg.lastMessage!.content, 'Last');
     });
 

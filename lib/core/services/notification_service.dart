@@ -38,7 +38,8 @@ class NotificationService {
 
     // Prune stale entries to avoid unbounded growth.
     _recentTitles.removeWhere(
-        (_, t) => now.difference(t) > const Duration(seconds: 10));
+      (_, t) => now.difference(t) > const Duration(seconds: 10),
+    );
 
     final context = navigatorKey.currentContext;
     if (context == null) {
@@ -46,14 +47,17 @@ class NotificationService {
       return;
     }
 
-    displayInfoBar(context, builder: (ctx, close) {
-      return InfoBar(
-        title: Text(title),
-        content: message != null ? Text(message) : null,
-        severity: effectiveSeverity,
-        action: actionBuilder?.call(close),
-        onClose: close,
-      );
-    });
+    displayInfoBar(
+      context,
+      builder: (ctx, close) {
+        return InfoBar(
+          title: Text(title),
+          content: message != null ? Text(message) : null,
+          severity: effectiveSeverity,
+          action: actionBuilder?.call(close),
+          onClose: close,
+        );
+      },
+    );
   }
 }

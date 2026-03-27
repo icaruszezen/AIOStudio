@@ -30,10 +30,9 @@ class VideoGenTaskQueue extends ConsumerWidget {
               Icon(FluentIcons.task_list, size: 14, color: theme.accentColor),
               const SizedBox(width: 6),
               historyAsync.when(
-                loading: () => Text('任务队列',
-                    style: theme.typography.bodyStrong),
-                error: (_, __) => Text('任务队列',
-                    style: theme.typography.bodyStrong),
+                loading: () => Text('任务队列', style: theme.typography.bodyStrong),
+                error: (_, __) =>
+                    Text('任务队列', style: theme.typography.bodyStrong),
                 data: (tasks) => Text(
                   '任务队列 (${tasks.length})',
                   style: theme.typography.bodyStrong,
@@ -52,8 +51,7 @@ class VideoGenTaskQueue extends ConsumerWidget {
         // Task list
         Expanded(
           child: historyAsync.when(
-            loading: () =>
-                const LoadingIndicator(message: '加载任务记录...'),
+            loading: () => const LoadingIndicator(message: '加载任务记录...'),
             error: (e, _) => EmptyState(
               icon: FluentIcons.error_badge,
               title: '加载失败',
@@ -177,8 +175,7 @@ class _TaskCard extends ConsumerWidget {
                       context,
                       icon: FluentIcons.info,
                       tooltip: task.errorMessage!,
-                      onPressed: () =>
-                          _showError(context, task.errorMessage!),
+                      onPressed: () => _showError(context, task.errorMessage!),
                     ),
                 ],
                 if (isPolling)
@@ -198,14 +195,24 @@ class _TaskCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatusIcon(String status, bool isPolling, FluentThemeData theme) {
+  Widget _buildStatusIcon(
+    String status,
+    bool isPolling,
+    FluentThemeData theme,
+  ) {
     switch (status) {
       case 'completed':
-        return Icon(FluentIcons.completed_solid,
-            size: 14, color: AppColors.success(theme.brightness));
+        return Icon(
+          FluentIcons.completed_solid,
+          size: 14,
+          color: AppColors.success(theme.brightness),
+        );
       case 'failed':
-        return Icon(FluentIcons.error_badge,
-            size: 14, color: AppColors.error(theme.brightness));
+        return Icon(
+          FluentIcons.error_badge,
+          size: 14,
+          color: AppColors.error(theme.brightness),
+        );
       case 'running':
         return const SizedBox(
           width: 14,
@@ -213,8 +220,11 @@ class _TaskCard extends ConsumerWidget {
           child: ProgressRing(strokeWidth: 2),
         );
       default:
-        return Icon(FluentIcons.clock,
-            size: 14, color: AppColors.pending(theme.brightness));
+        return Icon(
+          FluentIcons.clock,
+          size: 14,
+          color: AppColors.pending(theme.brightness),
+        );
     }
   }
 
@@ -256,10 +266,7 @@ class _TaskCard extends ConsumerWidget {
       message: tooltip,
       child: Padding(
         padding: const EdgeInsets.only(left: 4),
-        child: IconButton(
-          icon: Icon(icon, size: 12),
-          onPressed: onPressed,
-        ),
+        child: IconButton(icon: Icon(icon, size: 12), onPressed: onPressed),
       ),
     );
   }

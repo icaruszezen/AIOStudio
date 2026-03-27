@@ -1108,8 +1108,9 @@ class _AiProviderDialogState extends ConsumerState<AiProviderDialog> {
           child: Container(
             constraints: const BoxConstraints(maxHeight: 220),
             decoration: BoxDecoration(
-              border:
-                  Border.all(color: theme.resources.controlStrokeColorDefault),
+              border: Border.all(
+                color: theme.resources.controlStrokeColorDefault,
+              ),
               borderRadius: BorderRadius.circular(4),
             ),
             child: ListView.separated(

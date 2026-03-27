@@ -68,12 +68,14 @@ void main() {
       await dao.insertTag(makeTag('t1', 'OldName'));
 
       final original = await dao.getTagById('t1');
-      final ok = await dao.updateTag(TagsCompanion(
-        id: const Value('t1'),
-        name: const Value('NewName'),
-        color: const Value(0xFFFF0000),
-        createdAt: Value(original!.createdAt),
-      ));
+      final ok = await dao.updateTag(
+        TagsCompanion(
+          id: const Value('t1'),
+          name: const Value('NewName'),
+          color: const Value(0xFFFF0000),
+          createdAt: Value(original!.createdAt),
+        ),
+      );
       expect(ok, isTrue);
 
       final fetched = await dao.getTagById('t1');

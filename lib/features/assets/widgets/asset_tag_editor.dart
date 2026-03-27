@@ -9,10 +9,7 @@ import '../providers/tags_provider.dart';
 
 /// Inline tag editor: shows current tags as chips with an add button.
 class AssetTagEditor extends ConsumerStatefulWidget {
-  const AssetTagEditor({
-    super.key,
-    required this.assetId,
-  });
+  const AssetTagEditor({super.key, required this.assetId});
 
   final String assetId;
 
@@ -40,7 +37,10 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
         height: 28,
         child: Center(child: ProgressRing(strokeWidth: 2)),
       ),
-      error: (e, _) => Text('$e', style: TextStyle(color: AppColors.error(theme.brightness))),
+      error: (e, _) => Text(
+        '$e',
+        style: TextStyle(color: AppColors.error(theme.brightness)),
+      ),
       data: (currentTags) {
         return Wrap(
           spacing: 6,
@@ -59,8 +59,7 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
   }
 
   Widget _buildTagChip(FluentThemeData theme, Tag tag) {
-    final chipColor =
-        tag.color != null ? Color(tag.color!) : theme.accentColor;
+    final chipColor = tag.color != null ? Color(tag.color!) : theme.accentColor;
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -78,10 +77,7 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
           Container(
             width: 8,
             height: 8,
-            decoration: BoxDecoration(
-              color: chipColor,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: chipColor, shape: BoxShape.circle),
           ),
           const SizedBox(width: 6),
           Text(
@@ -114,9 +110,7 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
         ),
         decoration: BoxDecoration(
           borderRadius: DesignTokens.borderRadiusXL,
-          border: Border.all(
-            color: theme.resources.cardStrokeColorDefault,
-          ),
+          border: Border.all(color: theme.resources.cardStrokeColorDefault),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -143,8 +137,9 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
     final allTagsAsync = ref.watch(allTagsProvider);
     final allTags = allTagsAsync.value ?? <Tag>[];
     final currentTagIds = currentTags.map((t) => t.id).toSet();
-    final available =
-        allTags.where((t) => !currentTagIds.contains(t.id)).toList();
+    final available = allTags
+        .where((t) => !currentTagIds.contains(t.id))
+        .toList();
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -156,10 +151,7 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
             controller: _textController,
             placeholder: '输入标签名...',
             items: available
-                .map((t) => AutoSuggestBoxItem<Tag>(
-                      value: t,
-                      label: t.name,
-                    ))
+                .map((t) => AutoSuggestBoxItem<Tag>(value: t, label: t.name))
                 .toList(),
             onSelected: (item) {
               if (item.value != null) {
@@ -203,15 +195,18 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
       await ref.read(tagActionsProvider).addToAsset(widget.assetId, tagId);
     } catch (e) {
       if (mounted) {
-        await displayInfoBar(context, builder: (_, close) => InfoBar(
-          title: const Text('添加标签失败'),
-          content: Text(formatUserError(e)),
-          severity: InfoBarSeverity.error,
-          action: IconButton(
-            icon: const Icon(FluentIcons.clear),
-            onPressed: close,
+        await displayInfoBar(
+          context,
+          builder: (_, close) => InfoBar(
+            title: const Text('添加标签失败'),
+            content: Text(formatUserError(e)),
+            severity: InfoBarSeverity.error,
+            action: IconButton(
+              icon: const Icon(FluentIcons.clear),
+              onPressed: close,
+            ),
           ),
-        ));
+        );
       }
     }
     if (mounted) {
@@ -229,15 +224,18 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
       await actions.addToAsset(widget.assetId, tagId);
     } catch (e) {
       if (mounted) {
-        await displayInfoBar(context, builder: (_, close) => InfoBar(
-          title: const Text('创建标签失败'),
-          content: Text(formatUserError(e)),
-          severity: InfoBarSeverity.error,
-          action: IconButton(
-            icon: const Icon(FluentIcons.clear),
-            onPressed: close,
+        await displayInfoBar(
+          context,
+          builder: (_, close) => InfoBar(
+            title: const Text('创建标签失败'),
+            content: Text(formatUserError(e)),
+            severity: InfoBarSeverity.error,
+            action: IconButton(
+              icon: const Icon(FluentIcons.clear),
+              onPressed: close,
+            ),
           ),
-        ));
+        );
       }
     }
     if (mounted) {
@@ -253,15 +251,18 @@ class _AssetTagEditorState extends ConsumerState<AssetTagEditor> {
       await ref.read(tagActionsProvider).removeFromAsset(widget.assetId, tagId);
     } catch (e) {
       if (mounted) {
-        await displayInfoBar(context, builder: (_, close) => InfoBar(
-          title: const Text('移除标签失败'),
-          content: Text(formatUserError(e)),
-          severity: InfoBarSeverity.error,
-          action: IconButton(
-            icon: const Icon(FluentIcons.clear),
-            onPressed: close,
+        await displayInfoBar(
+          context,
+          builder: (_, close) => InfoBar(
+            title: const Text('移除标签失败'),
+            content: Text(formatUserError(e)),
+            severity: InfoBarSeverity.error,
+            action: IconButton(
+              icon: const Icon(FluentIcons.clear),
+              onPressed: close,
+            ),
           ),
-        ));
+        );
       }
     }
   }
@@ -341,17 +342,14 @@ class TagSelectorPanel extends ConsumerWidget {
                     Text(
                       tag.name,
                       style: theme.typography.caption?.copyWith(
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                       ),
                     ),
                     if (isSelected) ...[
                       const SizedBox(width: DesignTokens.spacingXS),
-                      Icon(
-                        FluentIcons.check_mark,
-                        size: 10,
-                        color: chipColor,
-                      ),
+                      Icon(FluentIcons.check_mark, size: 10, color: chipColor),
                     ],
                   ],
                 ),

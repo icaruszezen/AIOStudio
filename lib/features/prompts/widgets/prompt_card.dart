@@ -17,7 +17,10 @@ IconData promptCategoryIcon(String? category) {
   };
 }
 
-Color promptCategoryColor(String? category, [Brightness brightness = Brightness.light]) {
+Color promptCategoryColor(
+  String? category, [
+  Brightness brightness = Brightness.light,
+]) {
   return switch (category) {
     'text_gen' => AppColors.textDoc(brightness),
     'image_gen' => AppColors.imageGen(brightness),
@@ -66,7 +69,10 @@ class _PromptCardState extends State<PromptCard> {
   @override
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
-    final catColor = promptCategoryColor(widget.prompt.category, theme.brightness);
+    final catColor = promptCategoryColor(
+      widget.prompt.category,
+      theme.brightness,
+    );
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -93,8 +99,8 @@ class _PromptCardState extends State<PromptCard> {
       color: widget.isSelected
           ? theme.accentColor.withValues(alpha: 0.1)
           : _isHovered
-              ? theme.resources.subtleFillColorSecondary
-              : Colors.transparent,
+          ? theme.resources.subtleFillColorSecondary
+          : Colors.transparent,
       borderRadius: DesignTokens.borderRadiusSM,
       border: widget.isSelected
           ? Border.all(color: theme.accentColor.withValues(alpha: 0.4))
@@ -139,9 +145,7 @@ class _PromptCardState extends State<PromptCard> {
       children: [
         Text(
           widget.prompt.title,
-          style: theme.typography.body?.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
+          style: theme.typography.body?.copyWith(fontWeight: FontWeight.w500),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -177,11 +181,7 @@ class _PromptCardState extends State<PromptCard> {
   Widget _buildFavoriteIndicator() {
     return const Padding(
       padding: EdgeInsets.only(left: 2),
-      child: Icon(
-        FluentIcons.heart_fill,
-        size: 12,
-        color: AppColors.favorite,
-      ),
+      child: Icon(FluentIcons.heart_fill, size: 12, color: AppColors.favorite),
     );
   }
 

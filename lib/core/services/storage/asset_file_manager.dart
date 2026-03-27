@@ -25,9 +25,9 @@ class AssetFileManager {
     required AssetDao assetDao,
     required LocalStorageService storage,
     Dio? dio,
-  })  : _assetDao = assetDao,
-        _storage = storage,
-        _dio = dio ?? Dio();
+  }) : _assetDao = assetDao,
+       _storage = storage,
+       _dio = dio ?? Dio();
 
   /// Validates that [url] uses http/https and does not target private networks.
   static void _validateDownloadUrl(String url) {
@@ -46,7 +46,8 @@ class AssetFileManager {
       bool blocked = false;
       if (ip.type == InternetAddressType.IPv4) {
         final b = ip.rawAddress;
-        blocked = b[0] == 127 || // 127.0.0.0/8
+        blocked =
+            b[0] == 127 || // 127.0.0.0/8
             b[0] == 10 || // 10.0.0.0/8
             (b[0] == 172 && b[1] >= 16 && b[1] <= 31) || // 172.16.0.0/12
             (b[0] == 192 && b[1] == 168) || // 192.168.0.0/16
@@ -54,7 +55,8 @@ class AssetFileManager {
             b.every((v) => v == 0); // 0.0.0.0
       } else if (ip.type == InternetAddressType.IPv6) {
         final b = ip.rawAddress;
-        final isLoopback = b.last == 1 &&
+        final isLoopback =
+            b.last == 1 &&
             b.sublist(0, b.length - 1).every((v) => v == 0); // ::1
         final isLinkLocal = b[0] == 0xfe && (b[1] & 0xc0) == 0x80; // fe80::/10
         final isUla = (b[0] & 0xfe) == 0xfc; // fc00::/7
@@ -79,9 +81,7 @@ class AssetFileManager {
         url,
         options: Options(receiveTimeout: const Duration(seconds: 10)),
       );
-      final cl = int.tryParse(
-        headResp.headers.value('content-length') ?? '',
-      );
+      final cl = int.tryParse(headResp.headers.value('content-length') ?? '');
       if (cl != null && cl > _maxDownloadBytes) {
         throw ArgumentError(
           'File too large: $cl bytes (max $_maxDownloadBytes)',
@@ -364,8 +364,7 @@ class AssetFileManager {
       originalUrl: Value(mediaUrl),
       sourceType: 'browser_extension',
       fileSize: Value(fileSize),
-      metadata:
-          Value(metadataMap.isNotEmpty ? jsonEncode(metadataMap) : null),
+      metadata: Value(metadataMap.isNotEmpty ? jsonEncode(metadataMap) : null),
       createdAt: now,
       updatedAt: now,
     );

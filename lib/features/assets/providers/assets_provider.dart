@@ -13,17 +13,19 @@ final allAssetsProvider = StreamProvider<List<Asset>>((ref) {
   return ref.watch(assetDaoProvider).watchAssets();
 });
 
-final assetsByProjectProvider =
-    StreamProvider.autoDispose.family<List<Asset>, String>((ref, projectId) {
-  return ref.watch(assetDaoProvider).watchAssets(projectId: projectId);
-});
+final assetsByProjectProvider = StreamProvider.autoDispose
+    .family<List<Asset>, String>((ref, projectId) {
+      return ref.watch(assetDaoProvider).watchAssets(projectId: projectId);
+    });
 
 final favoriteAssetsProvider = StreamProvider<List<Asset>>((ref) {
   return ref.watch(assetDaoProvider).watchFavorites();
 });
 
-final assetDetailProvider =
-    StreamProvider.autoDispose.family<Asset?, String>((ref, id) {
+final assetDetailProvider = StreamProvider.autoDispose.family<Asset?, String>((
+  ref,
+  id,
+) {
   return ref.watch(assetDaoProvider).watchAssetById(id);
 });
 
@@ -41,17 +43,51 @@ class AssetActions {
   final Ref _ref;
 
   static const _imageExtensions = {
-    '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg', '.ico', '.tiff',
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.gif',
+    '.bmp',
+    '.webp',
+    '.svg',
+    '.ico',
+    '.tiff',
   };
   static const _videoExtensions = {
-    '.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm', '.m4v',
+    '.mp4',
+    '.avi',
+    '.mov',
+    '.mkv',
+    '.wmv',
+    '.flv',
+    '.webm',
+    '.m4v',
   };
   static const _audioExtensions = {
-    '.mp3', '.wav', '.flac', '.aac', '.ogg', '.wma', '.m4a',
+    '.mp3',
+    '.wav',
+    '.flac',
+    '.aac',
+    '.ogg',
+    '.wma',
+    '.m4a',
   };
   static const _textExtensions = {
-    '.txt', '.md', '.json', '.xml', '.csv', '.html', '.css', '.js',
-    '.dart', '.py', '.yaml', '.yml', '.toml', '.ini', '.log',
+    '.txt',
+    '.md',
+    '.json',
+    '.xml',
+    '.csv',
+    '.html',
+    '.css',
+    '.js',
+    '.dart',
+    '.py',
+    '.yaml',
+    '.yml',
+    '.toml',
+    '.ini',
+    '.log',
   };
 
   static String inferAssetType(String filePath) {
@@ -147,7 +183,9 @@ class AssetActions {
     await dao.updateAsset(
       AssetsCompanion(
         id: Value(existing.id),
-        projectId: Value(clearProject ? null : (projectId ?? existing.projectId)),
+        projectId: Value(
+          clearProject ? null : (projectId ?? existing.projectId),
+        ),
         name: Value(name ?? existing.name),
         type: Value(existing.type),
         filePath: Value(existing.filePath),
@@ -166,15 +204,20 @@ class AssetActions {
     );
   }
 
-  Future<void> moveToProject(String assetId, String? projectId) =>
-      updateAsset(id: assetId, projectId: projectId, clearProject: projectId == null);
+  Future<void> moveToProject(String assetId, String? projectId) => updateAsset(
+    id: assetId,
+    projectId: projectId,
+    clearProject: projectId == null,
+  );
 
   Future<void> batchMoveToProject(List<String> ids, String? projectId) =>
       _ref.read(assetDaoProvider).batchMoveToProject(ids, projectId);
 
-  Future<void> batchToggleFavorite(List<String> ids, {required bool favorite}) =>
+  Future<void> batchToggleFavorite(
+    List<String> ids, {
+    required bool favorite,
+  }) =>
       _ref.read(assetDaoProvider).batchToggleFavorite(ids, favorite: favorite);
 
-  Future<int> getAssetCount() =>
-      _ref.read(assetDaoProvider).countAllAssets();
+  Future<int> getAssetCount() => _ref.read(assetDaoProvider).countAllAssets();
 }

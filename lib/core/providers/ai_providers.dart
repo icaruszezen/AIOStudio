@@ -7,7 +7,9 @@ import '../services/ai/model_capability_registry.dart';
 import '../services/ai/model_discovery_service.dart';
 import 'database_provider.dart';
 
-final modelCapabilityRegistryProvider = Provider<ModelCapabilityRegistry>((ref) {
+final modelCapabilityRegistryProvider = Provider<ModelCapabilityRegistry>((
+  ref,
+) {
   return ModelCapabilityRegistry();
 });
 
@@ -45,11 +47,11 @@ final aiServicesReadyProvider = FutureProvider<AiServiceManager>((ref) async {
 
 /// Available model identifiers for the given capability type
 /// ("chat", "image", "video").
-final availableModelsProvider =
-    FutureProvider.autoDispose.family<List<AiModelInfo>, String>((ref, type) async {
-  final manager = await ref.watch(aiServicesReadyProvider.future);
-  return manager.getAvailableModelInfos(type);
-});
+final availableModelsProvider = FutureProvider.autoDispose
+    .family<List<AiModelInfo>, String>((ref, type) async {
+      final manager = await ref.watch(aiServicesReadyProvider.future);
+      return manager.getAvailableModelInfos(type);
+    });
 
 final defaultChatServiceProvider = Provider<AiService?>((ref) {
   final managerAsync = ref.watch(aiServicesReadyProvider);

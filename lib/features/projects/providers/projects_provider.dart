@@ -18,68 +18,74 @@ final archivedProjectsProvider = StreamProvider<List<Project>>((ref) {
   return ref.watch(projectDaoProvider).watchArchivedProjects();
 });
 
-final projectDetailProvider =
-    StreamProvider.autoDispose.family<Project?, String>((ref, id) {
-  return ref.watch(projectDaoProvider).watchProjectById(id);
-});
+final projectDetailProvider = StreamProvider.autoDispose
+    .family<Project?, String>((ref, id) {
+      return ref.watch(projectDaoProvider).watchProjectById(id);
+    });
 
-final projectAiTasksProvider =
-    StreamProvider.autoDispose.family<List<AiTask>, String>((ref, projectId) {
-  return ref.watch(aiTaskDaoProvider).watchByProject(projectId);
-});
+final projectAiTasksProvider = StreamProvider.autoDispose
+    .family<List<AiTask>, String>((ref, projectId) {
+      return ref.watch(aiTaskDaoProvider).watchByProject(projectId);
+    });
 
 // ---------------------------------------------------------------------------
 // Future providers
 // ---------------------------------------------------------------------------
 
-final searchProjectsProvider = FutureProvider.autoDispose.family<List<Project>,
-    (String query, bool archivedOnly)>((ref, params) {
-  final (query, archivedOnly) = params;
-  if (query.isEmpty) return Future.value([]);
-  return ref
-      .watch(projectDaoProvider)
-      .searchByName(query, archivedOnly: archivedOnly);
-});
+final searchProjectsProvider = FutureProvider.autoDispose
+    .family<List<Project>, (String query, bool archivedOnly)>((ref, params) {
+      final (query, archivedOnly) = params;
+      if (query.isEmpty) return Future.value([]);
+      return ref
+          .watch(projectDaoProvider)
+          .searchByName(query, archivedOnly: archivedOnly);
+    });
 
 /// Lightweight count-only streams for reactive stats updates.
-final _assetCountTrigger =
-    StreamProvider.autoDispose.family<int, String>((ref, projectId) {
+final _assetCountTrigger = StreamProvider.autoDispose.family<int, String>((
+  ref,
+  projectId,
+) {
   return ref.watch(assetDaoProvider).watchCountByProject(projectId);
 });
 
-final _promptCountTrigger =
-    StreamProvider.autoDispose.family<int, String>((ref, projectId) {
+final _promptCountTrigger = StreamProvider.autoDispose.family<int, String>((
+  ref,
+  projectId,
+) {
   return ref.watch(promptDaoProvider).watchCountByProject(projectId);
 });
 
-final _taskCountTrigger =
-    StreamProvider.autoDispose.family<int, String>((ref, projectId) {
+final _taskCountTrigger = StreamProvider.autoDispose.family<int, String>((
+  ref,
+  projectId,
+) {
   return ref.watch(aiTaskDaoProvider).watchCountByProject(projectId);
 });
 
-final projectStatsProvider =
-    FutureProvider.autoDispose.family<ProjectStats, String>((ref, projectId) async {
-  final assetDao = ref.watch(assetDaoProvider);
-  final aiTaskDao = ref.watch(aiTaskDaoProvider);
+final projectStatsProvider = FutureProvider.autoDispose
+    .family<ProjectStats, String>((ref, projectId) async {
+      final assetDao = ref.watch(assetDaoProvider);
+      final aiTaskDao = ref.watch(aiTaskDaoProvider);
 
-  final counts = await Future.wait([
-    ref.watch(_assetCountTrigger(projectId).future),
-    ref.watch(_promptCountTrigger(projectId).future),
-    ref.watch(_taskCountTrigger(projectId).future),
-    assetDao.countByProjectAndType(projectId, 'image'),
-    assetDao.countByProjectAndType(projectId, 'video'),
-    aiTaskDao.sumTokenUsageByProject(projectId),
-  ]);
+      final counts = await Future.wait([
+        ref.watch(_assetCountTrigger(projectId).future),
+        ref.watch(_promptCountTrigger(projectId).future),
+        ref.watch(_taskCountTrigger(projectId).future),
+        assetDao.countByProjectAndType(projectId, 'image'),
+        assetDao.countByProjectAndType(projectId, 'video'),
+        aiTaskDao.sumTokenUsageByProject(projectId),
+      ]);
 
-  return ProjectStats(
-    totalAssets: counts[0],
-    imageCount: counts[3],
-    videoCount: counts[4],
-    promptCount: counts[1],
-    aiTaskCount: counts[2],
-    totalTokenUsage: counts[5],
-  );
-});
+      return ProjectStats(
+        totalAssets: counts[0],
+        imageCount: counts[3],
+        videoCount: counts[4],
+        promptCount: counts[1],
+        aiTaskCount: counts[2],
+        totalTokenUsage: counts[5],
+      );
+    });
 
 // ---------------------------------------------------------------------------
 // Project actions (CRUD)
@@ -103,7 +109,9 @@ class ProjectActions {
   }) async {
     final id = _uuid.v4();
     final now = epochNowMs();
-    await _ref.read(projectDaoProvider).insertProject(
+    await _ref
+        .read(projectDaoProvider)
+        .insertProject(
           ProjectsCompanion.insert(
             id: id,
             name: name,

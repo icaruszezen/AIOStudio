@@ -61,11 +61,9 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
     final category = (catIndex > _favoriteTabIndex)
         ? _categoryTabs[catIndex]
         : null;
-    final id = await ref.read(promptActionsProvider).createPrompt(
-          title: '新提示词',
-          content: '',
-          category: category,
-        );
+    final id = await ref
+        .read(promptActionsProvider)
+        .createPrompt(title: '新提示词', content: '', category: category);
     ref.read(currentPromptIdProvider.notifier).select(id);
   }
 
@@ -82,22 +80,26 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
         builder: (context, constraints) {
           final totalWidth = constraints.maxWidth;
           final maxListWidth = totalWidth * _maxListFraction;
-          final clampedListWidth =
-              _listPanelWidth.clamp(_minListWidth, maxListWidth);
+          final clampedListWidth = _listPanelWidth.clamp(
+            _minListWidth,
+            maxListWidth,
+          );
 
           return Row(
             children: [
-              SizedBox(
-                width: clampedListWidth,
-                child: _buildListPanel(),
+              SizedBox(width: clampedListWidth, child: _buildListPanel()),
+              ResizableDivider(
+                onDrag: (dx) {
+                  setState(() {
+                    _listPanelWidth += dx;
+                    final maxW = totalWidth * _maxListFraction;
+                    _listPanelWidth = _listPanelWidth.clamp(
+                      _minListWidth,
+                      maxW,
+                    );
+                  });
+                },
               ),
-              ResizableDivider(onDrag: (dx) {
-                setState(() {
-                  _listPanelWidth += dx;
-                  final maxW = totalWidth * _maxListFraction;
-                  _listPanelWidth = _listPanelWidth.clamp(_minListWidth, maxW);
-                });
-              }),
               Expanded(child: _buildEditorPanel()),
             ],
           );
@@ -165,17 +167,12 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
   }
 
   Widget _buildCategoryTabs(FluentThemeData theme) {
-    final tabLabels = [
-      '全部',
-      '收藏',
-      ...promptCategories.map((c) => c.label),
-    ];
+    final tabLabels = ['全部', '收藏', ...promptCategories.map((c) => c.label)];
     return SizedBox(
       height: 36,
       child: Listener(
         onPointerSignal: (event) {
-          if (event is PointerScrollEvent &&
-              _tabScrollController.hasClients) {
+          if (event is PointerScrollEvent && _tabScrollController.hasClients) {
             _tabScrollController.jumpTo(
               (_tabScrollController.offset + event.scrollDelta.dy).clamp(
                 0.0,
@@ -186,10 +183,7 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
         },
         child: ScrollConfiguration(
           behavior: ScrollConfiguration.of(context).copyWith(
-            dragDevices: {
-              PointerDeviceKind.touch,
-              PointerDeviceKind.mouse,
-            },
+            dragDevices: {PointerDeviceKind.touch, PointerDeviceKind.mouse},
             scrollbars: false,
           ),
           child: ListView.builder(
@@ -263,16 +257,19 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
               },
               onCopyContent: () {
                 Clipboard.setData(ClipboardData(text: prompt.content));
-                displayInfoBar(context, builder: (_, close) {
-                  return InfoBar(
-                    title: const Text('已复制到剪贴板'),
-                    severity: InfoBarSeverity.success,
-                    action: IconButton(
-                      icon: const Icon(FluentIcons.clear),
-                      onPressed: close,
-                    ),
-                  );
-                });
+                displayInfoBar(
+                  context,
+                  builder: (_, close) {
+                    return InfoBar(
+                      title: const Text('已复制到剪贴板'),
+                      severity: InfoBarSeverity.success,
+                      action: IconButton(
+                        icon: const Icon(FluentIcons.clear),
+                        onPressed: close,
+                      ),
+                    );
+                  },
+                );
               },
             );
           },
@@ -293,7 +290,9 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
             FilledButton(
               onPressed: () => Navigator.of(ctx).pop(true),
               style: ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(AppColors.error(theme.brightness)),
+                backgroundColor: WidgetStatePropertyAll(
+                  AppColors.error(theme.brightness),
+                ),
               ),
               child: const Text('删除'),
             ),
@@ -321,9 +320,6 @@ class _PromptsPageState extends ConsumerState<PromptsPage> {
       );
     }
 
-    return PromptEditorPanel(
-      key: ValueKey(selectedId),
-      promptId: selectedId,
-    );
+    return PromptEditorPanel(key: ValueKey(selectedId), promptId: selectedId);
   }
 }

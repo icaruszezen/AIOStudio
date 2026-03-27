@@ -27,18 +27,20 @@ Prompt _fakePrompt({
 
 Widget _wrap(Widget child) {
   return FluentApp(
-    home: ScaffoldPage(
-      content: SizedBox(width: 400, height: 60, child: child),
-    ),
+    home: ScaffoldPage(content: SizedBox(width: 400, height: 60, child: child)),
   );
 }
 
 void main() {
   group('PromptCard', () {
     testWidgets('renders prompt title and content preview', (tester) async {
-      await tester.pumpWidget(_wrap(
-        PromptCard(prompt: _fakePrompt(title: 'My Prompt', content: 'Do stuff')),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          PromptCard(
+            prompt: _fakePrompt(title: 'My Prompt', content: 'Do stuff'),
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('My Prompt'), findsOneWidget);
@@ -46,36 +48,36 @@ void main() {
     });
 
     testWidgets('shows favorite icon when isFavorite is true', (tester) async {
-      await tester.pumpWidget(_wrap(
-        PromptCard(prompt: _fakePrompt(isFavorite: true)),
-      ));
+      await tester.pumpWidget(
+        _wrap(PromptCard(prompt: _fakePrompt(isFavorite: true))),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byIcon(FluentIcons.heart_fill), findsOneWidget);
     });
 
     testWidgets('hides favorite icon when isFavorite is false', (tester) async {
-      await tester.pumpWidget(_wrap(
-        PromptCard(prompt: _fakePrompt(isFavorite: false)),
-      ));
+      await tester.pumpWidget(
+        _wrap(PromptCard(prompt: _fakePrompt(isFavorite: false))),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byIcon(FluentIcons.heart_fill), findsNothing);
     });
 
     testWidgets('shows use count when greater than zero', (tester) async {
-      await tester.pumpWidget(_wrap(
-        PromptCard(prompt: _fakePrompt(useCount: 5)),
-      ));
+      await tester.pumpWidget(
+        _wrap(PromptCard(prompt: _fakePrompt(useCount: 5))),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('5'), findsOneWidget);
     });
 
     testWidgets('hides use count when zero', (tester) async {
-      await tester.pumpWidget(_wrap(
-        PromptCard(prompt: _fakePrompt(useCount: 0)),
-      ));
+      await tester.pumpWidget(
+        _wrap(PromptCard(prompt: _fakePrompt(useCount: 0))),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('0'), findsNothing);
@@ -83,12 +85,9 @@ void main() {
 
     testWidgets('calls onTap callback when tapped', (tester) async {
       var tapped = false;
-      await tester.pumpWidget(_wrap(
-        PromptCard(
-          prompt: _fakePrompt(),
-          onTap: () => tapped = true,
-        ),
-      ));
+      await tester.pumpWidget(
+        _wrap(PromptCard(prompt: _fakePrompt(), onTap: () => tapped = true)),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.byType(PromptCard));
@@ -96,18 +95,18 @@ void main() {
     });
 
     testWidgets('shows category icon for different categories', (tester) async {
-      await tester.pumpWidget(_wrap(
-        PromptCard(prompt: _fakePrompt(category: 'chat')),
-      ));
+      await tester.pumpWidget(
+        _wrap(PromptCard(prompt: _fakePrompt(category: 'chat'))),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byIcon(FluentIcons.chat), findsOneWidget);
     });
 
     testWidgets('shows image_gen category icon', (tester) async {
-      await tester.pumpWidget(_wrap(
-        PromptCard(prompt: _fakePrompt(category: 'image_gen')),
-      ));
+      await tester.pumpWidget(
+        _wrap(PromptCard(prompt: _fakePrompt(category: 'image_gen'))),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byIcon(FluentIcons.photo2), findsOneWidget);

@@ -16,9 +16,7 @@ void main() {
   setUp(() {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     container = ProviderContainer(
-      overrides: [
-        appDatabaseProvider.overrideWithValue(db),
-      ],
+      overrides: [appDatabaseProvider.overrideWithValue(db)],
     );
   });
 
@@ -47,12 +45,14 @@ void main() {
 
     test('createPrompt with projectId associates to project', () async {
       final ts = DateTime.now().millisecondsSinceEpoch;
-      await db.projectDao.insertProject(ProjectsCompanion(
-        id: const Value('proj-1'),
-        name: const Value('Test'),
-        createdAt: Value(ts),
-        updatedAt: Value(ts),
-      ));
+      await db.projectDao.insertProject(
+        ProjectsCompanion(
+          id: const Value('proj-1'),
+          name: const Value('Test'),
+          createdAt: Value(ts),
+          updatedAt: Value(ts),
+        ),
+      );
 
       final actions = container.read(promptActionsProvider);
       final id = await actions.createPrompt(
@@ -101,10 +101,7 @@ void main() {
 
     test('deletePrompt removes the prompt', () async {
       final actions = container.read(promptActionsProvider);
-      final id = await actions.createPrompt(
-        title: 'To Delete',
-        content: 'bye',
-      );
+      final id = await actions.createPrompt(title: 'To Delete', content: 'bye');
 
       await actions.deletePrompt(id);
       expect(await db.promptDao.getPromptById(id), isNull);
@@ -126,10 +123,7 @@ void main() {
 
     test('toggleFavorite flips the flag', () async {
       final actions = container.read(promptActionsProvider);
-      final id = await actions.createPrompt(
-        title: 'Fav',
-        content: 'content',
-      );
+      final id = await actions.createPrompt(title: 'Fav', content: 'content');
 
       var prompt = await db.promptDao.getPromptById(id);
       expect(prompt!.isFavorite, isFalse);
@@ -145,10 +139,7 @@ void main() {
 
     test('incrementUseCount bumps count by 1', () async {
       final actions = container.read(promptActionsProvider);
-      final id = await actions.createPrompt(
-        title: 'Used',
-        content: 'content',
-      );
+      final id = await actions.createPrompt(title: 'Used', content: 'content');
 
       var prompt = await db.promptDao.getPromptById(id);
       expect(prompt!.useCount, 0);

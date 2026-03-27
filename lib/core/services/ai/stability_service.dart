@@ -24,12 +24,12 @@ class StabilityService extends AiService {
     required String apiKey,
     String baseUrl = 'https://api.stability.ai',
     List<AiModelInfo>? modelInfos,
-  })  : _modelInfoOverrides = modelInfos,
-        _dio = createAiDio(
-          baseUrl: baseUrl,
-          apiKey: apiKey,
-          extraHeaders: {'Accept': 'application/json'},
-        );
+  }) : _modelInfoOverrides = modelInfos,
+       _dio = createAiDio(
+         baseUrl: baseUrl,
+         apiKey: apiKey,
+         extraHeaders: {'Accept': 'application/json'},
+       );
 
   @override
   String get providerName => 'Stability AI';
@@ -45,9 +45,9 @@ class StabilityService extends AiService {
   @override
   List<String> get imageModels => _modelInfoOverrides != null
       ? _modelInfoOverrides
-          .where((m) => m.isEnabled && m.isImageModel)
-          .map((m) => m.id)
-          .toList()
+            .where((m) => m.isEnabled && m.isImageModel)
+            .map((m) => m.id)
+            .toList()
       : List.unmodifiable(_defaultModels);
 
   @override
@@ -55,11 +55,11 @@ class StabilityService extends AiService {
 
   @override
   Set<String> get imageGenCapabilities => const {
-        ImageGenCap.cfgScale,
-        ImageGenCap.steps,
-        ImageGenCap.seed,
-        ImageGenCap.negativePrompt,
-      };
+    ImageGenCap.cfgScale,
+    ImageGenCap.steps,
+    ImageGenCap.seed,
+    ImageGenCap.negativePrompt,
+  };
 
   @override
   bool get supportsChatCompletion => false;
@@ -98,9 +98,9 @@ class StabilityService extends AiService {
 
       // Single-image response: { "image": "<base64>", "finish_reason": "..." }
       if (data.containsKey('image')) {
-        return AiImageResponse(images: [
-          AiGeneratedImage(base64: data['image'] as String),
-        ]);
+        return AiImageResponse(
+          images: [AiGeneratedImage(base64: data['image'] as String)],
+        );
       }
 
       // Array response (future-proofing)
@@ -109,9 +109,7 @@ class StabilityService extends AiService {
         return AiImageResponse(
           images: artifacts.map((a) {
             final art = a as Map<String, dynamic>;
-            return AiGeneratedImage(
-              base64: art['base64'] as String?,
-            );
+            return AiGeneratedImage(base64: art['base64'] as String?);
           }).toList(),
         );
       }
@@ -137,10 +135,7 @@ class StabilityService extends AiService {
     } on DioException catch (e) {
       throw _unwrap(e);
     } catch (e) {
-      throw AiServiceException(
-        message: e.toString(),
-        userMessage: '连接测试失败',
-      );
+      throw AiServiceException(message: e.toString(), userMessage: '连接测试失败');
     }
   }
 
@@ -166,11 +161,11 @@ class StabilityService extends AiService {
 
   static AiServiceException _unwrap(DioException e) =>
       e.error is AiServiceException
-          ? e.error! as AiServiceException
-          : AiServiceException(
-              message: e.message ?? e.toString(),
-              userMessage: '网络请求异常',
-              statusCode: e.response?.statusCode,
-              originalError: e,
-            );
+      ? e.error! as AiServiceException
+      : AiServiceException(
+          message: e.message ?? e.toString(),
+          userMessage: '网络请求异常',
+          statusCode: e.response?.statusCode,
+          originalError: e,
+        );
 }

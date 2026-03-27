@@ -25,7 +25,10 @@ mixin OpenAiCompatibleMixin {
           'content': [
             {'type': 'text', 'text': m.content},
             for (final url in m.imageUrls!)
-              {'type': 'image_url', 'image_url': {'url': url}},
+              {
+                'type': 'image_url',
+                'image_url': {'url': url},
+              },
           ],
         };
       }
@@ -45,8 +48,8 @@ mixin OpenAiCompatibleMixin {
     final choices = data['choices'] as List<dynamic>? ?? [];
     final content = choices.isNotEmpty
         ? (choices[0] as Map<String, dynamic>)['message']['content']
-                as String? ??
-            ''
+                  as String? ??
+              ''
         : '';
     final usage = data['usage'] as Map<String, dynamic>? ?? {};
 
@@ -78,8 +81,9 @@ mixin OpenAiCompatibleMixin {
           final json = jsonDecode(payload) as Map<String, dynamic>;
           final choices = json['choices'] as List<dynamic>? ?? [];
           if (choices.isEmpty) continue;
-          final delta = (choices[0] as Map<String, dynamic>)['delta']
-              as Map<String, dynamic>? ??
+          final delta =
+              (choices[0] as Map<String, dynamic>)['delta']
+                  as Map<String, dynamic>? ??
               {};
           final content = delta['content'] as String?;
           if (content != null && content.isNotEmpty) yield content;
@@ -92,11 +96,11 @@ mixin OpenAiCompatibleMixin {
 
   static AiServiceException unwrapDioError(DioException e) =>
       e.error is AiServiceException
-          ? e.error! as AiServiceException
-          : AiServiceException(
-              message: e.message ?? e.toString(),
-              userMessage: '网络请求异常',
-              statusCode: e.response?.statusCode,
-              originalError: e,
-            );
+      ? e.error! as AiServiceException
+      : AiServiceException(
+          message: e.message ?? e.toString(),
+          userMessage: '网络请求异常',
+          statusCode: e.response?.statusCode,
+          originalError: e,
+        );
 }

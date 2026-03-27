@@ -60,11 +60,8 @@ class AssetThumbnail extends StatelessWidget {
         file,
         fit: BoxFit.cover,
         cacheWidth: 300,
-        errorBuilder: (_, __, ___) => _buildPlaceholder(
-          theme,
-          FluentIcons.photo2,
-          theme.accentColor,
-        ),
+        errorBuilder: (_, __, ___) =>
+            _buildPlaceholder(theme, FluentIcons.photo2, theme.accentColor),
       ),
     );
   }
@@ -162,9 +159,7 @@ class AssetThumbnail extends StatelessWidget {
   Widget _buildPlaceholder(FluentThemeData theme, IconData icon, Color color) {
     return Container(
       color: theme.resources.subtleFillColorSecondary,
-      child: Center(
-        child: Icon(icon, size: 32, color: color),
-      ),
+      child: Center(child: Icon(icon, size: 32, color: color)),
     );
   }
 
@@ -236,5 +231,4 @@ class AssetThumbnail extends StatelessWidget {
       ),
     );
   }
-
 }

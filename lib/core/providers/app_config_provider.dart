@@ -15,7 +15,8 @@ const defaultExtensionPort = 52140;
 /// Holds the optional custom asset root path persisted in shared preferences.
 final storageDirectoryProvider =
     NotifierProvider<StorageDirectoryNotifier, String?>(
-        StorageDirectoryNotifier.new);
+      StorageDirectoryNotifier.new,
+    );
 
 /// Loads and updates the custom storage directory setting.
 class StorageDirectoryNotifier extends Notifier<String?> {
@@ -43,8 +44,9 @@ class StorageDirectoryNotifier extends Notifier<String?> {
 // ---------------------------------------------------------------------------
 
 /// Holds the extension HTTP port persisted in shared preferences.
-final extensionPortProvider =
-    NotifierProvider<ExtensionPortNotifier, int>(ExtensionPortNotifier.new);
+final extensionPortProvider = NotifierProvider<ExtensionPortNotifier, int>(
+  ExtensionPortNotifier.new,
+);
 
 /// Loads and updates the browser extension communication port.
 class ExtensionPortNotifier extends Notifier<int> {

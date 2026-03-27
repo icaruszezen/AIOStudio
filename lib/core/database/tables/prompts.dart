@@ -4,8 +4,7 @@ import 'projects.dart';
 
 class Prompts extends Table {
   TextColumn get id => text()();
-  TextColumn get projectId =>
-      text().nullable().references(Projects, #id)();
+  TextColumn get projectId => text().nullable().references(Projects, #id)();
   TextColumn get title => text()();
   TextColumn get content => text()();
   TextColumn get category => text().nullable()();

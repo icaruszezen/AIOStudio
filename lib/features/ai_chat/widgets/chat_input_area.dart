@@ -27,8 +27,7 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
     super.initState();
     _focusNode.onKeyEvent = _handleKeyEvent;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final pending =
-          ref.read(pendingPromptContentProvider.notifier).consume();
+      final pending = ref.read(pendingPromptContentProvider.notifier).consume();
       if (pending != null && pending.isNotEmpty) {
         _controller.text = pending;
       }
@@ -59,7 +58,9 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
     final text = _controller.text.trim();
     if (text.isEmpty && _attachedImages.isEmpty) return;
 
-    ref.read(chatProvider.notifier).sendMessage(
+    ref
+        .read(chatProvider.notifier)
+        .sendMessage(
           text,
           imageFiles: _attachedImages.isNotEmpty
               ? List.from(_attachedImages)
@@ -96,20 +97,15 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
   @override
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
-    final isGenerating = ref.watch(
-      chatProvider.select((s) => s.isGenerating),
-    );
-    final modelName = ref.watch(
-      chatProvider.select((s) => s.selectedModel),
-    ) ?? '未选择模型';
+    final isGenerating = ref.watch(chatProvider.select((s) => s.isGenerating));
+    final modelName =
+        ref.watch(chatProvider.select((s) => s.selectedModel)) ?? '未选择模型';
 
     return Container(
       decoration: BoxDecoration(
         color: theme.resources.solidBackgroundFillColorBase,
         border: Border(
-          top: BorderSide(
-            color: theme.resources.cardStrokeColorDefault,
-          ),
+          top: BorderSide(color: theme.resources.cardStrokeColorDefault),
         ),
       ),
       child: Column(
@@ -179,7 +175,9 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
       return FilledButton(
         onPressed: _stop,
         style: ButtonStyle(
-          backgroundColor: WidgetStatePropertyAll(AppColors.error(theme.brightness)),
+          backgroundColor: WidgetStatePropertyAll(
+            AppColors.error(theme.brightness),
+          ),
         ),
         child: const Row(
           mainAxisSize: MainAxisSize.min,

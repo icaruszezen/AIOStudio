@@ -48,7 +48,8 @@ Middleware tokenAuthMiddleware(String expectedToken) {
 Middleware corsMiddleware() {
   const baseCorsHeaders = {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Origin, Accept, Authorization',
+    'Access-Control-Allow-Headers':
+        'Content-Type, Origin, Accept, Authorization',
     'Access-Control-Max-Age': '86400',
   };
 

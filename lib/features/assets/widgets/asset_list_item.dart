@@ -43,7 +43,9 @@ class _AssetListItemState extends State<AssetListItem> {
   @override
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
-    final createdAt = DateTime.fromMillisecondsSinceEpoch(widget.asset.createdAt);
+    final createdAt = DateTime.fromMillisecondsSinceEpoch(
+      widget.asset.createdAt,
+    );
     final dateStr = formatDateTime(createdAt);
 
     return GestureDetector(
@@ -69,8 +71,8 @@ class _AssetListItemState extends State<AssetListItem> {
         color: widget.isSelected
             ? theme.accentColor.withValues(alpha: 0.1)
             : _isHovered
-                ? theme.resources.subtleFillColorSecondary
-                : Colors.transparent,
+            ? theme.resources.subtleFillColorSecondary
+            : Colors.transparent,
         borderRadius: DesignTokens.borderRadiusSM,
         border: widget.isSelected
             ? Border.all(color: theme.accentColor.withValues(alpha: 0.4))
@@ -120,10 +122,7 @@ class _AssetListItemState extends State<AssetListItem> {
     return SizedBox(
       width: 36,
       height: 36,
-      child: AssetThumbnail(
-        asset: widget.asset,
-        showFavorite: false,
-      ),
+      child: AssetThumbnail(asset: widget.asset, showFavorite: false),
     );
   }
 
@@ -132,9 +131,7 @@ class _AssetListItemState extends State<AssetListItem> {
       flex: 3,
       child: Text(
         widget.asset.name,
-        style: theme.typography.body?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
+        style: theme.typography.body?.copyWith(fontWeight: FontWeight.w500),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),

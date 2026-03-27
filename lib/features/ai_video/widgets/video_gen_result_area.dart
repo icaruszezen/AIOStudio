@@ -25,10 +25,12 @@ class VideoGenResultArea extends ConsumerStatefulWidget {
 }
 
 class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
-  final _dio = Dio(BaseOptions(
-    connectTimeout: AppConstants.defaultConnectTimeout,
-    receiveTimeout: const Duration(minutes: 10),
-  ));
+  final _dio = Dio(
+    BaseOptions(
+      connectTimeout: AppConstants.defaultConnectTimeout,
+      receiveTimeout: const Duration(minutes: 10),
+    ),
+  );
   Timer? _elapsedTimer;
   Duration _elapsed = Duration.zero;
   DateTime? _startTime;
@@ -114,10 +116,7 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
       error: (e, _) => ErrorState(title: '生成失败', message: formatUserError(e)),
       data: (task) {
         if (task == null) {
-          return const EmptyState(
-            icon: FluentIcons.video,
-            title: '任务未找到',
-          );
+          return const EmptyState(icon: FluentIcons.video, title: '任务未找到');
         }
 
         if (task.status == 'failed') {
@@ -129,12 +128,12 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
 
         if (task.status == 'completed' && task.outputText != null) {
           try {
-            final json =
-                jsonDecode(task.outputText!) as Map<String, dynamic>;
+            final json = jsonDecode(task.outputText!) as Map<String, dynamic>;
             final videoUrl = json['video_url'] as String?;
             if (videoUrl != null) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                ref.read(videoGenProvider.notifier)
+                ref
+                    .read(videoGenProvider.notifier)
                     .viewTaskResult(taskId, videoUrl);
               });
               return _buildVideoResult(
@@ -149,10 +148,7 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
           return _buildPollingState(context, taskId);
         }
 
-        return const EmptyState(
-          icon: FluentIcons.video,
-          title: '等待结果...',
-        );
+        return const EmptyState(icon: FluentIcons.video, title: '等待结果...');
       },
     );
   }
@@ -204,7 +200,8 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
             const SizedBox(height: 24),
             Button(
               onPressed: () {
-                ref.read(videoTaskPollerProvider.notifier)
+                ref
+                    .read(videoTaskPollerProvider.notifier)
                     .cancelPolling(taskId, markCancelled: true);
                 ref.read(videoGenProvider.notifier).clearViewingTask();
               },
@@ -299,20 +296,26 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
     );
 
     if (result != null && context.mounted) {
-      final asset = await ref.read(videoGenProvider.notifier).saveToAsset(
+      final asset = await ref
+          .read(videoGenProvider.notifier)
+          .saveToAsset(
             taskId: taskId,
             projectId: result.projectId,
             name: result.name,
           );
       if (context.mounted) {
-        await displayInfoBar(context, builder: (ctx, close) {
-          return InfoBar(
-            title: Text(asset != null ? '已保存到资产库' : '保存失败'),
-            severity:
-                asset != null ? InfoBarSeverity.success : InfoBarSeverity.error,
-            onClose: close,
-          );
-        });
+        await displayInfoBar(
+          context,
+          builder: (ctx, close) {
+            return InfoBar(
+              title: Text(asset != null ? '已保存到资产库' : '保存失败'),
+              severity: asset != null
+                  ? InfoBarSeverity.success
+                  : InfoBarSeverity.error,
+              onClose: close,
+            );
+          },
+        );
       }
     }
   }
@@ -335,23 +338,29 @@ class _VideoGenResultAreaState extends ConsumerState<VideoGenResultArea> {
       }
 
       if (context.mounted) {
-        await displayInfoBar(context, builder: (ctx, close) {
-          return InfoBar(
-            title: const Text('文件已保存'),
-            severity: InfoBarSeverity.success,
-            onClose: close,
-          );
-        });
+        await displayInfoBar(
+          context,
+          builder: (ctx, close) {
+            return InfoBar(
+              title: const Text('文件已保存'),
+              severity: InfoBarSeverity.success,
+              onClose: close,
+            );
+          },
+        );
       }
     } catch (e) {
       if (context.mounted) {
-        await displayInfoBar(context, builder: (ctx, close) {
-          return InfoBar(
-            title: Text('保存失败: ${formatUserError(e)}'),
-            severity: InfoBarSeverity.error,
-            onClose: close,
-          );
-        });
+        await displayInfoBar(
+          context,
+          builder: (ctx, close) {
+            return InfoBar(
+              title: Text('保存失败: ${formatUserError(e)}'),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            );
+          },
+        );
       }
     }
   }

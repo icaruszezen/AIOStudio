@@ -32,10 +32,10 @@ class ExtensionHandlers {
     required TagDao tagDao,
     required AssetFileManager fileManager,
     required this.importEventController,
-  })  : _projectDao = projectDao,
-        _assetDao = assetDao,
-        _tagDao = tagDao,
-        _fileManager = fileManager;
+  }) : _projectDao = projectDao,
+       _assetDao = assetDao,
+       _tagDao = tagDao,
+       _fileManager = fileManager;
 
   Router get router {
     final r = Router()
@@ -64,11 +64,7 @@ class ExtensionHandlers {
       final list = <Map<String, dynamic>>[];
       for (final project in active) {
         final count = await _assetDao.countByProject(project.id);
-        list.add({
-          'id': project.id,
-          'name': project.name,
-          'assetCount': count,
-        });
+        list.add({'id': project.id, 'name': project.name, 'assetCount': count});
       }
       return Response.ok(jsonEncode(list), headers: _jsonHeaders);
     } catch (e, st) {
@@ -151,9 +147,12 @@ class ExtensionHandlers {
       try {
         await _associateTags(asset.id, tags, tagCache: tagCache);
       } catch (e, st) {
-        _log.w('Tag association failed for asset ${asset.id}, '
-            'asset was imported successfully without tags',
-            error: e, stackTrace: st);
+        _log.w(
+          'Tag association failed for asset ${asset.id}, '
+          'asset was imported successfully without tags',
+          error: e,
+          stackTrace: st,
+        );
       }
     }
 
@@ -199,8 +198,10 @@ class ExtensionHandlers {
   }
 
   Response _errorResponse(int statusCode, String message) {
-    return Response(statusCode,
-        body: jsonEncode({'success': false, 'error': message}),
-        headers: _jsonHeaders);
+    return Response(
+      statusCode,
+      body: jsonEncode({'success': false, 'error': message}),
+      headers: _jsonHeaders,
+    );
   }
 }

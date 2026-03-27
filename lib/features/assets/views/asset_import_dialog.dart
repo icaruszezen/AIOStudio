@@ -68,11 +68,9 @@ class _AssetImportDialogState extends ConsumerState<AssetImportDialog> {
     try {
       final file = File(path);
       final stat = await file.stat();
-      _files.add(_FileEntry(
-        path: path,
-        name: p.basename(path),
-        size: stat.size,
-      ));
+      _files.add(
+        _FileEntry(path: path, name: p.basename(path), size: stat.size),
+      );
     } catch (_) {
       // Skip files that cannot be stat'd (e.g. removed between selection and add)
     }
@@ -107,10 +105,9 @@ class _AssetImportDialogState extends ConsumerState<AssetImportDialog> {
     try {
       for (var i = 0; i < paths.length; i++) {
         try {
-          await actions.importLocalFiles(
-            [paths[i]],
-            projectId: _selectedProjectId,
-          );
+          await actions.importLocalFiles([
+            paths[i],
+          ], projectId: _selectedProjectId);
           successCount++;
         } catch (e) {
           failures.add(p.basename(paths[i]));
@@ -177,10 +174,7 @@ class _AssetImportDialogState extends ConsumerState<AssetImportDialog> {
           ),
           if (_files.isNotEmpty) ...[
             const SizedBox(height: 16),
-            Text(
-              '已选文件 (${_files.length})',
-              style: theme.typography.bodyStrong,
-            ),
+            Text('已选文件 (${_files.length})', style: theme.typography.bodyStrong),
             const SizedBox(height: 8),
             Flexible(
               child: ListView.builder(
@@ -318,17 +312,23 @@ class _AssetImportDialogState extends ConsumerState<AssetImportDialog> {
   static IconData _fileIcon(String name) {
     final ext = name.split('.').last.toLowerCase();
     return switch (ext) {
-      'jpg' || 'jpeg' || 'png' || 'gif' || 'webp' || 'bmp' || 'svg' =>
-        FluentIcons.photo2,
+      'jpg' ||
+      'jpeg' ||
+      'png' ||
+      'gif' ||
+      'webp' ||
+      'bmp' ||
+      'svg' => FluentIcons.photo2,
       'mp4' || 'avi' || 'mov' || 'mkv' || 'webm' => FluentIcons.video,
-      'mp3' || 'wav' || 'flac' || 'aac' || 'ogg' =>
-        FluentIcons.music_in_collection,
-      'txt' || 'md' || 'json' || 'xml' || 'csv' =>
-        FluentIcons.text_document,
+      'mp3' ||
+      'wav' ||
+      'flac' ||
+      'aac' ||
+      'ogg' => FluentIcons.music_in_collection,
+      'txt' || 'md' || 'json' || 'xml' || 'csv' => FluentIcons.text_document,
       _ => FluentIcons.document,
     };
   }
-
 }
 
 class _FileEntry {

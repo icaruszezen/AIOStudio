@@ -8,10 +8,7 @@ import '../providers/tags_provider.dart';
 import 'asset_type_helpers.dart';
 
 class AssetFilterBar extends ConsumerWidget {
-  const AssetFilterBar({
-    super.key,
-    this.projects = const [],
-  });
+  const AssetFilterBar({super.key, this.projects = const []});
 
   final List<Project> projects;
 
@@ -51,7 +48,8 @@ class AssetFilterBar extends ConsumerWidget {
                   ),
                 if (filter.projectFilter != null)
                   _FilterChip(
-                    label: '项目: ${_projectName(filter.projectFilter!, projects)}',
+                    label:
+                        '项目: ${_projectName(filter.projectFilter!, projects)}',
                     onRemove: () => notifier.setProjectFilter(null),
                   ),
                 for (final tagId in filter.tagFilters)
@@ -89,10 +87,7 @@ class AssetFilterBar extends ConsumerWidget {
 }
 
 class _FilterChip extends StatelessWidget {
-  const _FilterChip({
-    required this.label,
-    required this.onRemove,
-  });
+  const _FilterChip({required this.label, required this.onRemove});
 
   final String label;
   final VoidCallback onRemove;
@@ -109,9 +104,7 @@ class _FilterChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.accentColor.withValues(alpha: 0.1),
         borderRadius: DesignTokens.borderRadiusXL,
-        border: Border.all(
-          color: theme.accentColor.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: theme.accentColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

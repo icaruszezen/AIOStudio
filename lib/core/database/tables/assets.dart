@@ -4,8 +4,7 @@ import 'projects.dart';
 
 class Assets extends Table {
   TextColumn get id => text()();
-  TextColumn get projectId =>
-      text().nullable().references(Projects, #id)();
+  TextColumn get projectId => text().nullable().references(Projects, #id)();
   TextColumn get name => text()();
   TextColumn get type => text()();
   TextColumn get filePath => text()();

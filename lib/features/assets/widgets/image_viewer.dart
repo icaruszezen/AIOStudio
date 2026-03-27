@@ -107,38 +107,43 @@ class _ImageViewerState extends State<ImageViewer> {
                   quarterTurns: _rotationQuarters,
                   child: LayoutBuilder(
                     builder: (context, constraints) => Image.file(
-                    File(widget.filePath),
-                    fit: _isFitMode ? BoxFit.contain : null,
-                    cacheWidth: _isFitMode
-                        ? constraints.maxWidth.round().clamp(1, 2048)
-                        : null,
-                    frameBuilder: (context, child, frame, loaded) {
-                      if (!loaded && frame == null) {
-                        return const Center(child: ProgressRing());
-                      }
-                      if (frame != null && _isLoading) {
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (mounted) setState(() => _isLoading = false);
-                        });
-                      }
-                      return child;
-                    },
-                    errorBuilder: (context, error, stack) => Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(FluentIcons.error_badge,
+                      File(widget.filePath),
+                      fit: _isFitMode ? BoxFit.contain : null,
+                      cacheWidth: _isFitMode
+                          ? constraints.maxWidth.round().clamp(1, 2048)
+                          : null,
+                      frameBuilder: (context, child, frame, loaded) {
+                        if (!loaded && frame == null) {
+                          return const Center(child: ProgressRing());
+                        }
+                        if (frame != null && _isLoading) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted) setState(() => _isLoading = false);
+                          });
+                        }
+                        return child;
+                      },
+                      errorBuilder: (context, error, stack) => Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              FluentIcons.error_badge,
                               size: 48,
-                              color: theme.resources.textFillColorSecondary),
-                          const SizedBox(height: 8),
-                          Text('无法加载图片',
+                              color: theme.resources.textFillColorSecondary,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '无法加载图片',
                               style: theme.typography.body?.copyWith(
-                                  color:
-                                      theme.resources.textFillColorSecondary)),
-                        ],
+                                color: theme.resources.textFillColorSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  )),
+                  ),
                 ),
               ),
             ),
@@ -204,9 +209,7 @@ class _ImageViewerState extends State<ImageViewer> {
             message: _isFitMode ? '原始大小' : '适应窗口',
             child: IconButton(
               icon: Icon(
-                _isFitMode
-                    ? FluentIcons.full_screen
-                    : FluentIcons.fit_page,
+                _isFitMode ? FluentIcons.full_screen : FluentIcons.fit_page,
                 size: 14,
               ),
               onPressed: _toggleFitOriginal,

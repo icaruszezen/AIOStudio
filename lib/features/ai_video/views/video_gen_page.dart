@@ -45,10 +45,7 @@ class _VideoGenPageState extends ConsumerState<VideoGenPage> {
           flex: 7,
           child: Row(
             children: [
-              SizedBox(
-                width: 380,
-                child: VideoGenParamsPanel(),
-              ),
+              SizedBox(width: 380, child: VideoGenParamsPanel()),
               Divider(direction: Axis.vertical),
               Expanded(child: VideoGenResultArea()),
             ],
@@ -56,10 +53,7 @@ class _VideoGenPageState extends ConsumerState<VideoGenPage> {
         ),
         if (!isQueueCollapsed) ...[
           const Divider(),
-          const SizedBox(
-            height: 250,
-            child: VideoGenTaskQueue(),
-          ),
+          const SizedBox(height: 250, child: VideoGenTaskQueue()),
         ],
         if (isQueueCollapsed) _buildCollapsedQueueBar(context),
       ],
@@ -78,10 +72,7 @@ class _VideoGenPageState extends ConsumerState<VideoGenPage> {
         ),
         if (!isQueueCollapsed) ...[
           const Divider(),
-          const SizedBox(
-            height: 180,
-            child: VideoGenTaskQueue(),
-          ),
+          const SizedBox(height: 180, child: VideoGenTaskQueue()),
         ],
         if (isQueueCollapsed) _buildCollapsedQueueBar(context),
       ],
@@ -122,11 +113,7 @@ class _VideoGenPageState extends ConsumerState<VideoGenPage> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          Icon(
-            FluentIcons.video,
-            size: 20,
-            color: theme.accentColor,
-          ),
+          Icon(FluentIcons.video, size: 20, color: theme.accentColor),
           const SizedBox(width: 8),
           Text('AI 视频生成', style: theme.typography.subtitle),
           const Spacer(),
@@ -138,12 +125,11 @@ class _VideoGenPageState extends ConsumerState<VideoGenPage> {
   Widget _buildCollapsedQueueBar(BuildContext context) {
     final theme = FluentTheme.of(context);
     final historyAsync = ref.watch(videoGenHistoryProvider);
-    final activeCount = historyAsync.whenOrNull(
-          data: (tasks) =>
-              tasks
-                  .where(
-                      (t) => t.status == 'running' || t.status == 'pending')
-                  .length,
+    final activeCount =
+        historyAsync.whenOrNull(
+          data: (tasks) => tasks
+              .where((t) => t.status == 'running' || t.status == 'pending')
+              .length,
         ) ??
         0;
 
@@ -162,18 +148,22 @@ class _VideoGenPageState extends ConsumerState<VideoGenPage> {
           ),
           child: Row(
             children: [
-              Icon(FluentIcons.task_list,
-                  size: 14,
-                  color: theme.resources.textFillColorSecondary),
+              Icon(
+                FluentIcons.task_list,
+                size: 14,
+                color: theme.resources.textFillColorSecondary,
+              ),
               const SizedBox(width: 6),
               Text(
                 '任务队列${activeCount > 0 ? ' ($activeCount 进行中)' : ''}',
                 style: theme.typography.caption,
               ),
               const Spacer(),
-              Icon(FluentIcons.chevron_up,
-                  size: 10,
-                  color: theme.resources.textFillColorSecondary),
+              Icon(
+                FluentIcons.chevron_up,
+                size: 10,
+                color: theme.resources.textFillColorSecondary,
+              ),
             ],
           ),
         );

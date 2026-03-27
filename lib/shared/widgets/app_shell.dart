@@ -41,7 +41,11 @@ class _AppShellState extends State<AppShell> with WindowListener {
     _NavItem(route: AppRoutes.settings, icon: FluentIcons.settings),
   ];
 
-  static final _allSelectableItems = [..._topItems, ..._aiItems, ..._footerNavItems];
+  static final _allSelectableItems = [
+    ..._topItems,
+    ..._aiItems,
+    ..._footerNavItems,
+  ];
 
   static String _navTitle(_NavItem item, S l) {
     return switch (item.route) {
@@ -105,8 +109,8 @@ class _AppShellState extends State<AppShell> with WindowListener {
         final paneDisplayMode = isNarrow
             ? PaneDisplayMode.minimal
             : (_isPaneExpanded
-                ? PaneDisplayMode.expanded
-                : PaneDisplayMode.compact);
+                  ? PaneDisplayMode.expanded
+                  : PaneDisplayMode.compact);
 
         final paneToggle = PaneToggleButton(
           onPressed: () => setState(() => _isPaneExpanded = !_isPaneExpanded),
@@ -272,7 +276,10 @@ class _WindowButtonState extends State<_WindowButton> {
       onShowHoverHighlight: (v) => setState(() => _isHovered = v),
       actions: {
         ActivateIntent: CallbackAction<ActivateIntent>(
-          onInvoke: (_) { widget.onPressed(); return null; },
+          onInvoke: (_) {
+            widget.onPressed();
+            return null;
+          },
         ),
       },
       child: GestureDetector(
@@ -281,9 +288,7 @@ class _WindowButtonState extends State<_WindowButton> {
           width: 46,
           height: 32,
           color: background,
-          child: Center(
-            child: Icon(widget.icon, size: 10, color: iconColor),
-          ),
+          child: Center(child: Icon(widget.icon, size: 10, color: iconColor)),
         ),
       ),
     );

@@ -42,36 +42,36 @@ class ModelSelector extends ConsumerWidget {
     final items = <ComboBoxItem<String>>[];
     for (final group in groups) {
       // Group header (non-selectable)
-      items.add(ComboBoxItem<String>(
-        value: '__header__${group.providerId}',
-        enabled: false,
-        child: Text(
-          group.providerName,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 12,
+      items.add(
+        ComboBoxItem<String>(
+          value: '__header__${group.providerId}',
+          enabled: false,
+          child: Text(
+            group.providerName,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
           ),
         ),
-      ));
+      );
       for (final model in group.models) {
         final key = '${group.providerId}::$model';
-        items.add(ComboBoxItem<String>(
-          value: key,
-          child: Padding(
-            padding: const EdgeInsets.only(left: DesignTokens.spacingMD),
-            child: Text(model, style: const TextStyle(fontSize: 13)),
+        items.add(
+          ComboBoxItem<String>(
+            value: key,
+            child: Padding(
+              padding: const EdgeInsets.only(left: DesignTokens.spacingMD),
+              child: Text(model, style: const TextStyle(fontSize: 13)),
+            ),
           ),
-        ));
+        );
       }
     }
 
     // Ensure current value exists in items
-    final validKeys =
-        items.map((i) => i.value).where((v) => v != null).toSet();
+    final validKeys = items.map((i) => i.value).where((v) => v != null).toSet();
     final effectiveValue =
         (currentKey != null && validKeys.contains(currentKey))
-            ? currentKey
-            : null;
+        ? currentKey
+        : null;
 
     return ComboBox<String>(
       value: effectiveValue,

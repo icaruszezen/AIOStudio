@@ -9,11 +9,7 @@ void main() {
 
   group('AiChatMessage', () {
     test('toJson/fromJson roundtrip without imageUrls', () {
-      final msg = AiChatMessage(
-        role: 'user',
-        content: 'hello',
-        timestamp: now,
-      );
+      final msg = AiChatMessage(role: 'user', content: 'hello', timestamp: now);
 
       final json = msg.toJson();
       final restored = AiChatMessage.fromJson(json);
@@ -51,10 +47,7 @@ void main() {
 
     test('fromJson uses DateTime.now() when timestamp missing', () {
       final before = DateTime.now();
-      final msg = AiChatMessage.fromJson({
-        'role': 'user',
-        'content': 'test',
-      });
+      final msg = AiChatMessage.fromJson({'role': 'user', 'content': 'test'});
       final after = DateTime.now();
 
       expect(msg.timestamp.isAfter(before) || msg.timestamp == before, true);
@@ -66,9 +59,7 @@ void main() {
     test('toJson with all fields', () {
       final request = AiChatRequest(
         model: 'gpt-4',
-        messages: [
-          AiChatMessage(role: 'user', content: 'hi', timestamp: now),
-        ],
+        messages: [AiChatMessage(role: 'user', content: 'hi', timestamp: now)],
         temperature: 0.5,
         maxTokens: 100,
         stream: false,
@@ -85,9 +76,7 @@ void main() {
     test('toJson omits max_tokens when null', () {
       final request = AiChatRequest(
         model: 'gpt-4',
-        messages: [
-          AiChatMessage(role: 'user', content: 'hi', timestamp: now),
-        ],
+        messages: [AiChatMessage(role: 'user', content: 'hi', timestamp: now)],
       );
 
       final json = request.toJson();
@@ -170,10 +159,7 @@ void main() {
     });
 
     test('toJson omits null optional fields', () {
-      const request = AiImageRequest(
-        prompt: 'a dog',
-        model: 'dall-e-3',
-      );
+      const request = AiImageRequest(prompt: 'a dog', model: 'dall-e-3');
 
       final json = request.toJson();
       expect(json.containsKey('negative_prompt'), false);

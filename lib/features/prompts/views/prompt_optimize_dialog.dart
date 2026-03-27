@@ -45,7 +45,9 @@ class _PromptOptimizeDialogState extends ConsumerState<PromptOptimizeDialog> {
     });
 
     try {
-      final result = await ref.read(promptActionsProvider).optimizePrompt(
+      final result = await ref
+          .read(promptActionsProvider)
+          .optimizePrompt(
             widget.originalContent,
             widget.category,
             modelId: _selectedModelId,
@@ -66,7 +68,6 @@ class _PromptOptimizeDialogState extends ConsumerState<PromptOptimizeDialog> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
@@ -85,10 +86,10 @@ class _PromptOptimizeDialogState extends ConsumerState<PromptOptimizeDialog> {
             child: _isLoading
                 ? _buildLoadingState(theme)
                 : _error != null
-                    ? _buildErrorState(theme)
-                    : _optimizedContent != null
-                        ? _buildComparisonView(theme)
-                        : _buildInitialState(theme),
+                ? _buildErrorState(theme)
+                : _optimizedContent != null
+                ? _buildComparisonView(theme)
+                : _buildInitialState(theme),
           ),
         ],
       ),
@@ -99,19 +100,13 @@ class _PromptOptimizeDialogState extends ConsumerState<PromptOptimizeDialog> {
             child: const Text('开始优化'),
           ),
         if (!_isLoading && _error != null)
-          FilledButton(
-            onPressed: _startOptimization,
-            child: const Text('重试'),
-          ),
+          FilledButton(onPressed: _startOptimization, child: const Text('重试')),
         if (!_isLoading && _optimizedContent != null) ...[
           FilledButton(
             onPressed: () => Navigator.of(context).pop(_optimizedContent),
             child: const Text('采用优化版本'),
           ),
-          Button(
-            onPressed: _startOptimization,
-            child: const Text('重新优化'),
-          ),
+          Button(onPressed: _startOptimization, child: const Text('重新优化')),
         ],
         Button(
           onPressed: () => Navigator.of(context).pop(null),
@@ -132,8 +127,10 @@ class _PromptOptimizeDialogState extends ConsumerState<PromptOptimizeDialog> {
       ),
       error: (e, _) => InfoLabel(
         label: '选择模型',
-        child: Text(formatUserError(e),
-            style: TextStyle(color: AppColors.error(theme.brightness))),
+        child: Text(
+          formatUserError(e),
+          style: TextStyle(color: AppColors.error(theme.brightness)),
+        ),
       ),
       data: (models) {
         if (models.isNotEmpty && _selectedModelId == null) {
@@ -150,10 +147,7 @@ class _PromptOptimizeDialogState extends ConsumerState<PromptOptimizeDialog> {
             placeholder: const Text('选择一个模型'),
             isExpanded: true,
             items: models
-                .map((m) => ComboBoxItem(
-                      value: m.id,
-                      child: Text(m.id),
-                    ))
+                .map((m) => ComboBoxItem(value: m.id, child: Text(m.id)))
                 .toList(),
             onChanged: _isLoading
                 ? null
@@ -184,11 +178,7 @@ class _PromptOptimizeDialogState extends ConsumerState<PromptOptimizeDialog> {
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            ProgressRing(),
-            SizedBox(height: 16),
-            Text('正在优化提示词...'),
-          ],
+          children: [ProgressRing(), SizedBox(height: 16), Text('正在优化提示词...')],
         ),
       ),
     );
@@ -201,13 +191,13 @@ class _PromptOptimizeDialogState extends ConsumerState<PromptOptimizeDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(FluentIcons.error_badge,
-                size: 48, color: AppColors.error(theme.brightness)),
-            const SizedBox(height: 16),
-            Text(
-              '优化失败',
-              style: theme.typography.subtitle,
+            Icon(
+              FluentIcons.error_badge,
+              size: 48,
+              color: AppColors.error(theme.brightness),
             ),
+            const SizedBox(height: 16),
+            Text('优化失败', style: theme.typography.subtitle),
             const SizedBox(height: 8),
             Text(
               _error!,
@@ -261,10 +251,7 @@ class _PromptOptimizeDialogState extends ConsumerState<PromptOptimizeDialog> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          title,
-          style: theme.typography.bodyStrong?.copyWith(color: color),
-        ),
+        Text(title, style: theme.typography.bodyStrong?.copyWith(color: color)),
         const SizedBox(height: 8),
         Flexible(
           child: Container(
@@ -273,15 +260,10 @@ class _PromptOptimizeDialogState extends ConsumerState<PromptOptimizeDialog> {
             decoration: BoxDecoration(
               color: theme.resources.subtleFillColorSecondary,
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: theme.resources.cardStrokeColorDefault,
-              ),
+              border: Border.all(color: theme.resources.cardStrokeColorDefault),
             ),
             child: SingleChildScrollView(
-              child: SelectableText(
-                content,
-                style: theme.typography.body,
-              ),
+              child: SelectableText(content, style: theme.typography.body),
             ),
           ),
         ),

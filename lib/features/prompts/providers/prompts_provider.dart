@@ -15,15 +15,15 @@ final allPromptsProvider = StreamProvider<List<Prompt>>((ref) {
   return ref.watch(promptDaoProvider).watchPrompts();
 });
 
-final promptsByCategoryProvider =
-    StreamProvider.autoDispose.family<List<Prompt>, String>((ref, category) {
-  return ref.watch(promptDaoProvider).watchPrompts(category: category);
-});
+final promptsByCategoryProvider = StreamProvider.autoDispose
+    .family<List<Prompt>, String>((ref, category) {
+      return ref.watch(promptDaoProvider).watchPrompts(category: category);
+    });
 
-final promptsByProjectProvider =
-    StreamProvider.autoDispose.family<List<Prompt>, String>((ref, projectId) {
-  return ref.watch(promptDaoProvider).watchPrompts(projectId: projectId);
-});
+final promptsByProjectProvider = StreamProvider.autoDispose
+    .family<List<Prompt>, String>((ref, projectId) {
+      return ref.watch(promptDaoProvider).watchPrompts(projectId: projectId);
+    });
 
 final favoritePromptsProvider = StreamProvider<List<Prompt>>((ref) {
   return ref.watch(promptDaoProvider).watchFavoritePrompts();
@@ -33,10 +33,11 @@ final favoritePromptsProvider = StreamProvider<List<Prompt>>((ref) {
 // Future providers
 // ---------------------------------------------------------------------------
 
-final promptDetailProvider =
-    StreamProvider.autoDispose.family<Prompt?, String>((ref, id) {
-  return ref.watch(promptDaoProvider).watchPromptById(id);
-});
+final promptDetailProvider = StreamProvider.autoDispose.family<Prompt?, String>(
+  (ref, id) {
+    return ref.watch(promptDaoProvider).watchPromptById(id);
+  },
+);
 
 // ---------------------------------------------------------------------------
 // State providers
@@ -44,8 +45,8 @@ final promptDetailProvider =
 
 final currentPromptIdProvider =
     NotifierProvider<CurrentPromptIdNotifier, String?>(
-  CurrentPromptIdNotifier.new,
-);
+      CurrentPromptIdNotifier.new,
+    );
 
 class CurrentPromptIdNotifier extends Notifier<String?> {
   @override
@@ -56,8 +57,8 @@ class CurrentPromptIdNotifier extends Notifier<String?> {
 
 final promptCategoryFilterProvider =
     NotifierProvider<_CategoryFilterNotifier, String?>(
-  _CategoryFilterNotifier.new,
-);
+      _CategoryFilterNotifier.new,
+    );
 
 class _CategoryFilterNotifier extends Notifier<String?> {
   @override
@@ -67,9 +68,7 @@ class _CategoryFilterNotifier extends Notifier<String?> {
 }
 
 final promptSearchQueryProvider =
-    NotifierProvider<_SearchQueryNotifier, String>(
-  _SearchQueryNotifier.new,
-);
+    NotifierProvider<_SearchQueryNotifier, String>(_SearchQueryNotifier.new);
 
 class _SearchQueryNotifier extends Notifier<String> {
   @override
@@ -80,8 +79,8 @@ class _SearchQueryNotifier extends Notifier<String> {
 
 final promptFavoriteFilterProvider =
     NotifierProvider<_FavoriteFilterNotifier, bool>(
-  _FavoriteFilterNotifier.new,
-);
+      _FavoriteFilterNotifier.new,
+    );
 
 class _FavoriteFilterNotifier extends Notifier<bool> {
   @override
@@ -137,7 +136,9 @@ class PromptActions {
   }) async {
     final now = DateTime.now().millisecondsSinceEpoch;
     final id = _uuid.v4();
-    await _ref.read(promptDaoProvider).insertPrompt(
+    await _ref
+        .read(promptDaoProvider)
+        .insertPrompt(
           PromptsCompanion(
             id: Value(id),
             projectId: Value(projectId),
@@ -169,8 +170,9 @@ class PromptActions {
     await dao.updatePrompt(
       PromptsCompanion(
         id: Value(existing.id),
-        projectId:
-            Value(clearProject ? null : (projectId ?? existing.projectId)),
+        projectId: Value(
+          clearProject ? null : (projectId ?? existing.projectId),
+        ),
         title: Value(title ?? existing.title),
         content: Value(content ?? existing.content),
         category: Value(category ?? existing.category),
@@ -213,8 +215,7 @@ class PromptActions {
       throw StateError('未配置 AI 聊天服务，请先在设置中添加 AI 服务。');
     }
 
-    final models =
-        await _ref.read(availableModelsProvider('chat').future);
+    final models = await _ref.read(availableModelsProvider('chat').future);
     if (models.isEmpty) {
       throw StateError('无可用的聊天模型，请先在设置中配置 AI 服务。');
     }
@@ -282,8 +283,8 @@ const promptCategories = [
 
 final pendingPromptContentProvider =
     NotifierProvider<_PendingPromptNotifier, String?>(
-  _PendingPromptNotifier.new,
-);
+      _PendingPromptNotifier.new,
+    );
 
 class _PendingPromptNotifier extends Notifier<String?> {
   @override

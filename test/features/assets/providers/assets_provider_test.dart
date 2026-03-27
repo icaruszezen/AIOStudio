@@ -47,27 +47,35 @@ void main() {
 
   Future<void> seedProject(String id) async {
     final ts = now();
-    await db.projectDao.insertProject(ProjectsCompanion(
-      id: Value(id),
-      name: Value('Project $id'),
-      createdAt: Value(ts),
-      updatedAt: Value(ts),
-    ));
+    await db.projectDao.insertProject(
+      ProjectsCompanion(
+        id: Value(id),
+        name: Value('Project $id'),
+        createdAt: Value(ts),
+        updatedAt: Value(ts),
+      ),
+    );
   }
 
-  Future<String> seedAsset(String projectId, {String name = 'test.png', String type = 'image'}) async {
+  Future<String> seedAsset(
+    String projectId, {
+    String name = 'test.png',
+    String type = 'image',
+  }) async {
     final ts = now();
     final id = 'asset-${name.hashCode}';
-    await db.assetDao.insertAsset(AssetsCompanion(
-      id: Value(id),
-      projectId: Value(projectId),
-      name: Value(name),
-      type: Value(type),
-      filePath: Value('/path/$name'),
-      sourceType: const Value('local_import'),
-      createdAt: Value(ts),
-      updatedAt: Value(ts),
-    ));
+    await db.assetDao.insertAsset(
+      AssetsCompanion(
+        id: Value(id),
+        projectId: Value(projectId),
+        name: Value(name),
+        type: Value(type),
+        filePath: Value('/path/$name'),
+        sourceType: const Value('local_import'),
+        createdAt: Value(ts),
+        updatedAt: Value(ts),
+      ),
+    );
     return id;
   }
 
@@ -148,8 +156,7 @@ void main() {
     });
 
     test('deleteAsset delegates to AssetFileManager', () async {
-      when(() => mockFileManager.deleteAsset(any()))
-          .thenAnswer((_) async {});
+      when(() => mockFileManager.deleteAsset(any())).thenAnswer((_) async {});
 
       final actions = container.read(assetActionsProvider);
       await actions.deleteAsset('some-id');

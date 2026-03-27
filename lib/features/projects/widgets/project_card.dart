@@ -61,9 +61,7 @@ class _ProjectCardState extends State<ProjectCard> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildCover(project),
-              Expanded(
-                child: _buildDetailsSection(theme, project, dateStr),
-              ),
+              Expanded(child: _buildDetailsSection(theme, project, dateStr)),
             ],
           ),
         ),
@@ -115,10 +113,7 @@ class _ProjectCardState extends State<ProjectCard> {
     );
   }
 
-  Widget _buildTitleAndDescription(
-    FluentThemeData theme,
-    Project project,
-  ) {
+  Widget _buildTitleAndDescription(FluentThemeData theme, Project project) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -128,8 +123,7 @@ class _ProjectCardState extends State<ProjectCard> {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        if (project.description != null &&
-            project.description!.isNotEmpty) ...[
+        if (project.description != null && project.description!.isNotEmpty) ...[
           const SizedBox(height: DesignTokens.spacingXS),
           Text(
             project.description!,
@@ -183,7 +177,8 @@ class _ProjectCardState extends State<ProjectCard> {
         width: double.infinity,
         fit: BoxFit.cover,
         cacheWidth: 400,
-        errorBuilder: (_, __, ___) => _buildGradientPlaceholder(project, height),
+        errorBuilder: (_, __, ___) =>
+            _buildGradientPlaceholder(project, height),
       );
     } else {
       cover = _buildGradientPlaceholder(project, height);
@@ -248,7 +243,9 @@ class _ProjectCardState extends State<ProjectCard> {
 
   Widget _buildGradientPlaceholder(Project project, double height) {
     final colors = _gradientForProject(project.name);
-    final initial = project.name.isNotEmpty ? project.name[0].toUpperCase() : '?';
+    final initial = project.name.isNotEmpty
+        ? project.name[0].toUpperCase()
+        : '?';
     return Container(
       height: height,
       width: double.infinity,

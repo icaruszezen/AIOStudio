@@ -82,7 +82,9 @@ class ChatState {
 // Notifier
 // ---------------------------------------------------------------------------
 
-final chatProvider = NotifierProvider<ChatNotifier, ChatState>(ChatNotifier.new);
+final chatProvider = NotifierProvider<ChatNotifier, ChatState>(
+  ChatNotifier.new,
+);
 
 class ChatNotifier extends Notifier<ChatState> {
   static final _log = Logger(printer: PrettyPrinter(methodCount: 0));
@@ -96,8 +98,7 @@ class ChatNotifier extends Notifier<ChatState> {
   CancelToken? _activeCancelToken;
   Timer? _idleTimer;
 
-  AiServiceManager get _serviceManager =>
-      ref.read(aiServiceManagerProvider);
+  AiServiceManager get _serviceManager => ref.read(aiServiceManagerProvider);
 
   @override
   ChatState build() {
@@ -123,11 +124,13 @@ class ChatNotifier extends Notifier<ChatState> {
     final services = _serviceManager.getAllEnabledServices();
     return services
         .where((s) => s.supportsChatCompletion)
-        .map((s) => ProviderModelGroup(
-              providerId: s.providerId,
-              providerName: s.providerName,
-              models: s.supportedModels,
-            ))
+        .map(
+          (s) => ProviderModelGroup(
+            providerId: s.providerId,
+            providerName: s.providerName,
+            models: s.supportedModels,
+          ),
+        )
         .toList();
   }
 
@@ -181,8 +184,7 @@ class ChatNotifier extends Notifier<ChatState> {
   void selectConversation(String id) {
     final conv = state.conversations.where((c) => c.id == id).firstOrNull;
     if (conv == null) return;
-    final hasModel =
-        conv.providerId.isNotEmpty && conv.model.isNotEmpty;
+    final hasModel = conv.providerId.isNotEmpty && conv.model.isNotEmpty;
     state = state.copyWith(
       currentConversationId: id,
       selectedProviderId: hasModel ? conv.providerId : null,
@@ -257,8 +259,7 @@ class ChatNotifier extends Notifier<ChatState> {
     if (conv.messages.isEmpty && content.trim().isNotEmpty) {
       final snippet = content.trim();
       conv = conv.copyWith(
-        title:
-            snippet.length > 30 ? '${snippet.substring(0, 30)}...' : snippet,
+        title: snippet.length > 30 ? '${snippet.substring(0, 30)}...' : snippet,
       );
     }
 
@@ -292,17 +293,20 @@ class ChatNotifier extends Notifier<ChatState> {
     );
 
     state = state.copyWith(
-      conversations:
-          state.conversations.map((c) => c.id == convId ? conv! : c).toList(),
+      conversations: state.conversations
+          .map((c) => c.id == convId ? conv! : c)
+          .toList(),
       isGenerating: true,
     );
 
     final service = _getServiceForConversation(conv);
     if (service == null) {
-      _updateMessage(convId, assistantMsgId, (msg) => msg.copyWith(
-            isStreaming: false,
-            error: '未找到可用的 AI 服务，请在设置中配置服务商',
-          ));
+      _updateMessage(
+        convId,
+        assistantMsgId,
+        (msg) =>
+            msg.copyWith(isStreaming: false, error: '未找到可用的 AI 服务，请在设置中配置服务商'),
+      );
       state = state.copyWith(isGenerating: false);
       return;
     }
@@ -321,18 +325,23 @@ class ChatNotifier extends Notifier<ChatState> {
       _activeSubscription = stream.listen(
         (chunk) {
           _resetIdleTimer(convId, assistantMsgId);
-          _updateMessage(convId, assistantMsgId,
-              (msg) => msg.copyWith(content: msg.content + chunk));
+          _updateMessage(
+            convId,
+            assistantMsgId,
+            (msg) => msg.copyWith(content: msg.content + chunk),
+          );
         },
         onError: (Object error) {
           _log.e('[ChatNotifier] Stream error: $error');
           _idleTimer?.cancel();
           _idleTimer = null;
           _activeSubscription = null;
-          _updateMessage(convId, assistantMsgId, (msg) => msg.copyWith(
-                isStreaming: false,
-                error: formatUserError(error),
-              ));
+          _updateMessage(
+            convId,
+            assistantMsgId,
+            (msg) =>
+                msg.copyWith(isStreaming: false, error: formatUserError(error)),
+          );
           state = state.copyWith(isGenerating: false);
           _saveToDisk();
         },
@@ -340,8 +349,11 @@ class ChatNotifier extends Notifier<ChatState> {
           _idleTimer?.cancel();
           _idleTimer = null;
           _activeSubscription = null;
-          _updateMessage(convId, assistantMsgId,
-              (msg) => msg.copyWith(isStreaming: false));
+          _updateMessage(
+            convId,
+            assistantMsgId,
+            (msg) => msg.copyWith(isStreaming: false),
+          );
           state = state.copyWith(isGenerating: false);
           _recordAiTask(convId, assistantMsgId, service, startedAt);
           _saveToDisk();
@@ -350,10 +362,11 @@ class ChatNotifier extends Notifier<ChatState> {
       );
     } catch (e) {
       _log.e('[ChatNotifier] Failed to start stream: $e');
-      _updateMessage(convId, assistantMsgId, (msg) => msg.copyWith(
-            isStreaming: false,
-            error: formatUserError(e),
-          ));
+      _updateMessage(
+        convId,
+        assistantMsgId,
+        (msg) => msg.copyWith(isStreaming: false, error: formatUserError(e)),
+      );
       state = state.copyWith(isGenerating: false);
     }
   }
@@ -397,8 +410,9 @@ class ChatNotifier extends Notifier<ChatState> {
       conversations: state.conversations.map((c) {
         if (c.id != convId) return c;
         return c.copyWith(
-          messages:
-              c.messages.map((m) => m.id == msgId ? updater(m) : m).toList(),
+          messages: c.messages
+              .map((m) => m.id == msgId ? updater(m) : m)
+              .toList(),
           updatedAt: DateTime.now(),
         );
       }).toList(),
@@ -412,15 +426,21 @@ class ChatNotifier extends Notifier<ChatState> {
   void _resetIdleTimer(String convId, String msgId) {
     _idleTimer?.cancel();
     _idleTimer = Timer(_idleTimeoutDuration, () {
-      _log.w('[ChatNotifier] Stream idle timeout after '
-          '${_idleTimeoutDuration.inSeconds}s');
+      _log.w(
+        '[ChatNotifier] Stream idle timeout after '
+        '${_idleTimeoutDuration.inSeconds}s',
+      );
       _activeSubscription?.cancel();
       _activeSubscription = null;
       _idleTimer = null;
-      _updateMessage(convId, msgId, (msg) => msg.copyWith(
-            isStreaming: false,
-            error: '响应超时（${_idleTimeoutDuration.inSeconds}秒无数据），请重试',
-          ));
+      _updateMessage(
+        convId,
+        msgId,
+        (msg) => msg.copyWith(
+          isStreaming: false,
+          error: '响应超时（${_idleTimeoutDuration.inSeconds}秒无数据），请重试',
+        ),
+      );
       state = state.copyWith(isGenerating: false);
       _saveToDisk();
     });
@@ -439,16 +459,20 @@ class ChatNotifier extends Notifier<ChatState> {
   }
 
   Future<AiChatRequest> _buildChatRequest(
-      Conversation conv, AiService service) async {
+    Conversation conv,
+    AiService service,
+  ) async {
     final messages = <AiChatMessage>[];
 
     final sysPrompt = conv.systemPrompt ?? state.systemPrompt;
     if (sysPrompt.isNotEmpty) {
-      messages.add(AiChatMessage(
-        role: ChatRole.system.toJson(),
-        content: sysPrompt,
-        timestamp: conv.createdAt,
-      ));
+      messages.add(
+        AiChatMessage(
+          role: ChatRole.system.toJson(),
+          content: sysPrompt,
+          timestamp: conv.createdAt,
+        ),
+      );
     }
 
     final contextLimit = _computeContextLimit(service, conv.model);
@@ -475,30 +499,27 @@ class ChatNotifier extends Notifier<ChatState> {
         if (imageUrls.isEmpty) imageUrls = null;
       }
 
-      messages.add(AiChatMessage(
-        role: msg.role.toJson(),
-        content: msg.content,
-        imageUrls: imageUrls,
-        timestamp: msg.timestamp,
-      ));
+      messages.add(
+        AiChatMessage(
+          role: msg.role.toJson(),
+          content: msg.content,
+          imageUrls: imageUrls,
+          timestamp: msg.timestamp,
+        ),
+      );
     }
 
     final modelId = conv.model.isNotEmpty
         ? conv.model
         : (service.supportedModels.isNotEmpty
-            ? service.supportedModels.first
-            : 'default');
+              ? service.supportedModels.first
+              : 'default');
 
-    return AiChatRequest(
-      messages: messages,
-      model: modelId,
-      stream: true,
-    );
+    return AiChatRequest(messages: messages, model: modelId, stream: true);
   }
 
   int _computeContextLimit(AiService service, String modelId) {
-    final info =
-        service.modelInfos.where((m) => m.id == modelId).firstOrNull;
+    final info = service.modelInfos.where((m) => m.id == modelId).firstOrNull;
     if (info?.contextWindow != null && info!.contextWindow! > 0) {
       final usableTokens = (info.contextWindow! * 0.75).toInt();
       return (usableTokens ~/ 50).clamp(10, 200);
@@ -525,7 +546,6 @@ class ChatNotifier extends Notifier<ChatState> {
     }
   }
 
-
   static int _estimateTokens(String text) {
     if (text.isEmpty) return 0;
     int cjkChars = 0;
@@ -549,34 +569,40 @@ class ChatNotifier extends Notifier<ChatState> {
     DateTime startedAt,
   ) async {
     try {
-      final conv =
-          state.conversations.where((c) => c.id == convId).firstOrNull;
+      final conv = state.conversations.where((c) => c.id == convId).firstOrNull;
       if (conv == null) return;
       final msg = conv.messages.where((m) => m.id == msgId).firstOrNull;
       if (msg == null) return;
 
       final estimatedTokens = _estimateTokens(msg.content);
       _updateMessage(
-          convId, msgId, (m) => m.copyWith(completionTokens: estimatedTokens));
+        convId,
+        msgId,
+        (m) => m.copyWith(completionTokens: estimatedTokens),
+      );
 
       final dao = ref.read(aiTaskDaoProvider);
       final now = DateTime.now();
-      await dao.insertTask(AiTasksCompanion(
-        id: Value(_uuid.v4()),
-        type: const Value('chat'),
-        status: const Value('completed'),
-        provider: Value(service.providerName),
-        model: Value(conv.model),
-        inputPrompt: Value(conv.messages
-            .where((m) => m.role == ChatRole.user)
-            .map((m) => m.content)
-            .join('\n---\n')),
-        outputText: Value(msg.content),
-        tokenUsage: Value(estimatedTokens),
-        startedAt: Value(startedAt.millisecondsSinceEpoch),
-        completedAt: Value(now.millisecondsSinceEpoch),
-        createdAt: Value(now.millisecondsSinceEpoch),
-      ));
+      await dao.insertTask(
+        AiTasksCompanion(
+          id: Value(_uuid.v4()),
+          type: const Value('chat'),
+          status: const Value('completed'),
+          provider: Value(service.providerName),
+          model: Value(conv.model),
+          inputPrompt: Value(
+            conv.messages
+                .where((m) => m.role == ChatRole.user)
+                .map((m) => m.content)
+                .join('\n---\n'),
+          ),
+          outputText: Value(msg.content),
+          tokenUsage: Value(estimatedTokens),
+          startedAt: Value(startedAt.millisecondsSinceEpoch),
+          completedAt: Value(now.millisecondsSinceEpoch),
+          createdAt: Value(now.millisecondsSinceEpoch),
+        ),
+      );
     } catch (e) {
       _log.w('[ChatNotifier] Failed to record AI task: $e');
     }
@@ -654,8 +680,7 @@ class ChatNotifier extends Notifier<ChatState> {
 
       final data = {
         'version': _jsonVersion,
-        'conversations':
-            state.conversations.map((c) => c.toJson()).toList(),
+        'conversations': state.conversations.map((c) => c.toJson()).toList(),
       };
       await tmpFile.writeAsString(jsonEncode(data));
       await tmpFile.rename(targetPath);
@@ -689,8 +714,7 @@ class ChatNotifier extends Notifier<ChatState> {
 
       if (convs.isNotEmpty) {
         final first = convs.first;
-        final hasModel =
-            first.providerId.isNotEmpty && first.model.isNotEmpty;
+        final hasModel = first.providerId.isNotEmpty && first.model.isNotEmpty;
         state = state.copyWith(
           conversations: convs,
           currentConversationId: first.id,

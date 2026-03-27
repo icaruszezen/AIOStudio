@@ -43,15 +43,14 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
   @override
   void initState() {
     super.initState();
-    _promptSub = ref.listenManual(
-      promptDetailProvider(widget.promptId),
-      (_, next) {
-        next.whenData((prompt) {
-          if (prompt != null) _loadPrompt(prompt);
-        });
-      },
-      fireImmediately: true,
-    );
+    _promptSub = ref.listenManual(promptDetailProvider(widget.promptId), (
+      _,
+      next,
+    ) {
+      next.whenData((prompt) {
+        if (prompt != null) _loadPrompt(prompt);
+      });
+    }, fireImmediately: true);
   }
 
   @override
@@ -69,7 +68,9 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
     final variablesJson = _variables.isEmpty
         ? null
         : jsonEncode(_variables.map((v) => v.toJson()).toList());
-    ref.read(promptActionsProvider).updatePrompt(
+    ref
+        .read(promptActionsProvider)
+        .updatePrompt(
           id: widget.promptId,
           title: _titleController.text,
           content: _contentController.text,
@@ -154,10 +155,13 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
     if (!_isDirty || !mounted) return;
     _isDirty = false;
 
-    final variablesJson =
-        _variables.isEmpty ? null : jsonEncode(_variables.map((v) => v.toJson()).toList());
+    final variablesJson = _variables.isEmpty
+        ? null
+        : jsonEncode(_variables.map((v) => v.toJson()).toList());
 
-    await ref.read(promptActionsProvider).updatePrompt(
+    await ref
+        .read(promptActionsProvider)
+        .updatePrompt(
           id: widget.promptId,
           title: _titleController.text,
           content: _contentController.text,
@@ -181,16 +185,19 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
     }
     await Clipboard.setData(ClipboardData(text: result));
     if (mounted) {
-      await displayInfoBar(context, builder: (_, close) {
-        return InfoBar(
-          title: const Text('已复制到剪贴板'),
-          severity: InfoBarSeverity.success,
-          action: IconButton(
-            icon: const Icon(FluentIcons.clear),
-            onPressed: close,
-          ),
-        );
-      });
+      await displayInfoBar(
+        context,
+        builder: (_, close) {
+          return InfoBar(
+            title: const Text('已复制到剪贴板'),
+            severity: InfoBarSeverity.success,
+            action: IconButton(
+              icon: const Icon(FluentIcons.clear),
+              onPressed: close,
+            ),
+          );
+        },
+      );
     }
   }
 
@@ -264,9 +271,7 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
                   children: [
                     Expanded(child: _buildCategoryField(theme)),
                     const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildProjectField(theme, projectsAsync),
-                    ),
+                    Expanded(child: _buildProjectField(theme, projectsAsync)),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -292,17 +297,12 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(
-            color: theme.resources.cardStrokeColorDefault,
-          ),
+          bottom: BorderSide(color: theme.resources.cardStrokeColorDefault),
         ),
       ),
       child: Row(
         children: [
-          Text(
-            '提示词编辑',
-            style: theme.typography.subtitle,
-          ),
+          Text('提示词编辑', style: theme.typography.subtitle),
           const Spacer(),
           Tooltip(
             message: _isFavorite ? '取消收藏' : '收藏',
@@ -352,16 +352,19 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
             onPressed: () async {
               await _save();
               if (!mounted) return;
-              displayInfoBar(context, builder: (_, close) {
-                return InfoBar(
-                  title: const Text('已保存'),
-                  severity: InfoBarSeverity.success,
-                  action: IconButton(
-                    icon: const Icon(FluentIcons.clear),
-                    onPressed: close,
-                  ),
-                );
-              });
+              displayInfoBar(
+                context,
+                builder: (_, close) {
+                  return InfoBar(
+                    title: const Text('已保存'),
+                    severity: InfoBarSeverity.success,
+                    action: IconButton(
+                      icon: const Icon(FluentIcons.clear),
+                      onPressed: close,
+                    ),
+                  );
+                },
+              );
             },
             child: const Text('保存'),
           ),
@@ -400,7 +403,9 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
   }
 
   Widget _buildProjectField(
-      FluentThemeData theme, AsyncValue<List<Project>> projectsAsync) {
+    FluentThemeData theme,
+    AsyncValue<List<Project>> projectsAsync,
+  ) {
     return InfoLabel(
       label: '所属项目（可选）',
       child: projectsAsync.when(
@@ -463,9 +468,7 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
           const SizedBox(width: 12),
           Text(
             '${_variables.length} 个变量',
-            style: theme.typography.caption?.copyWith(
-              color: theme.accentColor,
-            ),
+            style: theme.typography.caption?.copyWith(color: theme.accentColor),
           ),
         ],
       ],
@@ -481,26 +484,32 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
 
     for (final match in _variableRegex.allMatches(content)) {
       if (match.start > lastEnd) {
-        spans.add(TextSpan(
-          text: content.substring(lastEnd, match.start),
-          style: theme.typography.body,
-        ));
+        spans.add(
+          TextSpan(
+            text: content.substring(lastEnd, match.start),
+            style: theme.typography.body,
+          ),
+        );
       }
-      spans.add(TextSpan(
-        text: match.group(0),
-        style: theme.typography.body?.copyWith(
-          color: theme.accentColor,
-          fontWeight: FontWeight.w600,
-          backgroundColor: theme.accentColor.withValues(alpha: 0.08),
+      spans.add(
+        TextSpan(
+          text: match.group(0),
+          style: theme.typography.body?.copyWith(
+            color: theme.accentColor,
+            fontWeight: FontWeight.w600,
+            backgroundColor: theme.accentColor.withValues(alpha: 0.08),
+          ),
         ),
-      ));
+      );
       lastEnd = match.end;
     }
     if (lastEnd < content.length) {
-      spans.add(TextSpan(
-        text: content.substring(lastEnd),
-        style: theme.typography.body,
-      ));
+      spans.add(
+        TextSpan(
+          text: content.substring(lastEnd),
+          style: theme.typography.body,
+        ),
+      );
     }
 
     if (spans.isEmpty) return const SizedBox.shrink();
@@ -516,9 +525,7 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
           decoration: BoxDecoration(
             color: theme.resources.subtleFillColorSecondary,
             borderRadius: BorderRadius.circular(6),
-            border: Border.all(
-              color: theme.resources.cardStrokeColorDefault,
-            ),
+            border: Border.all(color: theme.resources.cardStrokeColorDefault),
           ),
           child: RichText(text: TextSpan(children: spans)),
         ),
@@ -536,9 +543,7 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
           decoration: BoxDecoration(
             color: theme.resources.subtleFillColorSecondary,
             borderRadius: BorderRadius.circular(6),
-            border: Border.all(
-              color: theme.resources.cardStrokeColorDefault,
-            ),
+            border: Border.all(color: theme.resources.cardStrokeColorDefault),
           ),
           child: Column(
             children: [
@@ -546,8 +551,9 @@ class _PromptEditorPanelState extends ConsumerState<PromptEditorPanel> {
                 if (i > 0)
                   Divider(
                     style: DividerThemeData(
-                      horizontalMargin:
-                          const EdgeInsets.symmetric(horizontal: 12),
+                      horizontalMargin: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: theme.resources.cardStrokeColorDefault,
                       ),
@@ -630,10 +636,10 @@ class _PromptVariable {
   }
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        if (defaultValue != null) 'default': defaultValue,
-        if (description != null) 'description': description,
-      };
+    'name': name,
+    if (defaultValue != null) 'default': defaultValue,
+    if (description != null) 'description': description,
+  };
 
   factory _PromptVariable.fromJson(Map<String, dynamic> json) {
     return _PromptVariable(
@@ -673,8 +679,7 @@ class _VariableTextBoxState extends State<_VariableTextBox> {
   @override
   void didUpdateWidget(covariant _VariableTextBox oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.value != widget.value &&
-        _controller.text != widget.value) {
+    if (oldWidget.value != widget.value && _controller.text != widget.value) {
       _controller.text = widget.value;
     }
   }

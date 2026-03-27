@@ -45,18 +45,20 @@ void main() {
     String? extraConfig,
   }) async {
     final ts = now();
-    await dao.insertConfig(AiProviderConfigsCompanion(
-      id: Value(id),
-      name: Value(name),
-      type: Value(type),
-      baseUrl: Value(baseUrl),
-      apiKey: Value(apiKey),
-      defaultModel: Value(defaultModel),
-      isEnabled: Value(isEnabled),
-      extraConfig: Value(extraConfig),
-      createdAt: Value(ts),
-      updatedAt: Value(ts),
-    ));
+    await dao.insertConfig(
+      AiProviderConfigsCompanion(
+        id: Value(id),
+        name: Value(name),
+        type: Value(type),
+        baseUrl: Value(baseUrl),
+        apiKey: Value(apiKey),
+        defaultModel: Value(defaultModel),
+        isEnabled: Value(isEnabled),
+        extraConfig: Value(extraConfig),
+        createdAt: Value(ts),
+        updatedAt: Value(ts),
+      ),
+    );
   }
 
   group('AiServiceManager', () {
@@ -106,8 +108,9 @@ void main() {
     });
 
     test('loadServices uses secure key over config apiKey', () async {
-      when(() => mockKeys.getApiKey('prov-1'))
-          .thenAnswer((_) async => 'secure-key');
+      when(
+        () => mockKeys.getApiKey('prov-1'),
+      ).thenAnswer((_) async => 'secure-key');
 
       await insertConfig(
         id: 'prov-1',
@@ -122,20 +125,22 @@ void main() {
       expect(manager.getService('prov-1'), isNotNull);
     });
 
-    test('loadServices falls back to config apiKey when secure key is null',
-        () async {
-      when(() => mockKeys.getApiKey(any())).thenAnswer((_) async => null);
+    test(
+      'loadServices falls back to config apiKey when secure key is null',
+      () async {
+        when(() => mockKeys.getApiKey(any())).thenAnswer((_) async => null);
 
-      await insertConfig(
-        id: 'prov-1',
-        name: 'Test',
-        type: 'openai',
-        apiKey: 'fallback-key',
-      );
+        await insertConfig(
+          id: 'prov-1',
+          name: 'Test',
+          type: 'openai',
+          apiKey: 'fallback-key',
+        );
 
-      await manager.loadServices();
-      expect(manager.getService('prov-1'), isNotNull);
-    });
+        await manager.loadServices();
+        expect(manager.getService('prov-1'), isNotNull);
+      },
+    );
 
     test('loadServices replaces previous services on re-call', () async {
       when(() => mockKeys.getApiKey(any())).thenAnswer((_) async => 'key');
@@ -183,11 +188,7 @@ void main() {
     test('loadServices skips unknown provider type', () async {
       when(() => mockKeys.getApiKey(any())).thenAnswer((_) async => 'key');
 
-      await insertConfig(
-        id: 'unknown-1',
-        name: 'Unknown',
-        type: 'gemini',
-      );
+      await insertConfig(id: 'unknown-1', name: 'Unknown', type: 'gemini');
 
       await manager.loadServices();
       expect(manager.getService('unknown-1'), isNull);
@@ -242,17 +243,15 @@ void main() {
       when(() => mockKeys.getApiKey(any())).thenAnswer((_) async => 'key');
 
       final discoveredModels = [
-        AiModelInfo(id: 'gpt-4o', mode: 'chat').toJson(),
-        AiModelInfo(id: 'dall-e-3', mode: 'image_generation').toJson(),
+        const AiModelInfo(id: 'gpt-4o', mode: 'chat').toJson(),
+        const AiModelInfo(id: 'dall-e-3', mode: 'image_generation').toJson(),
       ];
 
       await insertConfig(
         id: 'oai',
         name: 'OpenAI',
         type: 'openai',
-        extraConfig: jsonEncode({
-          'discovered_models': discoveredModels,
-        }),
+        extraConfig: jsonEncode({'discovered_models': discoveredModels}),
       );
       await manager.loadServices();
 
@@ -278,11 +277,7 @@ void main() {
     test('stability service is created correctly', () async {
       when(() => mockKeys.getApiKey(any())).thenAnswer((_) async => 'key');
 
-      await insertConfig(
-        id: 'stab-1',
-        name: 'Stability',
-        type: 'stability',
-      );
+      await insertConfig(id: 'stab-1', name: 'Stability', type: 'stability');
       await manager.loadServices();
 
       final service = manager.getService('stab-1');

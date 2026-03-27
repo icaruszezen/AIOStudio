@@ -113,10 +113,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
               }
             },
             child: Stack(
-              children: [
-                page,
-                if (_isDragging) _buildDragOverlay(theme),
-              ],
+              children: [page, if (_isDragging) _buildDragOverlay(theme)],
             ),
           );
         } else {
@@ -218,18 +215,12 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                     value: AssetSortField.createdAt,
                     child: Text('创建时间'),
                   ),
-                  ComboBoxItem(
-                    value: AssetSortField.name,
-                    child: Text('名称'),
-                  ),
+                  ComboBoxItem(value: AssetSortField.name, child: Text('名称')),
                   ComboBoxItem(
                     value: AssetSortField.fileSize,
                     child: Text('文件大小'),
                   ),
-                  ComboBoxItem(
-                    value: AssetSortField.type,
-                    child: Text('类型'),
-                  ),
+                  ComboBoxItem(value: AssetSortField.type, child: Text('类型')),
                 ],
                 onChanged: (v) {
                   if (v != null) notifier.setSortField(v);
@@ -268,15 +259,11 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
             style: theme.typography.bodyStrong,
           ),
           const SizedBox(width: 16),
-          Button(
-            onPressed: _selectAll,
-            child: const Text('全选'),
-          ),
+          Button(onPressed: _selectAll, child: const Text('全选')),
           const SizedBox(width: 8),
           Button(
             onPressed: () => setState(() {
               _selectedIds.clear();
-    
             }),
             child: const Text('取消选择'),
           ),
@@ -320,7 +307,9 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
           FilledButton(
             onPressed: _batchDelete,
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(AppColors.error(theme.brightness)),
+              backgroundColor: WidgetStateProperty.all(
+                AppColors.error(theme.brightness),
+              ),
             ),
             child: const Row(
               mainAxisSize: MainAxisSize.min,
@@ -358,9 +347,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
               const Spacer(),
               IconButton(
                 icon: Icon(
-                  _filterExpanded
-                      ? FluentIcons.chevron_up
-                      : FluentIcons.filter,
+                  _filterExpanded ? FluentIcons.chevron_up : FluentIcons.filter,
                   size: 16,
                 ),
                 onPressed: () =>
@@ -438,18 +425,12 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                       value: AssetSortField.createdAt,
                       child: Text('创建时间'),
                     ),
-                    ComboBoxItem(
-                      value: AssetSortField.name,
-                      child: Text('名称'),
-                    ),
+                    ComboBoxItem(value: AssetSortField.name, child: Text('名称')),
                     ComboBoxItem(
                       value: AssetSortField.fileSize,
                       child: Text('文件大小'),
                     ),
-                    ComboBoxItem(
-                      value: AssetSortField.type,
-                      child: Text('类型'),
-                    ),
+                    ComboBoxItem(value: AssetSortField.type, child: Text('类型')),
                   ],
                   onChanged: (v) {
                     if (v != null) notifier.setSortField(v);
@@ -477,7 +458,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
             icon: const Icon(FluentIcons.cancel, size: 16),
             onPressed: () => setState(() {
               _selectedIds.clear();
-    
+
               _multiSelectMode = false;
             }),
           ),
@@ -487,10 +468,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
             style: theme.typography.bodyStrong,
           ),
           const Spacer(),
-          Button(
-            onPressed: _selectAll,
-            child: const Text('全选'),
-          ),
+          Button(onPressed: _selectAll, child: const Text('全选')),
         ],
       ),
     );
@@ -546,10 +524,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: theme.accentColor, width: 2),
               boxShadow: [
-                BoxShadow(
-                  color: AppColors.overlayDark(0.1),
-                  blurRadius: 20,
-                ),
+                BoxShadow(color: AppColors.overlayDark(0.1), blurRadius: 20),
               ],
             ),
             child: Column(
@@ -588,7 +563,6 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
         } else {
           _selectedIds.add(asset.id);
         }
-
       });
       return;
     }
@@ -649,7 +623,9 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(AppColors.error(FluentTheme.of(context).brightness)),
+              backgroundColor: WidgetStateProperty.all(
+                AppColors.error(FluentTheme.of(context).brightness),
+              ),
             ),
             child: const Text('删除'),
           ),
@@ -678,7 +654,9 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(AppColors.error(FluentTheme.of(context).brightness)),
+              backgroundColor: WidgetStateProperty.all(
+                AppColors.error(FluentTheme.of(context).brightness),
+              ),
             ),
             child: const Text('删除'),
           ),
@@ -795,10 +773,9 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
     if (confirmed == true) {
       final newName = controller.text.trim();
       if (newName.isNotEmpty && newName != asset.name) {
-        await ref.read(assetActionsProvider).updateAsset(
-              id: asset.id,
-              name: newName,
-            );
+        await ref
+            .read(assetActionsProvider)
+            .updateAsset(id: asset.id, name: newName);
       }
     }
     controller.dispose();
@@ -873,18 +850,14 @@ class _AssetsContent extends ConsumerWidget {
       icon: FluentIcons.photo_collection,
       title: '还没有资产',
       description: '导入本地文件或从浏览器扩展抓取资源',
-      action: FilledButton(
-        onPressed: onShowImport,
-        child: const Text('导入资产'),
-      ),
+      action: FilledButton(onPressed: onShowImport, child: const Text('导入资产')),
     );
   }
 
   Widget _buildGridView(List<Asset> assets) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossAxisCount =
-            (constraints.maxWidth / 200).floor().clamp(2, 8);
+        final crossAxisCount = (constraints.maxWidth / 200).floor().clamp(2, 8);
         return GridView.builder(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,

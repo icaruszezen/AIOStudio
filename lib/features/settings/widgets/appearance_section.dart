@@ -73,22 +73,25 @@ class _ThemeModeSelector extends ConsumerWidget {
           children: [
             ToggleButton(
               checked: themeMode == ThemeMode.system,
-              onChanged: (_) =>
-                  ref.read(themeNotifierProvider.notifier).setThemeMode(ThemeMode.system),
+              onChanged: (_) => ref
+                  .read(themeNotifierProvider.notifier)
+                  .setThemeMode(ThemeMode.system),
               child: const Text('跟随系统'),
             ),
             const SizedBox(width: DesignTokens.spacingSM),
             ToggleButton(
               checked: themeMode == ThemeMode.light,
-              onChanged: (_) =>
-                  ref.read(themeNotifierProvider.notifier).setThemeMode(ThemeMode.light),
+              onChanged: (_) => ref
+                  .read(themeNotifierProvider.notifier)
+                  .setThemeMode(ThemeMode.light),
               child: const Text('亮色'),
             ),
             const SizedBox(width: DesignTokens.spacingSM),
             ToggleButton(
               checked: themeMode == ThemeMode.dark,
-              onChanged: (_) =>
-                  ref.read(themeNotifierProvider.notifier).setThemeMode(ThemeMode.dark),
+              onChanged: (_) => ref
+                  .read(themeNotifierProvider.notifier)
+                  .setThemeMode(ThemeMode.dark),
               child: const Text('暗色'),
             ),
           ],
@@ -135,13 +138,13 @@ class _AccentColorSelector extends ConsumerWidget {
                             width: 2,
                           )
                         : hovered
-                            ? Border.all(
-                                color: AppColors.selectionBorderSubtle(
-                                  theme.brightness,
-                                ),
-                                width: 1.5,
-                              )
-                            : null,
+                        ? Border.all(
+                            color: AppColors.selectionBorderSubtle(
+                              theme.brightness,
+                            ),
+                            width: 1.5,
+                          )
+                        : null,
                   ),
                   child: isSelected
                       ? const Icon(
@@ -216,8 +219,8 @@ class _WindowEffectSelector extends ConsumerWidget {
     final effectiveCurrent = effects.contains(current)
         ? current
         : (current == AppWindowEffect.mica || current == AppWindowEffect.tabbed)
-            ? AppWindowEffect.acrylic
-            : AppWindowEffect.none;
+        ? AppWindowEffect.acrylic
+        : AppWindowEffect.none;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,9 +242,8 @@ class _WindowEffectSelector extends ConsumerWidget {
             for (final effect in effects)
               ToggleButton(
                 checked: effectiveCurrent == effect,
-                onChanged: (_) => ref
-                    .read(windowEffectProvider.notifier)
-                    .setEffect(effect),
+                onChanged: (_) =>
+                    ref.read(windowEffectProvider.notifier).setEffect(effect),
                 child: Text(_effectLabels[effect] ?? effect.name),
               ),
           ],

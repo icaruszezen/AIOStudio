@@ -42,16 +42,18 @@ class _AioStudioAppState extends ConsumerState<AioStudioApp> {
       final router = ref.read(appRouterProvider);
 
       final l = S.of(context);
-      ref.read(notificationServiceProvider).show(
-        title: l.extensionImportSaved(asset.name),
-        actionBuilder: (close) => Button(
-          onPressed: () {
-            close();
-            router.go('/assets/${asset.id}');
-          },
-          child: Text(l.actionView),
-        ),
-      );
+      ref
+          .read(notificationServiceProvider)
+          .show(
+            title: l.extensionImportSaved(asset.name),
+            actionBuilder: (close) => Button(
+              onPressed: () {
+                close();
+                router.go('/assets/${asset.id}');
+              },
+              child: Text(l.actionView),
+            ),
+          );
     });
   }
 

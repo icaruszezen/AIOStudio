@@ -39,8 +39,16 @@ void showAssetContextMenu({
           ),
           const MenuFlyoutSeparator(),
           MenuFlyoutItem(
-            leading: Icon(FluentIcons.delete, color: AppColors.error(FluentTheme.of(context).brightness)),
-            text: Text('删除', style: TextStyle(color: AppColors.error(FluentTheme.of(context).brightness))),
+            leading: Icon(
+              FluentIcons.delete,
+              color: AppColors.error(FluentTheme.of(context).brightness),
+            ),
+            text: Text(
+              '删除',
+              style: TextStyle(
+                color: AppColors.error(FluentTheme.of(context).brightness),
+              ),
+            ),
             onPressed: () {
               Flyout.of(ctx).close();
               onDelete?.call();

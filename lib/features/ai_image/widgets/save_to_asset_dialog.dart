@@ -17,10 +17,7 @@ class SaveToAssetResult {
 }
 
 class SaveToAssetDialog extends ConsumerStatefulWidget {
-  const SaveToAssetDialog({
-    super.key,
-    required this.defaultName,
-  });
+  const SaveToAssetDialog({super.key, required this.defaultName});
 
   final String defaultName;
 
@@ -60,13 +57,16 @@ class _SaveToAssetDialogState extends ConsumerState<SaveToAssetDialog> {
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
-        await displayInfoBar(context, builder: (ctx, close) {
-          return InfoBar(
-            title: const Text('加载数据失败，请关闭后重试'),
-            severity: InfoBarSeverity.error,
-            onClose: close,
-          );
-        });
+        await displayInfoBar(
+          context,
+          builder: (ctx, close) {
+            return InfoBar(
+              title: const Text('加载数据失败，请关闭后重试'),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            );
+          },
+        );
       }
     }
   }
@@ -85,10 +85,7 @@ class _SaveToAssetDialogState extends ConsumerState<SaveToAssetDialog> {
       constraints: const BoxConstraints(maxWidth: 450),
       title: const Text('保存到资产库'),
       content: _loading
-          ? const SizedBox(
-              height: 100,
-              child: Center(child: ProgressRing()),
-            )
+          ? const SizedBox(height: 100, child: Center(child: ProgressRing()))
           : Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,10 +101,9 @@ class _SaveToAssetDialogState extends ConsumerState<SaveToAssetDialog> {
                   ComboBox<String>(
                     value: _selectedProjectId,
                     items: _projects
-                        .map((p) => ComboBoxItem(
-                              value: p.id,
-                              child: Text(p.name),
-                            ))
+                        .map(
+                          (p) => ComboBoxItem(value: p.id, child: Text(p.name)),
+                        )
                         .toList(),
                     onChanged: (v) => setState(() => _selectedProjectId = v),
                     isExpanded: true,
@@ -116,10 +112,7 @@ class _SaveToAssetDialogState extends ConsumerState<SaveToAssetDialog> {
                 const SizedBox(height: 16),
                 Text('资产名称', style: theme.typography.bodyStrong),
                 const SizedBox(height: 6),
-                TextBox(
-                  controller: _nameController,
-                  placeholder: '输入资产名称',
-                ),
+                TextBox(controller: _nameController, placeholder: '输入资产名称'),
                 if (_allTags.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   Text('标签', style: theme.typography.bodyStrong),
@@ -154,8 +147,10 @@ class _SaveToAssetDialogState extends ConsumerState<SaveToAssetDialog> {
                               ),
                               const SizedBox(width: 4),
                             ],
-                            Text(tag.name,
-                                style: const TextStyle(fontSize: 12)),
+                            Text(
+                              tag.name,
+                              style: const TextStyle(fontSize: 12),
+                            ),
                           ],
                         ),
                       );
@@ -167,11 +162,13 @@ class _SaveToAssetDialogState extends ConsumerState<SaveToAssetDialog> {
       actions: [
         FilledButton(
           onPressed: _canSave
-              ? () => Navigator.of(context).pop(SaveToAssetResult(
+              ? () => Navigator.of(context).pop(
+                  SaveToAssetResult(
                     projectId: _selectedProjectId!,
                     name: _nameController.text.trim(),
                     tagIds: _selectedTagIds.toList(),
-                  ))
+                  ),
+                )
               : null,
           child: const Text('保存'),
         ),

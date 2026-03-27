@@ -39,10 +39,7 @@ class _ImageGenPageState extends ConsumerState<ImageGenPage> {
   Widget _buildDesktopLayout(BuildContext context, bool showHistory) {
     return Row(
       children: [
-        const SizedBox(
-          width: 380,
-          child: ImageGenParamsPanel(),
-        ),
+        const SizedBox(width: 380, child: ImageGenParamsPanel()),
         const Divider(direction: Axis.vertical),
         Expanded(
           child: Column(
@@ -70,8 +67,8 @@ class _ImageGenPageState extends ConsumerState<ImageGenPage> {
           child: _mobileTabIndex == 0
               ? const SingleChildScrollView(child: ImageGenParamsPanel())
               : showHistory
-                  ? const ImageGenHistory()
-                  : const ImageGenResultArea(),
+              ? const ImageGenHistory()
+              : const ImageGenResultArea(),
         ),
       ],
     );
@@ -122,11 +119,7 @@ class _ImageGenPageState extends ConsumerState<ImageGenPage> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          Icon(
-            FluentIcons.image_search,
-            size: 20,
-            color: theme.accentColor,
-          ),
+          Icon(FluentIcons.image_search, size: 20, color: theme.accentColor),
           const SizedBox(width: 8),
           Text('AI 图片生成', style: theme.typography.subtitle),
           const Spacer(),

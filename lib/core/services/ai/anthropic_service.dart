@@ -32,14 +32,14 @@ class AnthropicService extends AiService {
     required String apiKey,
     String baseUrl = 'https://api.anthropic.com',
     List<AiModelInfo>? modelInfos,
-  })  : _modelInfoOverrides = modelInfos,
-        _dio = createAiDio(
-          baseUrl: baseUrl,
-          extraHeaders: {
-            'x-api-key': apiKey,
-            'anthropic-version': _anthropicVersion,
-          },
-        );
+  }) : _modelInfoOverrides = modelInfos,
+       _dio = createAiDio(
+         baseUrl: baseUrl,
+         extraHeaders: {
+           'x-api-key': apiKey,
+           'anthropic-version': _anthropicVersion,
+         },
+       );
 
   @override
   String get providerName => 'Anthropic';
@@ -99,7 +99,10 @@ class AnthropicService extends AiService {
     }
   }
 
-  Map<String, dynamic> _buildBody(AiChatRequest request, {required bool stream}) {
+  Map<String, dynamic> _buildBody(
+    AiChatRequest request, {
+    required bool stream,
+  }) {
     String? systemPrompt;
     final messages = <Map<String, dynamic>>[];
 
@@ -117,7 +120,10 @@ class AnthropicService extends AiService {
               if (url.startsWith('data:'))
                 _parseDataUrlToAnthropicSource(url)
               else
-                {'type': 'image', 'source': {'type': 'url', 'url': url}},
+                {
+                  'type': 'image',
+                  'source': {'type': 'url', 'url': url},
+                },
             {'type': 'text', 'text': m.content},
           ],
         });
@@ -149,7 +155,8 @@ class AnthropicService extends AiService {
   }
 
   AiChatResponse _parseResponse(Map<String, dynamic> data) {
-    final content = (data['content'] as List<dynamic>?)
+    final content =
+        (data['content'] as List<dynamic>?)
             ?.whereType<Map<String, dynamic>>()
             .where((b) => b['type'] == 'text')
             .map((b) => b['text'] as String)
@@ -162,7 +169,8 @@ class AnthropicService extends AiService {
       model: data['model'] as String? ?? '',
       promptTokens: usage['input_tokens'] as int? ?? 0,
       completionTokens: usage['output_tokens'] as int? ?? 0,
-      totalTokens: (usage['input_tokens'] as int? ?? 0) +
+      totalTokens:
+          (usage['input_tokens'] as int? ?? 0) +
           (usage['output_tokens'] as int? ?? 0),
     );
   }
@@ -236,28 +244,27 @@ class AnthropicService extends AiService {
   @override
   Future<bool> testConnection() async {
     try {
-      await chatCompletion(AiChatRequest(
-        messages: [
-          AiChatMessage(
-            role: 'user',
-            content: 'Hi',
-            timestamp: DateTime.now(),
-          ),
-        ],
-        model: _defaultModels.last,
-        maxTokens: 1,
-        stream: false,
-      ));
+      await chatCompletion(
+        AiChatRequest(
+          messages: [
+            AiChatMessage(
+              role: 'user',
+              content: 'Hi',
+              timestamp: DateTime.now(),
+            ),
+          ],
+          model: _defaultModels.last,
+          maxTokens: 1,
+          stream: false,
+        ),
+      );
       return true;
     } on AiServiceException {
       rethrow;
     } on DioException catch (e) {
       throw _unwrap(e);
     } catch (e) {
-      throw AiServiceException(
-        message: e.toString(),
-        userMessage: '连接测试失败',
-      );
+      throw AiServiceException(message: e.toString(), userMessage: '连接测试失败');
     }
   }
 
@@ -266,11 +273,11 @@ class AnthropicService extends AiService {
 
   static AiServiceException _unwrap(DioException e) =>
       e.error is AiServiceException
-          ? e.error! as AiServiceException
-          : AiServiceException(
-              message: e.message ?? e.toString(),
-              userMessage: '网络请求异常',
-              statusCode: e.response?.statusCode,
-              originalError: e,
-            );
+      ? e.error! as AiServiceException
+      : AiServiceException(
+          message: e.message ?? e.toString(),
+          userMessage: '网络请求异常',
+          statusCode: e.response?.statusCode,
+          originalError: e,
+        );
 }

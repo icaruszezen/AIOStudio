@@ -18,10 +18,7 @@ void main() {
     });
 
     test('implements Exception', () {
-      const ex = AiServiceException(
-        message: 'err',
-        userMessage: 'msg',
-      );
+      const ex = AiServiceException(message: 'err', userMessage: 'msg');
 
       expect(ex, isA<Exception>());
     });
@@ -37,10 +34,7 @@ void main() {
     });
 
     test('toString with null statusCode', () {
-      const ex = AiServiceException(
-        message: 'no code',
-        userMessage: 'ui',
-      );
+      const ex = AiServiceException(message: 'no code', userMessage: 'ui');
 
       expect(ex.toString(), 'AiServiceException(null): no code');
     });

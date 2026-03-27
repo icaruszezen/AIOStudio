@@ -4,6 +4,7 @@ class AiProviderConfigs extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
   TextColumn get type => text()();
+
   /// Kept for backward compatibility; new API keys are stored via
   /// [SecureKeyService] and this column remains null.
   TextColumn get apiKey => text().nullable()();
@@ -19,6 +20,6 @@ class AiProviderConfigs extends Table {
 
   @override
   List<Set<Column>> get uniqueKeys => [
-        {name, type},
-      ];
+    {name, type},
+  ];
 }

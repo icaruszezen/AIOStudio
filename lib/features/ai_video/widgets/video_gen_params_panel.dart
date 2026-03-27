@@ -25,8 +25,7 @@ class _VideoGenParamsPanelState extends ConsumerState<VideoGenParamsPanel> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final pending =
-          ref.read(pendingPromptContentProvider.notifier).consume();
+      final pending = ref.read(pendingPromptContentProvider.notifier).consume();
       if (pending != null && pending.isNotEmpty) {
         _promptController.text = pending;
         ref.read(videoGenProvider.notifier).updatePrompt(pending);
@@ -109,10 +108,12 @@ class _VideoGenParamsPanelState extends ConsumerState<VideoGenParamsPanel> {
                 ComboBox<String>(
                   value: genState.selectedProviderId,
                   items: providers
-                      .map((s) => ComboBoxItem(
-                            value: s.providerId,
-                            child: Text(s.providerName),
-                          ))
+                      .map(
+                        (s) => ComboBoxItem(
+                          value: s.providerId,
+                          child: Text(s.providerName),
+                        ),
+                      )
                       .toList(),
                   onChanged: (v) {
                     if (v != null) notifier.selectProvider(v);
@@ -163,10 +164,7 @@ class _VideoGenParamsPanelState extends ConsumerState<VideoGenParamsPanel> {
                 ComboBox<int>(
                   value: genState.duration,
                   items: videoDurations
-                      .map((d) => ComboBoxItem(
-                            value: d,
-                            child: Text('${d}s'),
-                          ))
+                      .map((d) => ComboBoxItem(value: d, child: Text('${d}s')))
                       .toList(),
                   onChanged: (v) {
                     if (v != null) notifier.setDuration(v);
@@ -185,9 +183,7 @@ class _VideoGenParamsPanelState extends ConsumerState<VideoGenParamsPanel> {
             decoration: BoxDecoration(
               color: theme.resources.solidBackgroundFillColorBase,
               border: Border(
-                top: BorderSide(
-                  color: theme.resources.cardStrokeColorDefault,
-                ),
+                top: BorderSide(color: theme.resources.cardStrokeColorDefault),
               ),
             ),
             child: _buildGenerateButton(theme, genState, notifier),
@@ -267,9 +263,7 @@ class _VideoGenParamsPanelState extends ConsumerState<VideoGenParamsPanel> {
             width: double.infinity,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: theme.resources.cardStrokeColorDefault,
-              ),
+              border: Border.all(color: theme.resources.cardStrokeColorDefault),
             ),
             clipBehavior: Clip.antiAlias,
             child: Stack(
@@ -280,9 +274,11 @@ class _VideoGenParamsPanelState extends ConsumerState<VideoGenParamsPanel> {
                     fit: BoxFit.contain,
                     cacheWidth: 400,
                     errorBuilder: (_, __, ___) => Center(
-                      child: Icon(FluentIcons.photo2,
-                          size: 48,
-                          color: theme.resources.textFillColorSecondary),
+                      child: Icon(
+                        FluentIcons.photo2,
+                        size: 48,
+                        color: theme.resources.textFillColorSecondary,
+                      ),
                     ),
                   ),
                 ),
@@ -296,8 +292,11 @@ class _VideoGenParamsPanelState extends ConsumerState<VideoGenParamsPanel> {
                         color: AppColors.overlayDark(0.5),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(FluentIcons.cancel,
-                          size: 10, color: AppColors.onAccent),
+                      child: const Icon(
+                        FluentIcons.cancel,
+                        size: 10,
+                        color: AppColors.onAccent,
+                      ),
                     ),
                     onPressed: () => notifier.setInputImage(null),
                   ),
@@ -345,7 +344,9 @@ class _VideoGenParamsPanelState extends ConsumerState<VideoGenParamsPanel> {
   // ---------------------------------------------------------------------------
 
   Widget _buildModelSelector(
-      VideoGenState genState, VideoGenNotifier notifier) {
+    VideoGenState genState,
+    VideoGenNotifier notifier,
+  ) {
     if (genState.selectedProviderId == null) {
       return const ComboBox<String>(
         items: [],
@@ -354,12 +355,12 @@ class _VideoGenParamsPanelState extends ConsumerState<VideoGenParamsPanel> {
       );
     }
 
-    final models =
-        notifier.getProviderVideoModels(genState.selectedProviderId!);
+    final models = notifier.getProviderVideoModels(
+      genState.selectedProviderId!,
+    );
     return ComboBox<String>(
       value: genState.selectedModel,
-      items:
-          models.map((m) => ComboBoxItem(value: m, child: Text(m))).toList(),
+      items: models.map((m) => ComboBoxItem(value: m, child: Text(m))).toList(),
       onChanged: (v) {
         if (v != null) notifier.selectModel(v);
       },
@@ -394,11 +395,13 @@ class _VideoGenParamsPanelState extends ConsumerState<VideoGenParamsPanel> {
 
     final bool canGenerate;
     if (genState.mode == VideoGenMode.text2video) {
-      canGenerate = genState.prompt.trim().isNotEmpty &&
+      canGenerate =
+          genState.prompt.trim().isNotEmpty &&
           genState.selectedProviderId != null &&
           genState.selectedModel != null;
     } else {
-      canGenerate = genState.inputImagePath != null &&
+      canGenerate =
+          genState.inputImagePath != null &&
           genState.selectedProviderId != null &&
           genState.selectedModel != null;
     }
@@ -448,17 +451,21 @@ class _VideoGenParamsPanelState extends ConsumerState<VideoGenParamsPanel> {
   }
 
   Future<void> _pickFromPromptLibrary(BuildContext context) async {
-    final prompts =
-        await ref.read(promptDaoProvider).filterByCategory('video_gen');
+    final prompts = await ref
+        .read(promptDaoProvider)
+        .filterByCategory('video_gen');
     if (!context.mounted || prompts.isEmpty) {
       if (context.mounted) {
-        await displayInfoBar(context, builder: (ctx, close) {
-          return InfoBar(
-            title: const Text('暂无视频生成分类的提示词'),
-            severity: InfoBarSeverity.info,
-            onClose: close,
-          );
-        });
+        await displayInfoBar(
+          context,
+          builder: (ctx, close) {
+            return InfoBar(
+              title: const Text('暂无视频生成分类的提示词'),
+              severity: InfoBarSeverity.info,
+              onClose: close,
+            );
+          },
+        );
       }
       return;
     }

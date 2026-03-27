@@ -9,9 +9,10 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/error_utils.dart';
 import '../views/ai_provider_dialog.dart';
 
-final _allProvidersProvider = StreamProvider.autoDispose<List<AiProviderConfig>>((ref) {
-  return ref.watch(aiProviderConfigDaoProvider).watchAll();
-});
+final _allProvidersProvider =
+    StreamProvider.autoDispose<List<AiProviderConfig>>((ref) {
+      return ref.watch(aiProviderConfigDaoProvider).watchAll();
+    });
 
 class AiProvidersSection extends ConsumerWidget {
   const AiProvidersSection({super.key});
@@ -276,8 +277,9 @@ class _ProviderRowState extends ConsumerState<_ProviderRow> {
   }
 
   Future<void> _deleteProvider() async {
-    final taskCount =
-        await ref.read(aiTaskDaoProvider).countByProvider(config.id);
+    final taskCount = await ref
+        .read(aiTaskDaoProvider)
+        .countByProvider(config.id);
 
     if (!mounted) return;
     final errorColor = AppColors.error(FluentTheme.of(context).brightness);
@@ -361,10 +363,10 @@ class _TypeBadge extends StatelessWidget {
   }
 }
 
-final _hasSecureApiKeyProvider =
-    FutureProvider.autoDispose.family<bool, String>((ref, providerId) {
-  return ref.watch(secureKeyServiceProvider).hasApiKey(providerId);
-});
+final _hasSecureApiKeyProvider = FutureProvider.autoDispose
+    .family<bool, String>((ref, providerId) {
+      return ref.watch(secureKeyServiceProvider).hasApiKey(providerId);
+    });
 
 class _StatusIndicator extends ConsumerWidget {
   const _StatusIndicator({required this.config, required this.preset});

@@ -91,10 +91,7 @@ class _ImagePreviewDialogState extends State<ImagePreviewDialog> {
       children: [
         const Icon(FluentIcons.photo2, size: 64),
         const SizedBox(height: 12),
-        Text(
-          '图片加载失败',
-          style: FluentTheme.of(context).typography.body,
-        ),
+        Text('图片加载失败', style: FluentTheme.of(context).typography.body),
       ],
     );
   }

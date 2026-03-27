@@ -71,7 +71,9 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
       context: context,
       builder: (ctx) => ContentDialog(
         title: const Text('确认删除'),
-        content: Text('确定要删除项目「${project.name}」吗？\n此操作将同时删除该项目下所有关联的资产、提示词和 AI 任务，且不可恢复。'),
+        content: Text(
+          '确定要删除项目「${project.name}」吗？\n此操作将同时删除该项目下所有关联的资产、提示词和 AI 任务，且不可恢复。',
+        ),
         actions: [
           Button(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -80,7 +82,9 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(AppColors.error(FluentTheme.of(context).brightness)),
+              backgroundColor: WidgetStateProperty.all(
+                AppColors.error(FluentTheme.of(context).brightness),
+              ),
             ),
             child: const Text('删除'),
           ),
@@ -189,8 +193,8 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
                   child: _searchQuery.isNotEmpty
                       ? _buildSearchResults()
                       : (_showArchived
-                          ? _buildArchivedList()
-                          : _buildActiveList()),
+                            ? _buildArchivedList()
+                            : _buildActiveList()),
                 ),
               ),
             ],
@@ -261,10 +265,8 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
             ComboBox<_SortField>(
               value: _sortField,
               items: const [
-                ComboBoxItem(
-                    value: _SortField.updatedAt, child: Text('更新时间')),
-                ComboBoxItem(
-                    value: _SortField.createdAt, child: Text('创建时间')),
+                ComboBoxItem(value: _SortField.updatedAt, child: Text('更新时间')),
+                ComboBoxItem(value: _SortField.createdAt, child: Text('创建时间')),
                 ComboBoxItem(value: _SortField.name, child: Text('名称')),
               ],
               onChanged: (v) {
@@ -351,8 +353,14 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
                 ComboBox<_SortField>(
                   value: _sortField,
                   items: const [
-                    ComboBoxItem(value: _SortField.updatedAt, child: Text('更新时间')),
-                    ComboBoxItem(value: _SortField.createdAt, child: Text('创建时间')),
+                    ComboBoxItem(
+                      value: _SortField.updatedAt,
+                      child: Text('更新时间'),
+                    ),
+                    ComboBoxItem(
+                      value: _SortField.createdAt,
+                      child: Text('创建时间'),
+                    ),
                     ComboBoxItem(value: _SortField.name, child: Text('名称')),
                   ],
                   onChanged: (v) {
@@ -363,8 +371,9 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
                 ToggleSwitch(
                   checked: _viewMode == _ViewMode.list,
                   onChanged: (v) {
-                    setState(() =>
-                        _viewMode = v ? _ViewMode.list : _ViewMode.grid);
+                    setState(
+                      () => _viewMode = v ? _ViewMode.list : _ViewMode.grid,
+                    );
                   },
                   content: Text(
                     _viewMode == _ViewMode.grid ? '网格' : '列表',
@@ -472,8 +481,7 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
   Widget _buildGridView(List<Project> projects, {required bool archived}) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossAxisCount =
-            (constraints.maxWidth / 260).floor().clamp(1, 6);
+        final crossAxisCount = (constraints.maxWidth / 260).floor().clamp(1, 6);
         return GridView.builder(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
@@ -540,9 +548,7 @@ class _ProjectCardWithContext extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final assetCountAsync = ref.watch(
-      _assetCountProvider(project.id),
-    );
+    final assetCountAsync = ref.watch(_assetCountProvider(project.id));
 
     return _ContextMenuWrapper(
       project: project,
@@ -582,9 +588,7 @@ class _ProjectTileWithContext extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final assetCountAsync = ref.watch(
-      _assetCountProvider(project.id),
-    );
+    final assetCountAsync = ref.watch(_assetCountProvider(project.id));
 
     return _ContextMenuWrapper(
       project: project,
@@ -605,7 +609,10 @@ class _ProjectTileWithContext extends ConsumerWidget {
   }
 }
 
-final _assetCountProvider = StreamProvider.autoDispose.family<int, String>((ref, projectId) {
+final _assetCountProvider = StreamProvider.autoDispose.family<int, String>((
+  ref,
+  projectId,
+) {
   return ref.watch(assetDaoProvider).watchCountByProject(projectId);
 });
 
@@ -677,8 +684,18 @@ class _ContextMenuWrapperState extends State<_ContextMenuWrapper> {
                 ),
                 const MenuFlyoutSeparator(),
                 MenuFlyoutItem(
-                  leading: Icon(FluentIcons.delete, color: AppColors.error(FluentTheme.of(context).brightness)),
-                  text: Text('删除', style: TextStyle(color: AppColors.error(FluentTheme.of(context).brightness))),
+                  leading: Icon(
+                    FluentIcons.delete,
+                    color: AppColors.error(FluentTheme.of(context).brightness),
+                  ),
+                  text: Text(
+                    '删除',
+                    style: TextStyle(
+                      color: AppColors.error(
+                        FluentTheme.of(context).brightness,
+                      ),
+                    ),
+                  ),
                   onPressed: () {
                     Flyout.of(ctx).close();
                     widget.onDelete?.call();
@@ -689,10 +706,7 @@ class _ContextMenuWrapperState extends State<_ContextMenuWrapper> {
           },
         );
       },
-      child: FlyoutTarget(
-        controller: _flyoutController,
-        child: widget.child,
-      ),
+      child: FlyoutTarget(controller: _flyoutController, child: widget.child),
     );
   }
 }

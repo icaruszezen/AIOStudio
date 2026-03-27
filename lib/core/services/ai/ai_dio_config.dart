@@ -17,17 +17,19 @@ Dio createAiDio({
   String? apiKey,
   Map<String, String>? extraHeaders,
 }) {
-  final dio = Dio(BaseOptions(
-    baseUrl: baseUrl,
-    connectTimeout: const Duration(seconds: 30),
-    sendTimeout: const Duration(seconds: 60),
-    receiveTimeout: const Duration(seconds: 120),
-    headers: {
-      'Content-Type': 'application/json',
-      if (apiKey != null) 'Authorization': 'Bearer $apiKey',
-      ...?extraHeaders,
-    },
-  ));
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: baseUrl,
+      connectTimeout: const Duration(seconds: 30),
+      sendTimeout: const Duration(seconds: 60),
+      receiveTimeout: const Duration(seconds: 120),
+      headers: {
+        'Content-Type': 'application/json',
+        if (apiKey != null) 'Authorization': 'Bearer $apiKey',
+        ...?extraHeaders,
+      },
+    ),
+  );
 
   dio.interceptors.addAll([
     AiLogInterceptor(),
@@ -46,21 +48,28 @@ class AiLogInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final masked = _maskHeaders(options.headers);
-    _log.d('[AI] → ${options.method} ${options.uri}\n'
-        '  headers: $masked');
+    _log.d(
+      '[AI] → ${options.method} ${options.uri}\n'
+      '  headers: $masked',
+    );
     handler.next(options);
   }
 
   @override
-  void onResponse(Response<dynamic> response, ResponseInterceptorHandler handler) {
+  void onResponse(
+    Response<dynamic> response,
+    ResponseInterceptorHandler handler,
+  ) {
     _log.d('[AI] ← ${response.statusCode} ${response.requestOptions.uri}');
     handler.next(response);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    _log.e('[AI] ✗ ${err.requestOptions.uri} – '
-        '${err.response?.statusCode ?? err.type}: ${err.message}');
+    _log.e(
+      '[AI] ✗ ${err.requestOptions.uri} – '
+      '${err.response?.statusCode ?? err.type}: ${err.message}',
+    );
     handler.next(err);
   }
 
@@ -75,7 +84,10 @@ class AiLogInterceptor extends Interceptor {
   }
 
   static String _maskValue(String value) {
-    final raw = value.replaceFirst(RegExp(r'^Bearer\s+', caseSensitive: false), '');
+    final raw = value.replaceFirst(
+      RegExp(r'^Bearer\s+', caseSensitive: false),
+      '',
+    );
     if (raw.length <= 4) return '****';
     return '${raw.substring(0, 4)}****';
   }
@@ -100,17 +112,21 @@ class AiRetryInterceptor extends QueuedInterceptor {
 
     for (var attempt = 0; attempt < _maxRetries; attempt++) {
       final delay = Duration(milliseconds: pow(2, attempt).toInt() * 1000);
-      _log.w('[AI] Retry ${attempt + 1}/$_maxRetries after ${delay.inSeconds}s '
-          '(status ${lastError.response?.statusCode})');
+      _log.w(
+        '[AI] Retry ${attempt + 1}/$_maxRetries after ${delay.inSeconds}s '
+        '(status ${lastError.response?.statusCode})',
+      );
       await Future<void>.delayed(delay);
 
       Dio? retryDio;
       try {
-        retryDio = Dio(BaseOptions(
-          headers: options.headers,
-          connectTimeout: options.connectTimeout,
-          receiveTimeout: options.receiveTimeout,
-        ));
+        retryDio = Dio(
+          BaseOptions(
+            headers: options.headers,
+            connectTimeout: options.connectTimeout,
+            receiveTimeout: options.receiveTimeout,
+          ),
+        );
         retryDio.interceptors.add(AiLogInterceptor());
         final response = await retryDio.fetch(options);
         _log.i('[AI] Retry succeeded for ${options.uri}');
@@ -170,14 +186,30 @@ class AiErrorInterceptor extends Interceptor {
     }
 
     if (status == 401 || status == 403) {
-      mapped = AuthenticationError(message: detail, statusCode: status, originalError: err);
+      mapped = AuthenticationError(
+        message: detail,
+        statusCode: status,
+        originalError: err,
+      );
     } else if (status == 429) {
       final retryAfter = _parseRetryAfter(err.response?.headers);
-      mapped = RateLimitError(message: detail, retryAfter: retryAfter, originalError: err);
+      mapped = RateLimitError(
+        message: detail,
+        retryAfter: retryAfter,
+        originalError: err,
+      );
     } else if (status == 400 || status == 422) {
-      mapped = InvalidRequestError(message: detail, statusCode: status, originalError: err);
+      mapped = InvalidRequestError(
+        message: detail,
+        statusCode: status,
+        originalError: err,
+      );
     } else if (status >= 500) {
-      mapped = ServerError(message: detail, statusCode: status, originalError: err);
+      mapped = ServerError(
+        message: detail,
+        statusCode: status,
+        originalError: err,
+      );
     } else {
       mapped = AiServiceException(
         message: detail,

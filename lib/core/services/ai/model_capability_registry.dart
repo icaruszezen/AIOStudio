@@ -25,9 +25,7 @@ class ModelCapabilityRegistry {
 
   static List<String> _resolveUrls(String githubMirror) {
     if (githubMirror.isEmpty) return _remoteBaseUrls;
-    return _remoteBaseUrls
-        .map((url) => '$githubMirror$url')
-        .toList();
+    return _remoteBaseUrls.map((url) => '$githubMirror$url').toList();
   }
 
   bool get isLoaded => _loaded;
@@ -38,8 +36,9 @@ class ModelCapabilityRegistry {
     try {
       final raw = await rootBundle.loadString(_assetPath);
       final parsed = jsonDecode(raw) as Map<String, dynamic>;
-      _data = parsed.map((k, v) =>
-          MapEntry(k.toLowerCase(), v as Map<String, dynamic>));
+      _data = parsed.map(
+        (k, v) => MapEntry(k.toLowerCase(), v as Map<String, dynamic>),
+      );
       _loaded = true;
       _log.i('[ModelRegistry] Loaded ${_data.length} model entries');
     } catch (e) {
@@ -110,10 +109,12 @@ class ModelCapabilityRegistry {
   /// Only extracts the fields we care about to keep memory small.
   Future<bool> updateFromRemote({String githubMirror = ''}) async {
     lastError = null;
-    final dio = Dio(BaseOptions(
-      connectTimeout: const Duration(seconds: 20),
-      receiveTimeout: const Duration(seconds: 60),
-    ));
+    final dio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 20),
+        receiveTimeout: const Duration(seconds: 60),
+      ),
+    );
 
     String? rawJson;
     for (final url in _resolveUrls(githubMirror)) {
@@ -160,8 +161,7 @@ class ModelCapabilityRegistry {
             'supports_response_schema': true,
           if (v['supports_web_search'] == true) 'supports_web_search': true,
           if (v['supports_audio_input'] == true) 'supports_audio_input': true,
-          if (v['supports_audio_output'] == true)
-            'supports_audio_output': true,
+          if (v['supports_audio_output'] == true) 'supports_audio_output': true,
           if (v['supports_parallel_function_calling'] == true)
             'supports_parallel_function_calling': true,
           if (v['supports_prompt_caching'] == true)

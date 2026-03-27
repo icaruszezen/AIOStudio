@@ -71,7 +71,8 @@ class _TagFilterButtonState extends State<TagFilterButton> {
             const Icon(FluentIcons.tag, size: 14),
             const SizedBox(width: 6),
             Text(
-                '标签${widget.selectedTagIds.isNotEmpty ? ' (${widget.selectedTagIds.length})' : ''}'),
+              '标签${widget.selectedTagIds.isNotEmpty ? ' (${widget.selectedTagIds.length})' : ''}',
+            ),
           ],
         ),
       ),
@@ -104,8 +105,9 @@ class BatchTagSelector extends ConsumerWidget {
           spacing: 8,
           runSpacing: 8,
           children: tags.map((tag) {
-            final chipColor =
-                tag.color != null ? Color(tag.color!) : theme.accentColor;
+            final chipColor = tag.color != null
+                ? Color(tag.color!)
+                : theme.accentColor;
             return Button(
               onPressed: () async {
                 await ref
@@ -116,7 +118,8 @@ class BatchTagSelector extends ConsumerWidget {
                     context,
                     builder: (context, close) => InfoBar(
                       title: Text(
-                          '已为 ${assetIds.length} 个资产添加标签 "${tag.name}"'),
+                        '已为 ${assetIds.length} 个资产添加标签 "${tag.name}"',
+                      ),
                       severity: InfoBarSeverity.success,
                       action: IconButton(
                         icon: const Icon(FluentIcons.clear),

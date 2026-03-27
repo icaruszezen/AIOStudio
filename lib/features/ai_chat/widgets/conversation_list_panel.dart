@@ -16,8 +16,7 @@ class ConversationListPanel extends ConsumerStatefulWidget {
       _ConversationListPanelState();
 }
 
-class _ConversationListPanelState
-    extends ConsumerState<ConversationListPanel> {
+class _ConversationListPanelState extends ConsumerState<ConversationListPanel> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -40,9 +39,11 @@ class _ConversationListPanelState
     final filtered = _searchQuery.isEmpty
         ? allConversations
         : allConversations
-            .where((c) =>
-                c.title.toLowerCase().contains(_searchQuery.toLowerCase()))
-            .toList();
+              .where(
+                (c) =>
+                    c.title.toLowerCase().contains(_searchQuery.toLowerCase()),
+              )
+              .toList();
 
     return Column(
       children: [
@@ -157,8 +158,7 @@ class _ConversationListPanelState
         ),
         actions: [
           FilledButton(
-            onPressed: () =>
-                Navigator.of(ctx).pop(controller.text.trim()),
+            onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
             child: const Text('确定'),
           ),
           Button(
@@ -186,7 +186,8 @@ class _ConversationListPanelState
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ButtonStyle(
               backgroundColor: WidgetStatePropertyAll(
-                  AppColors.error(FluentTheme.of(context).brightness)),
+                AppColors.error(FluentTheme.of(context).brightness),
+              ),
             ),
             child: const Text('删除'),
           ),
@@ -247,18 +248,24 @@ class _ConversationTileState extends State<_ConversationTile> {
         return MenuFlyout(
           items: [
             MenuFlyoutItem(
-              leading: const Icon(FluentIcons.rename, size: DesignTokens.iconSM),
+              leading: const Icon(
+                FluentIcons.rename,
+                size: DesignTokens.iconSM,
+              ),
               text: const Text('重命名'),
               onPressed: widget.onRename,
             ),
             const MenuFlyoutSeparator(),
             MenuFlyoutItem(
-              leading: Icon(FluentIcons.delete,
-                  size: DesignTokens.iconSM,
-                  color: AppColors.error(theme.brightness)),
-              text: Text('删除',
-                  style:
-                      TextStyle(color: AppColors.error(theme.brightness))),
+              leading: Icon(
+                FluentIcons.delete,
+                size: DesignTokens.iconSM,
+                color: AppColors.error(theme.brightness),
+              ),
+              text: Text(
+                '删除',
+                style: TextStyle(color: AppColors.error(theme.brightness)),
+              ),
               onPressed: widget.onDelete,
             ),
           ],
@@ -283,7 +290,10 @@ class _ConversationTileState extends State<_ConversationTile> {
         onSecondaryTapUp: (details) =>
             _showContextMenu(context, position: details.globalPosition),
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: DesignTokens.spacingSM, vertical: 2),
+          margin: const EdgeInsets.symmetric(
+            horizontal: DesignTokens.spacingSM,
+            vertical: 2,
+          ),
           padding: const EdgeInsets.symmetric(
             horizontal: DesignTokens.spacingMD,
             vertical: 10,
@@ -291,8 +301,8 @@ class _ConversationTileState extends State<_ConversationTile> {
           decoration: BoxDecoration(
             color: widget.isSelected
                 ? theme.accentColor
-                    .defaultBrushFor(theme.brightness)
-                    .withValues(alpha: 0.15)
+                      .defaultBrushFor(theme.brightness)
+                      .withValues(alpha: 0.15)
                 : Colors.transparent,
             borderRadius: DesignTokens.borderRadiusMD,
           ),

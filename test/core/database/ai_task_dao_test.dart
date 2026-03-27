@@ -42,12 +42,14 @@ void main() {
 
   Future<void> seedProject(String id) async {
     final ts = now();
-    await db.projectDao.insertProject(ProjectsCompanion(
-      id: Value(id),
-      name: Value('Project $id'),
-      createdAt: Value(ts),
-      updatedAt: Value(ts),
-    ));
+    await db.projectDao.insertProject(
+      ProjectsCompanion(
+        id: Value(id),
+        name: Value('Project $id'),
+        createdAt: Value(ts),
+        updatedAt: Value(ts),
+      ),
+    );
   }
 
   group('AiTaskDao', () {
@@ -73,13 +75,15 @@ void main() {
       await dao.insertTask(makeTask('t1', status: 'pending'));
       final original = await dao.getTaskById('t1');
 
-      final ok = await dao.updateTask(AiTasksCompanion(
-        id: const Value('t1'),
-        type: Value(original!.type),
-        status: const Value('completed'),
-        provider: Value(original.provider),
-        createdAt: Value(original.createdAt),
-      ));
+      final ok = await dao.updateTask(
+        AiTasksCompanion(
+          id: const Value('t1'),
+          type: Value(original!.type),
+          status: const Value('completed'),
+          provider: Value(original.provider),
+          createdAt: Value(original.createdAt),
+        ),
+      );
       expect(ok, isTrue);
 
       final fetched = await dao.getTaskById('t1');
@@ -136,15 +140,9 @@ void main() {
 
     test('sumTokenUsageByProject aggregates tokens', () async {
       await seedProject('proj1');
-      await dao.insertTask(
-        makeTask('t1', projectId: 'proj1', tokenUsage: 100),
-      );
-      await dao.insertTask(
-        makeTask('t2', projectId: 'proj1', tokenUsage: 250),
-      );
-      await dao.insertTask(
-        makeTask('t3', projectId: 'proj1', tokenUsage: 50),
-      );
+      await dao.insertTask(makeTask('t1', projectId: 'proj1', tokenUsage: 100));
+      await dao.insertTask(makeTask('t2', projectId: 'proj1', tokenUsage: 250));
+      await dao.insertTask(makeTask('t3', projectId: 'proj1', tokenUsage: 50));
 
       final total = await dao.sumTokenUsageByProject('proj1');
       expect(total, 400);

@@ -120,7 +120,10 @@ class _ProjectListTileState extends State<ProjectListTile> {
                 Tooltip(
                   message: '编辑',
                   child: IconButton(
-                    icon: const Icon(FluentIcons.edit, size: DesignTokens.iconSM),
+                    icon: const Icon(
+                      FluentIcons.edit,
+                      size: DesignTokens.iconSM,
+                    ),
                     onPressed: widget.onEdit,
                   ),
                 ),
@@ -139,7 +142,10 @@ class _ProjectListTileState extends State<ProjectListTile> {
                 Tooltip(
                   message: '删除',
                   child: IconButton(
-                    icon: const Icon(FluentIcons.delete, size: DesignTokens.iconSM),
+                    icon: const Icon(
+                      FluentIcons.delete,
+                      size: DesignTokens.iconSM,
+                    ),
                     onPressed: widget.onDelete,
                   ),
                 ),

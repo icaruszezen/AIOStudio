@@ -13,7 +13,7 @@ class ModelDiscoveryService {
   final ModelCapabilityRegistry _registry;
 
   ModelDiscoveryService({required ModelCapabilityRegistry registry})
-      : _registry = registry;
+    : _registry = registry;
 
   /// Calls `GET {baseUrl}/v1/models` and returns enriched [AiModelInfo] items.
   ///
@@ -23,16 +23,18 @@ class ModelDiscoveryService {
     required String baseUrl,
     String? apiKey,
   }) async {
-    final dio = Dio(BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 30),
-      headers: {
-        'Content-Type': 'application/json',
-        if (apiKey != null && apiKey.isNotEmpty)
-          'Authorization': 'Bearer $apiKey',
-      },
-    ));
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 30),
+        headers: {
+          'Content-Type': 'application/json',
+          if (apiKey != null && apiKey.isNotEmpty)
+            'Authorization': 'Bearer $apiKey',
+        },
+      ),
+    );
 
     try {
       final resp = await dio.get<Map<String, dynamic>>('/v1/models');
@@ -56,7 +58,9 @@ class ModelDiscoveryService {
 
       modelIds.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
 
-      _log.i('[ModelDiscovery] Fetched ${modelIds.length} models from $baseUrl');
+      _log.i(
+        '[ModelDiscovery] Fetched ${modelIds.length} models from $baseUrl',
+      );
 
       if (!_registry.isLoaded) await _registry.load();
       return _registry.enrichModels(modelIds);

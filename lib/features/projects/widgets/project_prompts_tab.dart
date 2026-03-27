@@ -25,8 +25,7 @@ class _ProjectPromptsTabState extends ConsumerState<ProjectPromptsTab> {
   @override
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
-    final promptsAsync =
-        ref.watch(promptsByProjectProvider(widget.projectId));
+    final promptsAsync = ref.watch(promptsByProjectProvider(widget.projectId));
 
     return Column(
       children: [
@@ -108,11 +107,9 @@ class _ProjectPromptsTabState extends ConsumerState<ProjectPromptsTab> {
   }
 
   Future<void> _createPrompt() async {
-    final id = await ref.read(promptActionsProvider).createPrompt(
-          title: '新提示词',
-          content: '',
-          projectId: widget.projectId,
-        );
+    final id = await ref
+        .read(promptActionsProvider)
+        .createPrompt(title: '新提示词', content: '', projectId: widget.projectId);
     if (mounted) _navigateToPrompt(id);
   }
 
@@ -123,16 +120,19 @@ class _ProjectPromptsTabState extends ConsumerState<ProjectPromptsTab> {
 
   void _copyContent(String content) {
     Clipboard.setData(ClipboardData(text: content));
-    displayInfoBar(context, builder: (_, close) {
-      return InfoBar(
-        title: const Text('已复制到剪贴板'),
-        severity: InfoBarSeverity.success,
-        action: IconButton(
-          icon: const Icon(FluentIcons.clear),
-          onPressed: close,
-        ),
-      );
-    });
+    displayInfoBar(
+      context,
+      builder: (_, close) {
+        return InfoBar(
+          title: const Text('已复制到剪贴板'),
+          severity: InfoBarSeverity.success,
+          action: IconButton(
+            icon: const Icon(FluentIcons.clear),
+            onPressed: close,
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _confirmDelete(Prompt prompt) async {
@@ -149,7 +149,9 @@ class _ProjectPromptsTabState extends ConsumerState<ProjectPromptsTab> {
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(AppColors.error(FluentTheme.of(context).brightness)),
+              backgroundColor: WidgetStateProperty.all(
+                AppColors.error(FluentTheme.of(context).brightness),
+              ),
             ),
             child: const Text('删除'),
           ),

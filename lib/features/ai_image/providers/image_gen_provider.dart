@@ -9,9 +9,9 @@ import '../../../core/database/app_database.dart';
 import '../../../core/providers/ai_providers.dart';
 import '../../../core/providers/database_provider.dart';
 import '../../../core/services/ai/ai_models.dart';
-import '../../../shared/utils/error_utils.dart';
 import '../../../core/services/ai/ai_service.dart';
 import '../../../core/services/ai/ai_service_manager.dart';
+import '../../../shared/utils/error_utils.dart';
 
 // ---------------------------------------------------------------------------
 // Size presets
@@ -109,10 +109,10 @@ class ImageGenState {
     bool clearTaskId = false,
   }) {
     return ImageGenState(
-      selectedProviderId:
-          clearProvider ? null : (selectedProviderId ?? this.selectedProviderId),
-      selectedModel:
-          clearModel ? null : (selectedModel ?? this.selectedModel),
+      selectedProviderId: clearProvider
+          ? null
+          : (selectedProviderId ?? this.selectedProviderId),
+      selectedModel: clearModel ? null : (selectedModel ?? this.selectedModel),
       prompt: prompt ?? this.prompt,
       negativePrompt: negativePrompt ?? this.negativePrompt,
       width: width ?? this.width,
@@ -125,10 +125,8 @@ class ImageGenState {
       seed: clearSeed ? null : (seed ?? this.seed),
       selectedSizePreset: selectedSizePreset ?? this.selectedSizePreset,
       isGenerating: isGenerating ?? this.isGenerating,
-      currentResult:
-          clearResult ? null : (currentResult ?? this.currentResult),
-      currentTaskId:
-          clearTaskId ? null : (currentTaskId ?? this.currentTaskId),
+      currentResult: clearResult ? null : (currentResult ?? this.currentResult),
+      currentTaskId: clearTaskId ? null : (currentTaskId ?? this.currentTaskId),
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       showHistory: showHistory ?? this.showHistory,
     );
@@ -139,8 +137,9 @@ class ImageGenState {
 // Notifier
 // ---------------------------------------------------------------------------
 
-final imageGenProvider =
-    NotifierProvider<ImageGenNotifier, ImageGenState>(ImageGenNotifier.new);
+final imageGenProvider = NotifierProvider<ImageGenNotifier, ImageGenState>(
+  ImageGenNotifier.new,
+);
 
 class ImageGenNotifier extends Notifier<ImageGenState> {
   static final _log = Logger(printer: PrettyPrinter(methodCount: 0));
@@ -235,16 +234,21 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
   // -- Generation params ----------------------------------------------------
 
   void setCount(int n) => state = state.copyWith(count: n.clamp(1, 4));
-  void setStyle(String? s) =>
-      s == null ? state = state.copyWith(clearStyle: true) : state = state.copyWith(style: s);
-  void setQuality(String? q) =>
-      q == null ? state = state.copyWith(clearQuality: true) : state = state.copyWith(quality: q);
-  void setCfgScale(double? v) =>
-      v == null ? state = state.copyWith(clearCfgScale: true) : state = state.copyWith(cfgScale: v);
-  void setSteps(int? v) =>
-      v == null ? state = state.copyWith(clearSteps: true) : state = state.copyWith(steps: v);
-  void setSeed(int? v) =>
-      v == null ? state = state.copyWith(clearSeed: true) : state = state.copyWith(seed: v);
+  void setStyle(String? s) => s == null
+      ? state = state.copyWith(clearStyle: true)
+      : state = state.copyWith(style: s);
+  void setQuality(String? q) => q == null
+      ? state = state.copyWith(clearQuality: true)
+      : state = state.copyWith(quality: q);
+  void setCfgScale(double? v) => v == null
+      ? state = state.copyWith(clearCfgScale: true)
+      : state = state.copyWith(cfgScale: v);
+  void setSteps(int? v) => v == null
+      ? state = state.copyWith(clearSteps: true)
+      : state = state.copyWith(steps: v);
+  void setSeed(int? v) => v == null
+      ? state = state.copyWith(clearSeed: true)
+      : state = state.copyWith(seed: v);
 
   void toggleHistory() =>
       state = state.copyWith(showHistory: !state.showHistory);
@@ -295,27 +299,33 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
         'negative_prompt': state.negativePrompt,
     });
 
-    await dao.insertTask(AiTasksCompanion.insert(
-      id: taskId,
-      type: 'image',
-      status: 'pending',
-      provider: service.providerName,
-      model: Value(state.selectedModel),
-      inputPrompt: Value(state.prompt),
-      inputParams: Value(inputParams),
-      createdAt: now.millisecondsSinceEpoch,
-    ));
+    await dao.insertTask(
+      AiTasksCompanion.insert(
+        id: taskId,
+        type: 'image',
+        status: 'pending',
+        provider: service.providerName,
+        model: Value(state.selectedModel),
+        inputPrompt: Value(state.prompt),
+        inputParams: Value(inputParams),
+        createdAt: now.millisecondsSinceEpoch,
+      ),
+    );
 
-    await dao.updateTaskFields(taskId, AiTasksCompanion(
-      status: const Value('running'),
-      startedAt: Value(now.millisecondsSinceEpoch),
-    ));
+    await dao.updateTaskFields(
+      taskId,
+      AiTasksCompanion(
+        status: const Value('running'),
+        startedAt: Value(now.millisecondsSinceEpoch),
+      ),
+    );
 
     try {
       final request = AiImageRequest(
         prompt: state.prompt,
-        negativePrompt:
-            state.negativePrompt.isEmpty ? null : state.negativePrompt,
+        negativePrompt: state.negativePrompt.isEmpty
+            ? null
+            : state.negativePrompt,
         model: state.selectedModel!,
         width: state.width,
         height: state.height,
@@ -330,19 +340,25 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
       final response = await service.generateImage(request);
 
       if (_cancelledTaskIds.remove(taskId)) {
-        await dao.updateTaskFields(taskId, AiTasksCompanion(
-          status: const Value('cancelled'),
-          completedAt: Value(DateTime.now().millisecondsSinceEpoch),
-        ));
+        await dao.updateTaskFields(
+          taskId,
+          AiTasksCompanion(
+            status: const Value('cancelled'),
+            completedAt: Value(DateTime.now().millisecondsSinceEpoch),
+          ),
+        );
         return;
       }
 
       final completedAt = DateTime.now().millisecondsSinceEpoch;
-      await dao.updateTaskFields(taskId, AiTasksCompanion(
-        status: const Value('completed'),
-        outputText: Value(jsonEncode(response.toJson())),
-        completedAt: Value(completedAt),
-      ));
+      await dao.updateTaskFields(
+        taskId,
+        AiTasksCompanion(
+          status: const Value('completed'),
+          outputText: Value(jsonEncode(response.toJson())),
+          completedAt: Value(completedAt),
+        ),
+      );
 
       state = state.copyWith(
         isGenerating: false,
@@ -353,29 +369,31 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
       _log.i('Image generation completed: ${response.images.length} images');
     } catch (e) {
       if (_cancelledTaskIds.remove(taskId)) {
-        await dao.updateTaskFields(taskId, AiTasksCompanion(
-          status: const Value('cancelled'),
-          completedAt: Value(DateTime.now().millisecondsSinceEpoch),
-        ));
+        await dao.updateTaskFields(
+          taskId,
+          AiTasksCompanion(
+            status: const Value('cancelled'),
+            completedAt: Value(DateTime.now().millisecondsSinceEpoch),
+          ),
+        );
         return;
       }
 
       final userMsg = formatUserError(e);
-      await dao.updateTaskFields(taskId, AiTasksCompanion(
-        status: const Value('failed'),
-        errorMessage: Value(e.toString()),
-        completedAt: Value(DateTime.now().millisecondsSinceEpoch),
-      ));
-
-      state = state.copyWith(
-        isGenerating: false,
-        errorMessage: userMsg,
+      await dao.updateTaskFields(
+        taskId,
+        AiTasksCompanion(
+          status: const Value('failed'),
+          errorMessage: Value(e.toString()),
+          completedAt: Value(DateTime.now().millisecondsSinceEpoch),
+        ),
       );
+
+      state = state.copyWith(isGenerating: false, errorMessage: userMsg);
 
       _log.e('Image generation failed: $e');
     }
   }
-
 
   // -- Save to asset --------------------------------------------------------
 
@@ -418,18 +436,20 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
       if (state.currentTaskId != null) {
         final dao = ref.read(aiTaskDaoProvider);
         final task = await dao.getTaskById(state.currentTaskId!);
-        final savedIds = _extractSavedAssetIds(task?.outputText)
-          ..add(asset.id);
+        final savedIds = _extractSavedAssetIds(task?.outputText)..add(asset.id);
 
         final outputJson = task?.outputText != null
             ? (jsonDecode(task!.outputText!) as Map<String, dynamic>)
             : <String, dynamic>{};
         outputJson['_savedAssetIds'] = savedIds;
 
-        await dao.updateTaskFields(state.currentTaskId!, AiTasksCompanion(
-          outputAssetId: Value(asset.id),
-          outputText: Value(jsonEncode(outputJson)),
-        ));
+        await dao.updateTaskFields(
+          state.currentTaskId!,
+          AiTasksCompanion(
+            outputAssetId: Value(asset.id),
+            outputText: Value(jsonEncode(outputJson)),
+          ),
+        );
       }
 
       _log.i('Saved image to asset: ${asset.name}');
@@ -473,12 +493,13 @@ class ImageGenNotifier extends Notifier<ImageGenState> {
     }
 
     final providers = getAvailableProviders();
-    final matchedService = providers.where(
-      (s) => s.providerName == task.provider,
-    ).firstOrNull;
+    final matchedService = providers
+        .where((s) => s.providerName == task.provider)
+        .firstOrNull;
 
     state = state.copyWith(
-      selectedProviderId: matchedService?.providerId ?? state.selectedProviderId,
+      selectedProviderId:
+          matchedService?.providerId ?? state.selectedProviderId,
       selectedModel: task.model ?? state.selectedModel,
       prompt: task.inputPrompt!,
       negativePrompt: params['negative_prompt'] as String? ?? '',
@@ -513,8 +534,8 @@ final imageGenHistoryProvider = StreamProvider.autoDispose<List<AiTask>>((ref) {
   return dao.watchByType('image', limit: _historyPageSize);
 });
 
-final imageGenTaskDetailProvider =
-    FutureProvider.autoDispose.family<AiTask?, String>((ref, id) {
-  final dao = ref.watch(aiTaskDaoProvider);
-  return dao.getTaskById(id);
-});
+final imageGenTaskDetailProvider = FutureProvider.autoDispose
+    .family<AiTask?, String>((ref, id) {
+      final dao = ref.watch(aiTaskDaoProvider);
+      return dao.getTaskById(id);
+    });

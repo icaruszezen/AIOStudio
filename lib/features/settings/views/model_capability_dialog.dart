@@ -212,10 +212,7 @@ class _ModelCapabilityDialogState extends ConsumerState<ModelCapabilityDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('取消'),
         ),
-        Button(
-          onPressed: _resetToAutoDetect,
-          child: const Text('重置为自动检测'),
-        ),
+        Button(onPressed: _resetToAutoDetect, child: const Text('重置为自动检测')),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(_buildResult()),
           child: const Text('保存'),
@@ -235,10 +232,7 @@ class _ModelCapabilityDialogState extends ConsumerState<ModelCapabilityDialog> {
         Row(
           children: [
             Expanded(
-              child: Text(
-                '从已知模型应用能力',
-                style: theme.typography.bodyStrong,
-              ),
+              child: Text('从已知模型应用能力', style: theme.typography.bodyStrong),
             ),
             if (_isUpdatingRegistry)
               const Padding(
@@ -270,11 +264,13 @@ class _ModelCapabilityDialogState extends ConsumerState<ModelCapabilityDialog> {
           controller: _searchCtrl,
           placeholder: '搜索模型库...',
           items: _searchResults
-              .map((m) => AutoSuggestBoxItem<AiModelInfo>(
-                    value: m,
-                    label: m.id,
-                    child: _SearchResultTile(model: m, theme: theme),
-                  ))
+              .map(
+                (m) => AutoSuggestBoxItem<AiModelInfo>(
+                  value: m,
+                  label: m.id,
+                  child: _SearchResultTile(model: m, theme: theme),
+                ),
+              )
               .toList(),
           onChanged: (text, reason) {
             if (reason == TextChangedReason.userInput && text.isNotEmpty) {
@@ -284,15 +280,13 @@ class _ModelCapabilityDialogState extends ConsumerState<ModelCapabilityDialog> {
                   if (!mounted) return;
                   setState(() {
                     _lastSearchQuery = text;
-                    _searchResults =
-                        registry.searchModels(text, limit: 12);
+                    _searchResults = registry.searchModels(text, limit: 12);
                   });
                 });
               } else {
                 setState(() {
                   _lastSearchQuery = text;
-                  _searchResults =
-                      registry.searchModels(text, limit: 12);
+                  _searchResults = registry.searchModels(text, limit: 12);
                 });
               }
             } else if (text.isEmpty) {
@@ -323,11 +317,13 @@ class _ModelCapabilityDialogState extends ConsumerState<ModelCapabilityDialog> {
           spacing: 6,
           runSpacing: 6,
           children: ModelCapabilityPresets.all
-              .map((p) => _PresetChip(
-                    preset: p,
-                    theme: theme,
-                    onTap: () => _applyPreset(p),
-                  ))
+              .map(
+                (p) => _PresetChip(
+                  preset: p,
+                  theme: theme,
+                  onTap: () => _applyPreset(p),
+                ),
+              )
               .toList(),
         ),
       ],
@@ -412,12 +408,7 @@ class _ModelCapabilityDialogState extends ConsumerState<ModelCapabilityDialog> {
 
   Widget _buildModalitySection(FluentThemeData theme) {
     const allModalities = ['text', 'image', 'audio', 'video'];
-    const labels = {
-      'text': '文本',
-      'image': '图像',
-      'audio': '音频',
-      'video': '视频',
-    };
+    const labels = {'text': '文本', 'image': '图像', 'audio': '音频', 'video': '视频'};
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -624,9 +615,7 @@ class _SearchResultTile extends StatelessWidget {
     final ctxLabel = model.contextWindowLabel;
     return Row(
       children: [
-        Expanded(
-          child: Text(model.id, overflow: TextOverflow.ellipsis),
-        ),
+        Expanded(child: Text(model.id, overflow: TextOverflow.ellipsis)),
         if (ctxLabel.isNotEmpty) ...[
           const SizedBox(width: 6),
           _MiniTag(label: ctxLabel, color: AppColors.info(b)),
@@ -660,10 +649,9 @@ class _MiniTag extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: FluentTheme.of(context)
-            .typography
-            .caption
-            ?.copyWith(color: color, fontSize: 10),
+        style: FluentTheme.of(
+          context,
+        ).typography.caption?.copyWith(color: color, fontSize: 10),
       ),
     );
   }

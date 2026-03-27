@@ -19,21 +19,20 @@ class AssetDao extends DatabaseAccessor<AppDatabase> with _$AssetDaoMixin {
   Future<Asset?> getAssetById(String id) =>
       (select(assets)..where((t) => t.id.equals(id))).getSingleOrNull();
 
-  Future<int> insertAsset(AssetsCompanion entry) =>
-      into(assets).insert(entry);
+  Future<int> insertAsset(AssetsCompanion entry) => into(assets).insert(entry);
 
   Future<bool> updateAsset(AssetsCompanion entry) =>
       update(assets).replace(entry);
 
   Future<void> deleteAsset(String id) => transaction(() async {
-        await customStatement(
-          'UPDATE ai_tasks SET output_asset_id = NULL '
-          'WHERE output_asset_id = ?',
-          [id],
-        );
-        await (delete(assetTags)..where((t) => t.assetId.equals(id))).go();
-        await (delete(assets)..where((t) => t.id.equals(id))).go();
-      });
+    await customStatement(
+      'UPDATE ai_tasks SET output_asset_id = NULL '
+      'WHERE output_asset_id = ?',
+      [id],
+    );
+    await (delete(assetTags)..where((t) => t.assetId.equals(id))).go();
+    await (delete(assets)..where((t) => t.id.equals(id))).go();
+  });
 
   Future<List<Asset>> getByProject(String projectId) =>
       (select(assets)..where((t) => t.projectId.equals(projectId))).get();
@@ -46,11 +45,12 @@ class AssetDao extends DatabaseAccessor<AppDatabase> with _$AssetDaoMixin {
 
   /// Returns assets that have **any** of the given [tagIds] (OR semantics).
   Future<List<Asset>> filterByTags(List<String> tagIds) async {
-    final query = select(assets).join([
-      innerJoin(assetTags, assetTags.assetId.equalsExp(assets.id)),
-    ])
-      ..where(assetTags.tagId.isIn(tagIds))
-      ..groupBy([assets.id]);
+    final query =
+        select(
+            assets,
+          ).join([innerJoin(assetTags, assetTags.assetId.equalsExp(assets.id))])
+          ..where(assetTags.tagId.isIn(tagIds))
+          ..groupBy([assets.id]);
     final rows = await query.get();
     return rows.map((r) => r.readTable(assets)).toList();
   }
@@ -83,8 +83,7 @@ class AssetDao extends DatabaseAccessor<AppDatabase> with _$AssetDaoMixin {
       ..groupBy([assets.projectId]);
     final rows = await query.get();
     return {
-      for (final row in rows)
-        row.read(assets.projectId)!: row.read(count) ?? 0,
+      for (final row in rows) row.read(assets.projectId)!: row.read(count) ?? 0,
     };
   }
 
@@ -158,13 +157,12 @@ class AssetDao extends DatabaseAccessor<AppDatabase> with _$AssetDaoMixin {
   Future<void> batchToggleFavorite(
     List<String> ids, {
     required bool favorite,
-  }) =>
-      (update(assets)..where((t) => t.id.isIn(ids))).write(
-        AssetsCompanion(
-          isFavorite: Value(favorite),
-          updatedAt: Value(epochNowMs()),
-        ),
-      );
+  }) => (update(assets)..where((t) => t.id.isIn(ids))).write(
+    AssetsCompanion(
+      isFavorite: Value(favorite),
+      updatedAt: Value(epochNowMs()),
+    ),
+  );
 
   Future<int> countAllAssets() async {
     final count = countAll();
@@ -222,9 +220,9 @@ class AssetDao extends DatabaseAccessor<AppDatabase> with _$AssetDaoMixin {
     String sortColumn = 'createdAt',
     bool sortAscending = false,
   }) {
-    final query = select(assets).join([
-      innerJoin(assetTags, assetTags.assetId.equalsExp(assets.id)),
-    ]);
+    final query = select(
+      assets,
+    ).join([innerJoin(assetTags, assetTags.assetId.equalsExp(assets.id))]);
 
     Expression<bool> where = assetTags.tagId.isIn(tagIds.toList());
     if (typeFilter != null) where = where & assets.type.equals(typeFilter);
@@ -241,8 +239,8 @@ class AssetDao extends DatabaseAccessor<AppDatabase> with _$AssetDaoMixin {
       ..orderBy([_orderTerm(assets, sortColumn, sortAscending)]);
 
     return query.watch().map(
-          (rows) => rows.map((r) => r.readTable(assets)).toList(),
-        );
+      (rows) => rows.map((r) => r.readTable(assets)).toList(),
+    );
   }
 
   static OrderingTerm _orderTerm(

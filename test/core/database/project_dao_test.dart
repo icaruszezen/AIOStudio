@@ -43,7 +43,10 @@ void main() {
 
       final all = await dao.getAllProjects();
       expect(all, hasLength(2));
-      expect(all.map((p) => p.name), containsAll(['Project One', 'Project Two']));
+      expect(
+        all.map((p) => p.name),
+        containsAll(['Project One', 'Project Two']),
+      );
     });
 
     test('getProjectById returns correct project', () async {
@@ -62,14 +65,16 @@ void main() {
       await dao.insertProject(makeProject('p1', 'Before'));
 
       final original = await dao.getProjectById('p1');
-      final updated = await dao.updateProject(ProjectsCompanion(
-        id: const Value('p1'),
-        name: const Value('After'),
-        description: const Value('desc'),
-        createdAt: Value(original!.createdAt),
-        updatedAt: Value(ts),
-        isArchived: const Value(false),
-      ));
+      final updated = await dao.updateProject(
+        ProjectsCompanion(
+          id: const Value('p1'),
+          name: const Value('After'),
+          description: const Value('desc'),
+          createdAt: Value(original!.createdAt),
+          updatedAt: Value(ts),
+          isArchived: const Value(false),
+        ),
+      );
       expect(updated, isTrue);
 
       final fetched = await dao.getProjectById('p1');
@@ -96,7 +101,10 @@ void main() {
 
       final results = await dao.searchByName('App');
       expect(results, hasLength(2));
-      expect(results.map((p) => p.name), containsAll(['Flutter App', 'React App']));
+      expect(
+        results.map((p) => p.name),
+        containsAll(['Flutter App', 'React App']),
+      );
 
       final noMatch = await dao.searchByName('Python');
       expect(noMatch, isEmpty);

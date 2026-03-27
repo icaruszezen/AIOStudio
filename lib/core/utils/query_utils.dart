@@ -12,10 +12,7 @@ String escapeLikePattern(String input) {
 }
 
 /// Generates `column LIKE '%<escaped>%' ESCAPE '\'` as a Drift expression.
-Expression<bool> likeEscaped(
-  Expression<String> column,
-  String userInput,
-) {
+Expression<bool> likeEscaped(Expression<String> column, String userInput) {
   final escaped = escapeLikePattern(userInput);
   return _LikeWithEscape(column, Variable.withString('%$escaped%'));
 }

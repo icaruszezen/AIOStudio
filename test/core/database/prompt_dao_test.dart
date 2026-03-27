@@ -44,12 +44,14 @@ void main() {
 
   Future<void> seedProject(String id) async {
     final ts = now();
-    await db.projectDao.insertProject(ProjectsCompanion(
-      id: Value(id),
-      name: Value('Project $id'),
-      createdAt: Value(ts),
-      updatedAt: Value(ts),
-    ));
+    await db.projectDao.insertProject(
+      ProjectsCompanion(
+        id: Value(id),
+        name: Value('Project $id'),
+        createdAt: Value(ts),
+        updatedAt: Value(ts),
+      ),
+    );
   }
 
   group('PromptDao', () {
@@ -75,13 +77,15 @@ void main() {
       await dao.insertPrompt(makePrompt('pr1', 'Old'));
       final original = await dao.getPromptById('pr1');
 
-      final ok = await dao.updatePrompt(PromptsCompanion(
-        id: const Value('pr1'),
-        title: const Value('Updated'),
-        content: Value(original!.content),
-        createdAt: Value(original.createdAt),
-        updatedAt: Value(now()),
-      ));
+      final ok = await dao.updatePrompt(
+        PromptsCompanion(
+          id: const Value('pr1'),
+          title: const Value('Updated'),
+          content: Value(original!.content),
+          createdAt: Value(original.createdAt),
+          updatedAt: Value(now()),
+        ),
+      );
       expect(ok, isTrue);
 
       final fetched = await dao.getPromptById('pr1');
@@ -132,7 +136,11 @@ void main() {
         makePrompt('pr2', 'Code review', content: 'Review this code'),
       );
       await dao.insertPrompt(
-        makePrompt('pr3', 'Summary', content: 'Summarize the image description'),
+        makePrompt(
+          'pr3',
+          'Summary',
+          content: 'Summarize the image description',
+        ),
       );
 
       final byTitle = await dao.searchPrompts('generator');

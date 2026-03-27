@@ -13,10 +13,10 @@ final allTagsProvider = StreamProvider<List<Tag>>((ref) {
   return ref.watch(tagDaoProvider).watchAllTags();
 });
 
-final tagsForAssetProvider =
-    StreamProvider.autoDispose.family<List<Tag>, String>((ref, assetId) {
-  return ref.watch(tagDaoProvider).watchTagsForAsset(assetId);
-});
+final tagsForAssetProvider = StreamProvider.autoDispose
+    .family<List<Tag>, String>((ref, assetId) {
+      return ref.watch(tagDaoProvider).watchTagsForAsset(assetId);
+    });
 
 final allAssetTagsProvider = StreamProvider<List<AssetTag>>((ref) {
   return ref.watch(tagDaoProvider).watchAllAssetTags();
@@ -39,7 +39,9 @@ class TagActions {
   Future<String> create({required String name, int? color}) async {
     final id = _uuid.v4();
     final now = DateTime.now().millisecondsSinceEpoch;
-    await _ref.read(tagDaoProvider).insertTag(
+    await _ref
+        .read(tagDaoProvider)
+        .insertTag(
           TagsCompanion.insert(
             id: id,
             name: name,
@@ -50,11 +52,7 @@ class TagActions {
     return id;
   }
 
-  Future<void> update({
-    required String id,
-    String? name,
-    int? color,
-  }) async {
+  Future<void> update({required String id, String? name, int? color}) async {
     final dao = _ref.read(tagDaoProvider);
     final existing = await dao.getTagById(id);
     if (existing == null) return;
@@ -69,8 +67,7 @@ class TagActions {
     );
   }
 
-  Future<void> deleteTag(String id) =>
-      _ref.read(tagDaoProvider).deleteTag(id);
+  Future<void> deleteTag(String id) => _ref.read(tagDaoProvider).deleteTag(id);
 
   Future<void> addToAsset(String assetId, String tagId) =>
       _ref.read(tagDaoProvider).addTagToAsset(assetId, tagId);

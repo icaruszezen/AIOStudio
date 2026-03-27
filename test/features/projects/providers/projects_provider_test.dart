@@ -22,8 +22,7 @@ void main() {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     mockStorage = MockLocalStorageService();
 
-    when(() => mockStorage.deleteAssetFile(any()))
-        .thenAnswer((_) async {});
+    when(() => mockStorage.deleteAssetFile(any())).thenAnswer((_) async {});
 
     container = ProviderContainer(
       overrides: [
@@ -47,44 +46,50 @@ void main() {
     final now = DateTime.now().millisecondsSinceEpoch;
     final dao = db.assetDao;
     const id = 'asset-1';
-    await dao.insertAsset(AssetsCompanion(
-      id: const Value('asset-1'),
-      projectId: Value(projectId),
-      name: const Value('test.png'),
-      type: const Value('image'),
-      filePath: const Value('/fake/path/test.png'),
-      sourceType: const Value('browser_extension'),
-      createdAt: Value(now),
-      updatedAt: Value(now),
-    ));
+    await dao.insertAsset(
+      AssetsCompanion(
+        id: const Value('asset-1'),
+        projectId: Value(projectId),
+        name: const Value('test.png'),
+        type: const Value('image'),
+        filePath: const Value('/fake/path/test.png'),
+        sourceType: const Value('browser_extension'),
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ),
+    );
     return id;
   }
 
   Future<String> seedPrompt(String projectId) async {
     final now = DateTime.now().millisecondsSinceEpoch;
     const id = 'prompt-1';
-    await db.promptDao.insertPrompt(PromptsCompanion(
-      id: const Value('prompt-1'),
-      projectId: Value(projectId),
-      title: const Value('Test Prompt'),
-      content: const Value('Hello {{name}}'),
-      createdAt: Value(now),
-      updatedAt: Value(now),
-    ));
+    await db.promptDao.insertPrompt(
+      PromptsCompanion(
+        id: const Value('prompt-1'),
+        projectId: Value(projectId),
+        title: const Value('Test Prompt'),
+        content: const Value('Hello {{name}}'),
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ),
+    );
     return id;
   }
 
   Future<String> seedTask(String projectId) async {
     final now = DateTime.now().millisecondsSinceEpoch;
     const id = 'task-1';
-    await db.aiTaskDao.insertTask(AiTasksCompanion(
-      id: const Value('task-1'),
-      projectId: Value(projectId),
-      type: const Value('chat'),
-      status: const Value('completed'),
-      provider: const Value('openai'),
-      createdAt: Value(now),
-    ));
+    await db.aiTaskDao.insertTask(
+      AiTasksCompanion(
+        id: const Value('task-1'),
+        projectId: Value(projectId),
+        type: const Value('chat'),
+        status: const Value('completed'),
+        provider: const Value('openai'),
+        createdAt: Value(now),
+      ),
+    );
     return id;
   }
 
@@ -138,8 +143,9 @@ void main() {
       expect(await db.promptDao.filterByProject(projectId), isEmpty);
       expect(await db.aiTaskDao.filterByProject(projectId), isEmpty);
 
-      verify(() => mockStorage.deleteAssetFile('/fake/path/test.png'))
-          .called(1);
+      verify(
+        () => mockStorage.deleteAssetFile('/fake/path/test.png'),
+      ).called(1);
     });
   });
 }

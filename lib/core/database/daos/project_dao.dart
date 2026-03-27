@@ -8,8 +8,7 @@ part 'project_dao.g.dart';
 
 /// Drift DAO for reading and writing project rows in the local database.
 @DriftAccessor(tables: [Projects])
-class ProjectDao extends DatabaseAccessor<AppDatabase>
-    with _$ProjectDaoMixin {
+class ProjectDao extends DatabaseAccessor<AppDatabase> with _$ProjectDaoMixin {
   ProjectDao(super.db);
 
   /// Returns every project row with no ordering or filtering.
@@ -46,26 +45,29 @@ class ProjectDao extends DatabaseAccessor<AppDatabase>
     bool archivedOnly = false,
   }) =>
       (select(projects)
-            ..where((t) =>
-                likeEscaped(t.name, query) &
-                t.isArchived.equals(archivedOnly))
+            ..where(
+              (t) =>
+                  likeEscaped(t.name, query) &
+                  t.isArchived.equals(archivedOnly),
+            )
             ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
           .get();
 
   /// Emits non-archived projects ordered by [Project.updatedAt] descending.
-  Stream<List<Project>> watchActiveProjects() => (select(projects)
-        ..where((t) => t.isArchived.equals(false))
-        ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
-      .watch();
+  Stream<List<Project>> watchActiveProjects() =>
+      (select(projects)
+            ..where((t) => t.isArchived.equals(false))
+            ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
+          .watch();
 
   /// Emits archived projects ordered by [Project.updatedAt] descending.
-  Stream<List<Project>> watchArchivedProjects() => (select(projects)
-        ..where((t) => t.isArchived.equals(true))
-        ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
-      .watch();
+  Stream<List<Project>> watchArchivedProjects() =>
+      (select(projects)
+            ..where((t) => t.isArchived.equals(true))
+            ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
+          .watch();
 
   /// Emits the project with [id], or null, and updates when that row changes.
   Stream<Project?> watchProjectById(String id) =>
-      (select(projects)..where((t) => t.id.equals(id)))
-          .watchSingleOrNull();
+      (select(projects)..where((t) => t.id.equals(id))).watchSingleOrNull();
 }

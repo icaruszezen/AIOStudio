@@ -98,19 +98,24 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
-    final progress =
-        _duration.inMilliseconds > 0
-            ? _position.inMilliseconds / _duration.inMilliseconds
-            : 0.0;
-    final ext = p.extension(widget.filePath).toUpperCase().replaceFirst('.', '');
+    final progress = _duration.inMilliseconds > 0
+        ? _position.inMilliseconds / _duration.inMilliseconds
+        : 0.0;
+    final ext = p
+        .extension(widget.filePath)
+        .toUpperCase()
+        .replaceFirst('.', '');
 
     if (_error != null) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(FluentIcons.error_badge,
-                size: 48, color: theme.resources.textFillColorSecondary),
+            Icon(
+              FluentIcons.error_badge,
+              size: 48,
+              color: theme.resources.textFillColorSecondary,
+            ),
             const SizedBox(height: 8),
             Text('无法播放音频', style: theme.typography.body),
             const SizedBox(height: 4),
@@ -240,7 +245,6 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
       ),
     );
   }
-
 }
 
 class _WaveformVisualizer extends StatelessWidget {
@@ -282,7 +286,10 @@ class _WaveformPainter extends CustomPainter {
   final Color inactiveColor;
 
   static final _rng = math.Random(42);
-  static final _heights = List.generate(64, (_) => 0.2 + _rng.nextDouble() * 0.8);
+  static final _heights = List.generate(
+    64,
+    (_) => 0.2 + _rng.nextDouble() * 0.8,
+  );
 
   @override
   void paint(Canvas canvas, Size size) {

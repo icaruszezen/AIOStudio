@@ -38,9 +38,7 @@ void showPromptContextMenu({
           ),
           MenuFlyoutItem(
             leading: Icon(
-              prompt.isFavorite
-                  ? FluentIcons.heart_broken
-                  : FluentIcons.heart,
+              prompt.isFavorite ? FluentIcons.heart_broken : FluentIcons.heart,
             ),
             text: Text(prompt.isFavorite ? '取消收藏' : '收藏'),
             onPressed: () {
@@ -50,8 +48,16 @@ void showPromptContextMenu({
           ),
           const MenuFlyoutSeparator(),
           MenuFlyoutItem(
-            leading: Icon(FluentIcons.delete, color: AppColors.error(FluentTheme.of(ctx).brightness)),
-            text: Text('删除', style: TextStyle(color: AppColors.error(FluentTheme.of(ctx).brightness))),
+            leading: Icon(
+              FluentIcons.delete,
+              color: AppColors.error(FluentTheme.of(ctx).brightness),
+            ),
+            text: Text(
+              '删除',
+              style: TextStyle(
+                color: AppColors.error(FluentTheme.of(ctx).brightness),
+              ),
+            ),
             onPressed: () {
               Flyout.of(ctx).close();
               onDelete?.call();

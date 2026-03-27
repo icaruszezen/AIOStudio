@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
-import '../../providers/app_config_provider.dart';
 import '../../database/app_database.dart';
+import '../../providers/app_config_provider.dart';
 import '../../providers/database_provider.dart';
 import 'extension_server.dart';
 
@@ -31,7 +31,8 @@ final extensionServerInstanceProvider = Provider<ExtensionServer>((ref) {
 
 final extensionServerProvider =
     AsyncNotifierProvider<ExtensionServerNotifier, bool>(
-        ExtensionServerNotifier.new);
+      ExtensionServerNotifier.new,
+    );
 
 class ExtensionServerNotifier extends AsyncNotifier<bool> {
   @override
@@ -89,7 +90,8 @@ class ExtensionServerNotifier extends AsyncNotifier<bool> {
     _healthTimer = Timer.periodic(const Duration(seconds: 10), (_) {
       final server = ref.read(extensionServerInstanceProvider);
       final lastPing = server.lastHealthPing;
-      final connected = lastPing != null &&
+      final connected =
+          lastPing != null &&
           DateTime.now().difference(lastPing).inSeconds < 30;
       ref
           .read(extensionConnectionStatusProvider.notifier)
@@ -104,7 +106,8 @@ class ExtensionServerNotifier extends AsyncNotifier<bool> {
 
 final extensionConnectionStatusProvider =
     NotifierProvider<ExtensionConnectionStatusNotifier, bool>(
-        ExtensionConnectionStatusNotifier.new);
+      ExtensionConnectionStatusNotifier.new,
+    );
 
 class ExtensionConnectionStatusNotifier extends Notifier<bool> {
   @override
@@ -119,7 +122,8 @@ class ExtensionConnectionStatusNotifier extends Notifier<bool> {
 
 final extensionActualPortProvider =
     NotifierProvider<ExtensionActualPortNotifier, int>(
-        ExtensionActualPortNotifier.new);
+      ExtensionActualPortNotifier.new,
+    );
 
 class ExtensionActualPortNotifier extends Notifier<int> {
   @override

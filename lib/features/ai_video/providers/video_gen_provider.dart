@@ -10,8 +10,8 @@ import '../../../core/providers/ai_providers.dart';
 import '../../../core/providers/database_provider.dart';
 import '../../../core/services/ai/ai_models.dart';
 import '../../../core/services/ai/ai_service.dart';
-import '../../../shared/utils/error_utils.dart';
 import '../../../core/services/ai/ai_service_manager.dart';
+import '../../../shared/utils/error_utils.dart';
 import 'video_task_poller.dart';
 
 // ---------------------------------------------------------------------------
@@ -99,13 +99,14 @@ class VideoGenState {
   }) {
     return VideoGenState(
       mode: mode ?? this.mode,
-      selectedProviderId:
-          clearProvider ? null : (selectedProviderId ?? this.selectedProviderId),
-      selectedModel:
-          clearModel ? null : (selectedModel ?? this.selectedModel),
+      selectedProviderId: clearProvider
+          ? null
+          : (selectedProviderId ?? this.selectedProviderId),
+      selectedModel: clearModel ? null : (selectedModel ?? this.selectedModel),
       prompt: prompt ?? this.prompt,
-      inputImagePath:
-          clearInputImage ? null : (inputImagePath ?? this.inputImagePath),
+      inputImagePath: clearInputImage
+          ? null
+          : (inputImagePath ?? this.inputImagePath),
       width: width ?? this.width,
       height: height ?? this.height,
       duration: duration ?? this.duration,
@@ -114,8 +115,9 @@ class VideoGenState {
       currentViewingTaskId: clearViewingTask
           ? null
           : (currentViewingTaskId ?? this.currentViewingTaskId),
-      currentVideoPath:
-          clearVideoPath ? null : (currentVideoPath ?? this.currentVideoPath),
+      currentVideoPath: clearVideoPath
+          ? null
+          : (currentVideoPath ?? this.currentVideoPath),
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       isQueueCollapsed: isQueueCollapsed ?? this.isQueueCollapsed,
       isSubmitting: isSubmitting ?? this.isSubmitting,
@@ -127,8 +129,9 @@ class VideoGenState {
 // Notifier
 // ---------------------------------------------------------------------------
 
-final videoGenProvider =
-    NotifierProvider<VideoGenNotifier, VideoGenState>(VideoGenNotifier.new);
+final videoGenProvider = NotifierProvider<VideoGenNotifier, VideoGenState>(
+  VideoGenNotifier.new,
+);
 
 class VideoGenNotifier extends Notifier<VideoGenState> {
   static final _log = Logger(printer: PrettyPrinter(methodCount: 0));
@@ -212,8 +215,7 @@ class VideoGenNotifier extends Notifier<VideoGenState> {
     );
   }
 
-  void setDuration(int seconds) =>
-      state = state.copyWith(duration: seconds);
+  void setDuration(int seconds) => state = state.copyWith(duration: seconds);
 
   // -- Queue ----------------------------------------------------------------
 
@@ -269,21 +271,26 @@ class VideoGenNotifier extends Notifier<VideoGenState> {
       if (state.inputImagePath != null) 'input_image': state.inputImagePath,
     });
 
-    await dao.insertTask(AiTasksCompanion.insert(
-      id: taskId,
-      type: 'video',
-      status: 'pending',
-      provider: service.providerName,
-      model: Value(state.selectedModel),
-      inputPrompt: Value(state.prompt),
-      inputParams: Value(inputParams),
-      createdAt: now.millisecondsSinceEpoch,
-    ));
+    await dao.insertTask(
+      AiTasksCompanion.insert(
+        id: taskId,
+        type: 'video',
+        status: 'pending',
+        provider: service.providerName,
+        model: Value(state.selectedModel),
+        inputPrompt: Value(state.prompt),
+        inputParams: Value(inputParams),
+        createdAt: now.millisecondsSinceEpoch,
+      ),
+    );
 
-    await dao.updateTaskFields(taskId, AiTasksCompanion(
-      status: const Value('running'),
-      startedAt: Value(now.millisecondsSinceEpoch),
-    ));
+    await dao.updateTaskFields(
+      taskId,
+      AiTasksCompanion(
+        status: const Value('running'),
+        startedAt: Value(now.millisecondsSinceEpoch),
+      ),
+    );
 
     try {
       final request = AiVideoRequest(
@@ -311,28 +318,34 @@ class VideoGenNotifier extends Notifier<VideoGenState> {
         if (remoteTaskId != null) 'remote_task_id': remoteTaskId,
       });
 
-      await dao.updateTaskFields(taskId, AiTasksCompanion(
-        inputParams: Value(updatedParams),
-      ));
+      await dao.updateTaskFields(
+        taskId,
+        AiTasksCompanion(inputParams: Value(updatedParams)),
+      );
 
       if (response.status == 'completed' && response.videoUrl != null) {
         // Rare: synchronous completion
-        await dao.updateTaskFields(taskId, AiTasksCompanion(
-          status: const Value('completed'),
-          outputText: Value(jsonEncode(response.toJson())),
-          completedAt: Value(DateTime.now().millisecondsSinceEpoch),
-        ));
+        await dao.updateTaskFields(
+          taskId,
+          AiTasksCompanion(
+            status: const Value('completed'),
+            outputText: Value(jsonEncode(response.toJson())),
+            completedAt: Value(DateTime.now().millisecondsSinceEpoch),
+          ),
+        );
         state = state.copyWith(
           isSubmitting: false,
           currentVideoPath: response.videoUrl,
         );
       } else if (remoteTaskId != null) {
         // Async: start polling
-        ref.read(videoTaskPollerProvider.notifier).startPolling(
-          localTaskId: taskId,
-          remoteTaskId: remoteTaskId,
-          providerId: state.selectedProviderId!,
-        );
+        ref
+            .read(videoTaskPollerProvider.notifier)
+            .startPolling(
+              localTaskId: taskId,
+              remoteTaskId: remoteTaskId,
+              providerId: state.selectedProviderId!,
+            );
         state = state.copyWith(isSubmitting: false);
       } else {
         throw Exception('API 未返回 taskId，无法轮询任务状态');
@@ -340,11 +353,14 @@ class VideoGenNotifier extends Notifier<VideoGenState> {
 
       _log.i('Video generation submitted: $taskId');
     } catch (e) {
-      await dao.updateTaskFields(taskId, AiTasksCompanion(
-        status: const Value('failed'),
-        errorMessage: Value(e.toString()),
-        completedAt: Value(DateTime.now().millisecondsSinceEpoch),
-      ));
+      await dao.updateTaskFields(
+        taskId,
+        AiTasksCompanion(
+          status: const Value('failed'),
+          errorMessage: Value(e.toString()),
+          completedAt: Value(DateTime.now().millisecondsSinceEpoch),
+        ),
+      );
 
       state = state.copyWith(
         isSubmitting: false,
@@ -379,9 +395,10 @@ class VideoGenNotifier extends Notifier<VideoGenState> {
         assetType: 'video',
       );
 
-      await dao.updateTaskFields(taskId, AiTasksCompanion(
-        outputAssetId: Value(asset.id),
-      ));
+      await dao.updateTaskFields(
+        taskId,
+        AiTasksCompanion(outputAssetId: Value(asset.id)),
+      );
 
       _log.i('Saved video to asset: ${asset.name}');
       return asset;
@@ -447,8 +464,8 @@ final videoGenHistoryProvider = StreamProvider.autoDispose<List<AiTask>>((ref) {
   return dao.watchByType('video', limit: 50);
 });
 
-final videoGenTaskDetailProvider =
-    FutureProvider.autoDispose.family<AiTask?, String>((ref, id) {
-  final dao = ref.watch(aiTaskDaoProvider);
-  return dao.getTaskById(id);
-});
+final videoGenTaskDetailProvider = FutureProvider.autoDispose
+    .family<AiTask?, String>((ref, id) {
+      final dao = ref.watch(aiTaskDaoProvider);
+      return dao.getTaskById(id);
+    });

@@ -12,10 +12,11 @@ class SecureKeyService {
   final FlutterSecureStorage _storage;
 
   SecureKeyService({FlutterSecureStorage? storage})
-      : _storage = storage ??
-            const FlutterSecureStorage(
-              aOptions: AndroidOptions(encryptedSharedPreferences: true),
-            );
+    : _storage =
+          storage ??
+          const FlutterSecureStorage(
+            aOptions: AndroidOptions(encryptedSharedPreferences: true),
+          );
 
   String _key(String providerId) => '$_prefix$providerId';
 
@@ -73,15 +74,19 @@ class SecureKeyService {
             migrated++;
           } catch (e) {
             failed++;
-            _log.e('[SecureKeyService] Failed to migrate key for '
-                'provider ${cfg.id}: $e');
+            _log.e(
+              '[SecureKeyService] Failed to migrate key for '
+              'provider ${cfg.id}: $e',
+            );
           }
         }
       }
 
       if (migrated > 0) {
-        _log.i('[SecureKeyService] Migrated $migrated API key(s) '
-            'to secure storage');
+        _log.i(
+          '[SecureKeyService] Migrated $migrated API key(s) '
+          'to secure storage',
+        );
       }
       if (failed > 0) {
         _log.w('[SecureKeyService] $failed key(s) failed to migrate');

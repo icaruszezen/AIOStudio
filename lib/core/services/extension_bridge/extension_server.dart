@@ -77,7 +77,8 @@ class ExtensionServer {
         _log.w('Port $tryPort in use, trying next... ($e)');
         if (attempt == _maxPortRetries - 1) {
           throw SocketException(
-              'Failed to bind after $_maxPortRetries attempts starting from port $port');
+            'Failed to bind after $_maxPortRetries attempts starting from port $port',
+          );
         }
       }
     }

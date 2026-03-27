@@ -59,75 +59,91 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        beforeOpen: (details) async {
-          await customStatement('PRAGMA foreign_keys = ON');
-          await customStatement('PRAGMA journal_mode = WAL');
-          await customStatement('PRAGMA synchronous = NORMAL');
-          await customStatement('PRAGMA busy_timeout = 5000');
-        },
-        onCreate: (m) async {
-          await m.createAll();
-          await _createIndexesV1(customStatement);
-          await _createIndexesV2(customStatement);
-          await _createIndexesV3(customStatement);
-        },
-        onUpgrade: (m, from, to) async {
-          for (var target = from + 1; target <= to; target++) {
-            switch (target) {
-              case 2:
-                await _createIndexesV2(customStatement);
-              case 3:
-                await _createIndexesV3(customStatement);
-            }
-          }
-        },
-      );
+    beforeOpen: (details) async {
+      await customStatement('PRAGMA foreign_keys = ON');
+      await customStatement('PRAGMA journal_mode = WAL');
+      await customStatement('PRAGMA synchronous = NORMAL');
+      await customStatement('PRAGMA busy_timeout = 5000');
+    },
+    onCreate: (m) async {
+      await m.createAll();
+      await _createIndexesV1(customStatement);
+      await _createIndexesV2(customStatement);
+      await _createIndexesV3(customStatement);
+    },
+    onUpgrade: (m, from, to) async {
+      for (var target = from + 1; target <= to; target++) {
+        switch (target) {
+          case 2:
+            await _createIndexesV2(customStatement);
+          case 3:
+            await _createIndexesV3(customStatement);
+        }
+      }
+    },
+  );
 
   static Future<void> _createIndexesV1(
-      Future<void> Function(String, [List<dynamic>?]) exec) async {
+    Future<void> Function(String, [List<dynamic>?]) exec,
+  ) async {
     await exec(
-        'CREATE INDEX IF NOT EXISTS idx_assets_project_id ON assets(project_id)');
+      'CREATE INDEX IF NOT EXISTS idx_assets_project_id ON assets(project_id)',
+    );
+    await exec('CREATE INDEX IF NOT EXISTS idx_assets_type ON assets(type)');
     await exec(
-        'CREATE INDEX IF NOT EXISTS idx_assets_type ON assets(type)');
+      'CREATE INDEX IF NOT EXISTS idx_assets_created_at ON assets(created_at)',
+    );
     await exec(
-        'CREATE INDEX IF NOT EXISTS idx_assets_created_at ON assets(created_at)');
-    await exec(
-        'CREATE INDEX IF NOT EXISTS idx_assets_is_favorite ON assets(is_favorite)');
+      'CREATE INDEX IF NOT EXISTS idx_assets_is_favorite ON assets(is_favorite)',
+    );
   }
 
   static Future<void> _createIndexesV2(
-      Future<void> Function(String, [List<dynamic>?]) exec) async {
+    Future<void> Function(String, [List<dynamic>?]) exec,
+  ) async {
     await exec(
-        'CREATE INDEX IF NOT EXISTS idx_ai_tasks_project_id ON ai_tasks(project_id)');
+      'CREATE INDEX IF NOT EXISTS idx_ai_tasks_project_id ON ai_tasks(project_id)',
+    );
     await exec(
-        'CREATE INDEX IF NOT EXISTS idx_ai_tasks_status ON ai_tasks(status)');
+      'CREATE INDEX IF NOT EXISTS idx_ai_tasks_status ON ai_tasks(status)',
+    );
     await exec(
-        'CREATE INDEX IF NOT EXISTS idx_ai_tasks_created_at ON ai_tasks(created_at)');
+      'CREATE INDEX IF NOT EXISTS idx_ai_tasks_created_at ON ai_tasks(created_at)',
+    );
     await exec(
-        'CREATE INDEX IF NOT EXISTS idx_prompts_project_id ON prompts(project_id)');
+      'CREATE INDEX IF NOT EXISTS idx_prompts_project_id ON prompts(project_id)',
+    );
     await exec(
-        'CREATE INDEX IF NOT EXISTS idx_prompts_category ON prompts(category)');
+      'CREATE INDEX IF NOT EXISTS idx_prompts_category ON prompts(category)',
+    );
     await exec(
-        'CREATE INDEX IF NOT EXISTS idx_asset_tags_tag_id ON asset_tags(tag_id)');
+      'CREATE INDEX IF NOT EXISTS idx_asset_tags_tag_id ON asset_tags(tag_id)',
+    );
     await exec(
-        'CREATE UNIQUE INDEX IF NOT EXISTS idx_ai_provider_configs_name_type '
-        'ON ai_provider_configs(name, type)');
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_ai_provider_configs_name_type '
+      'ON ai_provider_configs(name, type)',
+    );
   }
 
   static Future<void> _createIndexesV3(
-      Future<void> Function(String, [List<dynamic>?]) exec) async {
+    Future<void> Function(String, [List<dynamic>?]) exec,
+  ) async {
     await exec(
-        'CREATE INDEX IF NOT EXISTS idx_projects_archived_updated '
-        'ON projects(is_archived, updated_at)');
+      'CREATE INDEX IF NOT EXISTS idx_projects_archived_updated '
+      'ON projects(is_archived, updated_at)',
+    );
     await exec(
-        'CREATE INDEX IF NOT EXISTS idx_prompts_favorite_updated '
-        'ON prompts(is_favorite, updated_at)');
+      'CREATE INDEX IF NOT EXISTS idx_prompts_favorite_updated '
+      'ON prompts(is_favorite, updated_at)',
+    );
     await exec(
-        'CREATE INDEX IF NOT EXISTS idx_ai_tasks_type_created '
-        'ON ai_tasks(type, created_at)');
+      'CREATE INDEX IF NOT EXISTS idx_ai_tasks_type_created '
+      'ON ai_tasks(type, created_at)',
+    );
     await exec(
-        'CREATE INDEX IF NOT EXISTS idx_ai_tasks_provider '
-        'ON ai_tasks(provider)');
+      'CREATE INDEX IF NOT EXISTS idx_ai_tasks_provider '
+      'ON ai_tasks(provider)',
+    );
   }
 }
 

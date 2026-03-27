@@ -5,8 +5,7 @@ import 'projects.dart';
 
 class AiTasks extends Table {
   TextColumn get id => text()();
-  TextColumn get projectId =>
-      text().nullable().references(Projects, #id)();
+  TextColumn get projectId => text().nullable().references(Projects, #id)();
   TextColumn get type => text()();
   TextColumn get status => text()();
   TextColumn get provider => text()();
@@ -14,8 +13,7 @@ class AiTasks extends Table {
   TextColumn get inputPrompt => text().nullable()();
   TextColumn get inputParams => text().nullable()();
   TextColumn get outputText => text().nullable()();
-  TextColumn get outputAssetId =>
-      text().nullable().references(Assets, #id)();
+  TextColumn get outputAssetId => text().nullable().references(Assets, #id)();
   TextColumn get errorMessage => text().nullable()();
   IntColumn get tokenUsage => integer().nullable()();
   RealColumn get costEstimate => real().nullable()();

@@ -44,12 +44,14 @@ void main() {
 
   Future<void> seedProject(String id) async {
     final ts = now();
-    await db.projectDao.insertProject(ProjectsCompanion(
-      id: Value(id),
-      name: Value('Project $id'),
-      createdAt: Value(ts),
-      updatedAt: Value(ts),
-    ));
+    await db.projectDao.insertProject(
+      ProjectsCompanion(
+        id: Value(id),
+        name: Value('Project $id'),
+        createdAt: Value(ts),
+        updatedAt: Value(ts),
+      ),
+    );
   }
 
   group('AssetDao', () {
@@ -76,23 +78,33 @@ void main() {
       await dao.insertAsset(makeAsset('a1', 'Old'));
       final original = await dao.getAssetById('a1');
 
-      final ok = await dao.updateAsset(AssetsCompanion(
-        id: const Value('a1'),
-        name: const Value('New'),
-        type: Value(original!.type),
-        filePath: Value(original.filePath),
-        sourceType: Value(original.sourceType),
-        createdAt: Value(original.createdAt),
-        updatedAt: Value(now()),
-        isFavorite: Value(original.isFavorite),
-      ));
+      final ok = await dao.updateAsset(
+        AssetsCompanion(
+          id: const Value('a1'),
+          name: const Value('New'),
+          type: Value(original!.type),
+          filePath: Value(original.filePath),
+          sourceType: Value(original.sourceType),
+          createdAt: Value(original.createdAt),
+          updatedAt: Value(now()),
+          isFavorite: Value(original.isFavorite),
+        ),
+      );
       expect(ok, isTrue);
 
       final fetched = await dao.getAssetById('a1');
       expect(fetched!.name, 'New');
       expect(fetched.type, original.type, reason: 'type should be unchanged');
-      expect(fetched.filePath, original.filePath, reason: 'filePath should be unchanged');
-      expect(fetched.createdAt, original.createdAt, reason: 'createdAt should be unchanged');
+      expect(
+        fetched.filePath,
+        original.filePath,
+        reason: 'filePath should be unchanged',
+      );
+      expect(
+        fetched.createdAt,
+        original.createdAt,
+        reason: 'createdAt should be unchanged',
+      );
     });
 
     test('deleteAsset removes the row', () async {
@@ -148,8 +160,11 @@ void main() {
 
       final page1Ids = page1.map((a) => a.id).toSet();
       final page2Ids = page2.map((a) => a.id).toSet();
-      expect(page1Ids.intersection(page2Ids), isEmpty,
-          reason: 'Pages should not overlap');
+      expect(
+        page1Ids.intersection(page2Ids),
+        isEmpty,
+        reason: 'Pages should not overlap',
+      );
 
       final lastPage = await dao.getPaginated(limit: 5, offset: 8);
       expect(lastPage, hasLength(2));
@@ -157,9 +172,15 @@ void main() {
 
     test('countByProject and countByProjectAndType', () async {
       await seedProject('proj1');
-      await dao.insertAsset(makeAsset('a1', 'I1', type: 'image', projectId: 'proj1'));
-      await dao.insertAsset(makeAsset('a2', 'V1', type: 'video', projectId: 'proj1'));
-      await dao.insertAsset(makeAsset('a3', 'I2', type: 'image', projectId: 'proj1'));
+      await dao.insertAsset(
+        makeAsset('a1', 'I1', type: 'image', projectId: 'proj1'),
+      );
+      await dao.insertAsset(
+        makeAsset('a2', 'V1', type: 'video', projectId: 'proj1'),
+      );
+      await dao.insertAsset(
+        makeAsset('a3', 'I2', type: 'image', projectId: 'proj1'),
+      );
 
       expect(await dao.countByProject('proj1'), 3);
       expect(await dao.countByProjectAndType('proj1', 'image'), 2);

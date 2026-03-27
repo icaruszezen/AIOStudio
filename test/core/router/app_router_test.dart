@@ -15,7 +15,11 @@ void main() {
       ];
 
       for (final route in routes) {
-        expect(route, startsWith('/'), reason: 'Route "$route" should start with /');
+        expect(
+          route,
+          startsWith('/'),
+          reason: 'Route "$route" should start with /',
+        );
       }
     });
 
@@ -55,8 +59,11 @@ void main() {
       ];
 
       for (final route in routes) {
-        expect(route.endsWith('/'), isFalse,
-            reason: 'Route "$route" should not end with /');
+        expect(
+          route.endsWith('/'),
+          isFalse,
+          reason: 'Route "$route" should not end with /',
+        );
       }
     });
   });

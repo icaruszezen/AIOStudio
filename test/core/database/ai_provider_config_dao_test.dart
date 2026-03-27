@@ -69,14 +69,16 @@ void main() {
       await dao.insertConfig(makeConfig('c1', 'Old'));
       final original = await dao.getById('c1');
 
-      final ok = await dao.updateConfig(AiProviderConfigsCompanion(
-        id: const Value('c1'),
-        name: const Value('Updated'),
-        type: Value(original!.type),
-        isEnabled: Value(original.isEnabled),
-        createdAt: Value(original.createdAt),
-        updatedAt: Value(now()),
-      ));
+      final ok = await dao.updateConfig(
+        AiProviderConfigsCompanion(
+          id: const Value('c1'),
+          name: const Value('Updated'),
+          type: Value(original!.type),
+          isEnabled: Value(original.isEnabled),
+          createdAt: Value(original.createdAt),
+          updatedAt: Value(now()),
+        ),
+      );
       expect(ok, isTrue);
 
       final fetched = await dao.getById('c1');
@@ -91,9 +93,7 @@ void main() {
 
     test('getEnabled filters by isEnabled', () async {
       await dao.insertConfig(makeConfig('c1', 'Active'));
-      await dao.insertConfig(
-        makeConfig('c2', 'Disabled', isEnabled: false),
-      );
+      await dao.insertConfig(makeConfig('c2', 'Disabled', isEnabled: false));
       await dao.insertConfig(makeConfig('c3', 'Also Active'));
 
       final enabled = await dao.getEnabled();
@@ -121,21 +121,28 @@ void main() {
 
     test('full lifecycle: insert -> query -> update -> delete', () async {
       await dao.insertConfig(
-        makeConfig('c1', 'Provider', type: 'openai', baseUrl: 'https://api.openai.com'),
+        makeConfig(
+          'c1',
+          'Provider',
+          type: 'openai',
+          baseUrl: 'https://api.openai.com',
+        ),
       );
 
       var config = await dao.getById('c1');
       expect(config!.baseUrl, 'https://api.openai.com');
 
-      await dao.updateConfig(AiProviderConfigsCompanion(
-        id: const Value('c1'),
-        name: const Value('Provider v2'),
-        type: const Value('openai'),
-        baseUrl: const Value('https://api.openai.com/v2'),
-        isEnabled: const Value(true),
-        createdAt: Value(config.createdAt),
-        updatedAt: Value(now()),
-      ));
+      await dao.updateConfig(
+        AiProviderConfigsCompanion(
+          id: const Value('c1'),
+          name: const Value('Provider v2'),
+          type: const Value('openai'),
+          baseUrl: const Value('https://api.openai.com/v2'),
+          isEnabled: const Value(true),
+          createdAt: Value(config.createdAt),
+          updatedAt: Value(now()),
+        ),
+      );
 
       config = await dao.getById('c1');
       expect(config!.name, 'Provider v2');

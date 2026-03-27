@@ -5,8 +5,8 @@ import 'asset_filter_provider.dart';
 
 final currentAssetIdProvider =
     NotifierProvider<CurrentAssetIdNotifier, String?>(
-  CurrentAssetIdNotifier.new,
-);
+      CurrentAssetIdNotifier.new,
+    );
 
 class CurrentAssetIdNotifier extends Notifier<String?> {
   @override
@@ -16,7 +16,9 @@ class CurrentAssetIdNotifier extends Notifier<String?> {
   void set(String? id) => state = id;
 }
 
-final _currentAssetIndexProvider = Provider<(int index, List<Asset> assets)>((ref) {
+final _currentAssetIndexProvider = Provider<(int index, List<Asset> assets)>((
+  ref,
+) {
   final currentId = ref.watch(currentAssetIdProvider);
   if (currentId == null) return (-1, const []);
 

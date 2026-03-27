@@ -17,10 +17,7 @@ class ProjectCreateDialog extends ConsumerStatefulWidget {
 
   /// Returns the project ID on success (new ID on create, existing ID on
   /// edit), or `null` if cancelled.
-  static Future<String?> show(
-    BuildContext context, {
-    Project? existing,
-  }) {
+  static Future<String?> show(BuildContext context, {Project? existing}) {
     return showDialog<String>(
       context: context,
       builder: (_) => ProjectCreateDialog(existing: existing),
@@ -45,8 +42,9 @@ class _ProjectCreateDialogState extends ConsumerState<ProjectCreateDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.existing?.name ?? '');
-    _descController =
-        TextEditingController(text: widget.existing?.description ?? '');
+    _descController = TextEditingController(
+      text: widget.existing?.description ?? '',
+    );
     _coverPath = widget.existing?.coverImagePath;
   }
 
@@ -93,7 +91,8 @@ class _ProjectCreateDialogState extends ConsumerState<ProjectCreateDialog> {
           name: name,
           description: desc.isEmpty ? null : desc,
           coverImagePath: _coverPath,
-          clearCover: _coverPath == null && widget.existing!.coverImagePath != null,
+          clearCover:
+              _coverPath == null && widget.existing!.coverImagePath != null,
         );
       } else {
         newId = await actions.create(
@@ -169,10 +168,7 @@ class _ProjectCreateDialogState extends ConsumerState<ProjectCreateDialog> {
             ),
           ),
           const SizedBox(height: 16),
-          InfoLabel(
-            label: '封面图片',
-            child: _buildCoverPicker(theme),
-          ),
+          InfoLabel(label: '封面图片', child: _buildCoverPicker(theme)),
         ],
       ),
       actions: [
@@ -216,10 +212,7 @@ class _ProjectCreateDialogState extends ConsumerState<ProjectCreateDialog> {
           const SizedBox(height: 8),
           Row(
             children: [
-              Button(
-                onPressed: _pickCover,
-                child: const Text('更换图片'),
-              ),
+              Button(onPressed: _pickCover, child: const Text('更换图片')),
               const SizedBox(width: 8),
               Button(
                 onPressed: () => setState(() => _coverPath = null),

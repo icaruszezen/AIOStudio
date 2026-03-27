@@ -109,16 +109,15 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(FluentIcons.unknown,
-                      size: 48,
-                      color: theme.resources.textFillColorSecondary),
+                  Icon(
+                    FluentIcons.unknown,
+                    size: 48,
+                    color: theme.resources.textFillColorSecondary,
+                  ),
                   const SizedBox(height: 8),
                   Text('资产不存在', style: theme.typography.subtitle),
                   const SizedBox(height: 16),
-                  Button(
-                    onPressed: _goBack,
-                    child: const Text('返回资产库'),
-                  ),
+                  Button(onPressed: _goBack, child: const Text('返回资产库')),
                 ],
               ),
             );
@@ -135,7 +134,10 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
                     return isNarrow
                         ? _buildVerticalLayout(theme, asset)
                         : _buildHorizontalLayout(
-                            theme, asset, constraints.maxWidth);
+                            theme,
+                            asset,
+                            constraints.maxWidth,
+                          );
                   },
                 ),
               ),
@@ -190,20 +192,26 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
           Tooltip(
             message: '上一个',
             child: IconButton(
-              icon: Icon(FluentIcons.chevron_left, size: 12,
-                  color: prevId == null
-                      ? theme.resources.textFillColorDisabled
-                      : null),
+              icon: Icon(
+                FluentIcons.chevron_left,
+                size: 12,
+                color: prevId == null
+                    ? theme.resources.textFillColorDisabled
+                    : null,
+              ),
               onPressed: prevId != null ? () => _navigateTo(prevId) : null,
             ),
           ),
           Tooltip(
             message: '下一个',
             child: IconButton(
-              icon: Icon(FluentIcons.chevron_right, size: 12,
-                  color: nextId == null
-                      ? theme.resources.textFillColorDisabled
-                      : null),
+              icon: Icon(
+                FluentIcons.chevron_right,
+                size: 12,
+                color: nextId == null
+                    ? theme.resources.textFillColorDisabled
+                    : null,
+              ),
               onPressed: nextId != null ? () => _navigateTo(nextId) : null,
             ),
           ),
@@ -215,8 +223,7 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
                 _showInfoPanel ? FluentIcons.side_panel : FluentIcons.open_pane,
                 size: 14,
               ),
-              onPressed: () =>
-                  setState(() => _showInfoPanel = !_showInfoPanel),
+              onPressed: () => setState(() => _showInfoPanel = !_showInfoPanel),
             ),
           ),
         ],
@@ -225,16 +232,23 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
   }
 
   Widget _buildHorizontalLayout(
-      FluentThemeData theme, Asset asset, double totalWidth) {
+    FluentThemeData theme,
+    Asset asset,
+    double totalWidth,
+  ) {
     return Row(
       children: [
         Expanded(child: _buildPreviewArea(asset)),
         if (_showInfoPanel) ...[
-          ResizableDivider(onDrag: (dx) {
-            final maxW = totalWidth * _maxPanelFraction;
-            _infoPanelWidth.value =
-                (_infoPanelWidth.value - dx).clamp(_minPanelWidth, maxW);
-          }),
+          ResizableDivider(
+            onDrag: (dx) {
+              final maxW = totalWidth * _maxPanelFraction;
+              _infoPanelWidth.value = (_infoPanelWidth.value - dx).clamp(
+                _minPanelWidth,
+                maxW,
+              );
+            },
+          ),
           ValueListenableBuilder<double>(
             valueListenable: _infoPanelWidth,
             builder: (context, width, child) {
@@ -260,10 +274,7 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
           child: _buildPreviewArea(asset),
         ),
         if (_showInfoPanel) ...[
-          Container(
-            height: 1,
-            color: theme.resources.cardStrokeColorDefault,
-          ),
+          Container(height: 1, color: theme.resources.cardStrokeColorDefault),
           Expanded(
             flex: 4,
             child: AssetInfoPanel(
@@ -281,9 +292,9 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
       'image' => ImageViewer(filePath: asset.filePath),
       'video' => VideoPlayerWidget(filePath: asset.filePath),
       'audio' => AudioPlayerWidget(
-          filePath: asset.filePath,
-          fileName: asset.name,
-        ),
+        filePath: asset.filePath,
+        fileName: asset.name,
+      ),
       'text' => TextPreviewWidget(filePath: asset.filePath),
       _ => _buildUnsupportedPreview(asset),
     };
@@ -295,8 +306,11 @@ class _AssetDetailPageState extends ConsumerState<AssetDetailPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(FluentIcons.document,
-              size: 64, color: theme.resources.textFillColorSecondary),
+          Icon(
+            FluentIcons.document,
+            size: 64,
+            color: theme.resources.textFillColorSecondary,
+          ),
           const SizedBox(height: 12),
           Text(asset.name, style: theme.typography.subtitle),
           const SizedBox(height: 4),

@@ -107,8 +107,7 @@ class _ProjectAssetsTabState extends ConsumerState<ProjectAssetsTab> {
   Widget _buildGridView(List<Asset> assets) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossAxisCount =
-            (constraints.maxWidth / 200).floor().clamp(2, 8);
+        final crossAxisCount = (constraints.maxWidth / 200).floor().clamp(2, 8);
         return GridView.builder(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
@@ -182,7 +181,9 @@ class _ProjectAssetsTabState extends ConsumerState<ProjectAssetsTab> {
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(AppColors.error(FluentTheme.of(context).brightness)),
+              backgroundColor: WidgetStateProperty.all(
+                AppColors.error(FluentTheme.of(context).brightness),
+              ),
             ),
             child: const Text('删除'),
           ),

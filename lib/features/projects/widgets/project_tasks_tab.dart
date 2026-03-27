@@ -42,8 +42,7 @@ class ProjectTasksTab extends ConsumerWidget {
             horizontal: DesignTokens.spacingLG,
           ),
           itemCount: tasks.length,
-          itemBuilder: (context, index) =>
-              _AiTaskListItem(task: tasks[index]),
+          itemBuilder: (context, index) => _AiTaskListItem(task: tasks[index]),
         );
       },
     );
@@ -162,25 +161,25 @@ class _AiTaskListItem extends StatelessWidget {
   }
 
   static IconData _typeIcon(String type) => switch (type) {
-        'chat' => FluentIcons.chat,
-        'image_gen' => FluentIcons.image_search,
-        'video_gen' => FluentIcons.video,
-        _ => FluentIcons.processing,
-      };
+    'chat' => FluentIcons.chat,
+    'image_gen' => FluentIcons.image_search,
+    'video_gen' => FluentIcons.video,
+    _ => FluentIcons.processing,
+  };
 
   static String _typeLabel(String type) => switch (type) {
-        'chat' => 'AI 对话',
-        'image_gen' => '图片生成',
-        'video_gen' => '视频生成',
-        _ => 'AI 任务',
-      };
+    'chat' => 'AI 对话',
+    'image_gen' => '图片生成',
+    'video_gen' => '视频生成',
+    _ => 'AI 任务',
+  };
 
   Color _typeColor(String type, Brightness brightness) => switch (type) {
-        'chat' => AppColors.chat(brightness),
-        'image_gen' => AppColors.imageGen(brightness),
-        'video_gen' => AppColors.videoGen(brightness),
-        _ => AppColors.warning(brightness),
-      };
+    'chat' => AppColors.chat(brightness),
+    'image_gen' => AppColors.imageGen(brightness),
+    'video_gen' => AppColors.videoGen(brightness),
+    _ => AppColors.warning(brightness),
+  };
 }
 
 class _StatusBadge extends StatelessWidget {

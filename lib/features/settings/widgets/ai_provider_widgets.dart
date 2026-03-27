@@ -59,7 +59,9 @@ class StepDot extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: (isActive || isCompleted) ? AppColors.onAccent : color,
+                      color: (isActive || isCompleted)
+                          ? AppColors.onAccent
+                          : color,
                     ),
                   ),
           ),
@@ -236,17 +238,20 @@ class ModelRow extends StatelessWidget {
     badges.add(ModelBadge(label: modeLabel, color: AppColors.info(b)));
 
     if (model.contextWindowLabel.isNotEmpty) {
-      badges.add(ModelBadge(
-        label: model.contextWindowLabel,
-        color: AppColors.providerOpenAI(b),
-      ));
+      badges.add(
+        ModelBadge(
+          label: model.contextWindowLabel,
+          color: AppColors.providerOpenAI(b),
+        ),
+      );
     }
     if (model.supportsVision) {
       badges.add(ModelBadge(label: '视觉', color: AppColors.providerGoogle(b)));
     }
     if (model.supportsFunctionCalling) {
       badges.add(
-          ModelBadge(label: '函数调用', color: AppColors.providerAnthropic(b)));
+        ModelBadge(label: '函数调用', color: AppColors.providerAnthropic(b)),
+      );
     }
     if (model.supportsReasoning) {
       badges.add(ModelBadge(label: '推理', color: AppColors.warning(b)));
@@ -271,19 +276,23 @@ class ModelRow extends StatelessWidget {
       if (mod == 'text') continue;
       if (mod == 'image' && model.supportsVision) continue;
       if (mod == 'audio' && model.supportsAudioInput) continue;
-      badges.add(ModelBadge(
-        label: _modalityLabel(mod),
-        color: AppColors.providerCustom(b),
-      ));
+      badges.add(
+        ModelBadge(
+          label: _modalityLabel(mod),
+          color: AppColors.providerCustom(b),
+        ),
+      );
     }
 
     for (final mod in model.outputModalities) {
       if (mod == 'text') continue;
       if (mod == 'audio' && model.supportsAudioOutput) continue;
-      badges.add(ModelBadge(
-        label: '输出${_modalityLabel(mod)}',
-        color: AppColors.success(b),
-      ));
+      badges.add(
+        ModelBadge(
+          label: '输出${_modalityLabel(mod)}',
+          color: AppColors.success(b),
+        ),
+      );
     }
 
     if (badges.isEmpty) {
@@ -294,12 +303,12 @@ class ModelRow extends StatelessWidget {
   }
 
   static String _modalityLabel(String mod) => switch (mod) {
-        'text' => '文本',
-        'image' => '图像',
-        'audio' => '音频',
-        'video' => '视频',
-        _ => mod,
-      };
+    'text' => '文本',
+    'image' => '图像',
+    'audio' => '音频',
+    'video' => '视频',
+    _ => mod,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -322,10 +331,9 @@ class ModelBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: FluentTheme.of(context)
-            .typography
-            .caption
-            ?.copyWith(color: color),
+        style: FluentTheme.of(
+          context,
+        ).typography.caption?.copyWith(color: color),
       ),
     );
   }

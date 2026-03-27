@@ -32,69 +32,66 @@ ChatMessage _assistantMessage({
 
 Widget _wrap(Widget child) {
   return FluentApp(
-    home: ScaffoldPage(
-      content: SingleChildScrollView(child: child),
-    ),
+    home: ScaffoldPage(content: SingleChildScrollView(child: child)),
   );
 }
 
 void main() {
   group('ChatMessageBubble', () {
     testWidgets('renders user message content', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ChatMessageBubble(
-          message: _userMessage(content: 'How are you?'),
-          isDarkMode: false,
+      await tester.pumpWidget(
+        _wrap(
+          ChatMessageBubble(
+            message: _userMessage(content: 'How are you?'),
+            isDarkMode: false,
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('How are you?'), findsOneWidget);
     });
 
     testWidgets('shows user avatar for user messages', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ChatMessageBubble(
-          message: _userMessage(),
-          isDarkMode: false,
-        ),
-      ));
+      await tester.pumpWidget(
+        _wrap(ChatMessageBubble(message: _userMessage(), isDarkMode: false)),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byIcon(FluentIcons.contact), findsOneWidget);
     });
 
     testWidgets('shows AI avatar for assistant messages', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ChatMessageBubble(
-          message: _assistantMessage(),
-          isDarkMode: false,
+      await tester.pumpWidget(
+        _wrap(
+          ChatMessageBubble(message: _assistantMessage(), isDarkMode: false),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       expect(find.byIcon(FluentIcons.robot), findsOneWidget);
     });
 
     testWidgets('shows timestamp in footer', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ChatMessageBubble(
-          message: _userMessage(),
-          isDarkMode: false,
-        ),
-      ));
+      await tester.pumpWidget(
+        _wrap(ChatMessageBubble(message: _userMessage(), isDarkMode: false)),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('14:30'), findsOneWidget);
     });
 
-    testWidgets('shows typing indicator when streaming with empty content', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ChatMessageBubble(
-          message: _assistantMessage(content: '', isStreaming: true),
-          isDarkMode: false,
+    testWidgets('shows typing indicator when streaming with empty content', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          ChatMessageBubble(
+            message: _assistantMessage(content: '', isStreaming: true),
+            isDarkMode: false,
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       expect(find.text('思考中...'), findsOneWidget);
@@ -102,12 +99,14 @@ void main() {
     });
 
     testWidgets('shows error icon and message for error state', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ChatMessageBubble(
-          message: _assistantMessage(error: '连接超时'),
-          isDarkMode: false,
+      await tester.pumpWidget(
+        _wrap(
+          ChatMessageBubble(
+            message: _assistantMessage(error: '连接超时'),
+            isDarkMode: false,
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       expect(find.byIcon(FluentIcons.error_badge), findsOneWidget);
@@ -115,12 +114,14 @@ void main() {
     });
 
     testWidgets('shows token count for assistant messages', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ChatMessageBubble(
-          message: _assistantMessage(totalTokens: 150),
-          isDarkMode: false,
+      await tester.pumpWidget(
+        _wrap(
+          ChatMessageBubble(
+            message: _assistantMessage(totalTokens: 150),
+            isDarkMode: false,
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('150 tokens'), findsOneWidget);

@@ -50,7 +50,8 @@ class AboutSection extends ConsumerWidget {
                       const SizedBox(height: 2),
                       Text(
                         packageInfo.when(
-                          data: (info) => '版本 ${info.version} (Build ${info.buildNumber})',
+                          data: (info) =>
+                              '版本 ${info.version} (Build ${info.buildNumber})',
                           loading: () => '版本 ...',
                           error: (_, __) => '版本 未知',
                         ),
@@ -76,11 +77,14 @@ class AboutSection extends ConsumerWidget {
                 children: [
                   Button(
                     onPressed: () {
-                      displayInfoBar(context, builder: (ctx, close) => InfoBar(
-                        title: const Text('已是最新版本'),
-                        severity: InfoBarSeverity.success,
-                        onClose: close,
-                      ));
+                      displayInfoBar(
+                        context,
+                        builder: (ctx, close) => InfoBar(
+                          title: const Text('已是最新版本'),
+                          severity: InfoBarSeverity.success,
+                          onClose: close,
+                        ),
+                      );
                     },
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
@@ -104,9 +108,8 @@ class AboutSection extends ConsumerWidget {
                   ),
                   const SizedBox(width: 12),
                   HyperlinkButton(
-                    onPressed: () => launchUrl(
-                      Uri.parse('$githubBaseUrl/issues'),
-                    ),
+                    onPressed: () =>
+                        launchUrl(Uri.parse('$githubBaseUrl/issues')),
                     child: const Text('反馈问题'),
                   ),
                   const SizedBox(width: 12),

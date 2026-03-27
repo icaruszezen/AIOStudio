@@ -22,15 +22,18 @@ class OpenAiService extends AiService with OpenAiCompatibleMixin {
 
   static const _defaultImageModels = ['dall-e-3', 'dall-e-2'];
 
-  static const _defaultAllModels = [..._defaultChatModels, ..._defaultImageModels];
+  static const _defaultAllModels = [
+    ..._defaultChatModels,
+    ..._defaultImageModels,
+  ];
 
   OpenAiService({
     required this.providerId,
     required String apiKey,
     String baseUrl = 'https://api.openai.com',
     List<AiModelInfo>? modelInfos,
-  })  : _modelInfoOverrides = modelInfos,
-        _dio = createAiDio(baseUrl: baseUrl, apiKey: apiKey);
+  }) : _modelInfoOverrides = modelInfos,
+       _dio = createAiDio(baseUrl: baseUrl, apiKey: apiKey);
 
   @override
   String get providerName => 'OpenAI';
@@ -46,9 +49,9 @@ class OpenAiService extends AiService with OpenAiCompatibleMixin {
   @override
   List<String> get imageModels => _modelInfoOverrides != null
       ? _modelInfoOverrides
-          .where((m) => m.isEnabled && m.isImageModel)
-          .map((m) => m.id)
-          .toList()
+            .where((m) => m.isEnabled && m.isImageModel)
+            .map((m) => m.id)
+            .toList()
       : _defaultImageModels;
 
   @override
@@ -56,9 +59,9 @@ class OpenAiService extends AiService with OpenAiCompatibleMixin {
 
   @override
   Set<String> get imageGenCapabilities => const {
-        ImageGenCap.style,
-        ImageGenCap.quality,
-      };
+    ImageGenCap.style,
+    ImageGenCap.quality,
+  };
 
   @override
   bool get supportsChatCompletion => true;
@@ -145,10 +148,7 @@ class OpenAiService extends AiService with OpenAiCompatibleMixin {
     } on DioException catch (e) {
       throw OpenAiCompatibleMixin.unwrapDioError(e);
     } catch (e) {
-      throw AiServiceException(
-        message: e.toString(),
-        userMessage: '连接测试失败',
-      );
+      throw AiServiceException(message: e.toString(), userMessage: '连接测试失败');
     }
   }
 

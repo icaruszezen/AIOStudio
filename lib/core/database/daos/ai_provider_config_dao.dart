@@ -10,23 +10,21 @@ class AiProviderConfigDao extends DatabaseAccessor<AppDatabase>
     with _$AiProviderConfigDaoMixin {
   AiProviderConfigDao(super.db);
 
-  Future<List<AiProviderConfig>> getAll() =>
-      select(aiProviderConfigs).get();
+  Future<List<AiProviderConfig>> getAll() => select(aiProviderConfigs).get();
 
   Stream<List<AiProviderConfig>> watchAll() =>
       select(aiProviderConfigs).watch();
 
-  Future<AiProviderConfig?> getById(String id) =>
-      (select(aiProviderConfigs)..where((t) => t.id.equals(id)))
-          .getSingleOrNull();
+  Future<AiProviderConfig?> getById(String id) => (select(
+    aiProviderConfigs,
+  )..where((t) => t.id.equals(id))).getSingleOrNull();
 
   Future<List<AiProviderConfig>> getEnabled() =>
-      (select(aiProviderConfigs)..where((t) => t.isEnabled.equals(true)))
-          .get();
+      (select(aiProviderConfigs)..where((t) => t.isEnabled.equals(true))).get();
 
-  Stream<List<AiProviderConfig>> watchEnabled() =>
-      (select(aiProviderConfigs)..where((t) => t.isEnabled.equals(true)))
-          .watch();
+  Stream<List<AiProviderConfig>> watchEnabled() => (select(
+    aiProviderConfigs,
+  )..where((t) => t.isEnabled.equals(true))).watch();
 
   Future<List<AiProviderConfig>> getByType(String type) =>
       (select(aiProviderConfigs)..where((t) => t.type.equals(type))).get();

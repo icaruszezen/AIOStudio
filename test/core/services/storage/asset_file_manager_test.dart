@@ -27,10 +27,7 @@ void main() {
     assetDao = db.assetDao;
     mockStorage = MockLocalStorageService();
     tempDir = await Directory.systemTemp.createTemp('aio_afm_test_');
-    manager = AssetFileManager(
-      assetDao: assetDao,
-      storage: mockStorage,
-    );
+    manager = AssetFileManager(assetDao: assetDao, storage: mockStorage);
   });
 
   tearDown(() async {
@@ -44,12 +41,14 @@ void main() {
 
   Future<void> seedProject(String id) async {
     final ts = now();
-    await db.projectDao.insertProject(ProjectsCompanion(
-      id: Value(id),
-      name: Value('Project $id'),
-      createdAt: Value(ts),
-      updatedAt: Value(ts),
-    ));
+    await db.projectDao.insertProject(
+      ProjectsCompanion(
+        id: Value(id),
+        name: Value('Project $id'),
+        createdAt: Value(ts),
+        updatedAt: Value(ts),
+      ),
+    );
   }
 
   group('importLocalFile', () {
@@ -58,10 +57,12 @@ void main() {
       final sourceFile = File(p.join(tempDir.path, 'test.txt'));
       await sourceFile.writeAsString('content');
 
-      when(() => mockStorage.generateThumbnail(any()))
-          .thenAnswer((_) async => null);
-      when(() => mockStorage.generateVideoThumbnail(any()))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockStorage.generateThumbnail(any()),
+      ).thenAnswer((_) async => null);
+      when(
+        () => mockStorage.generateVideoThumbnail(any()),
+      ).thenAnswer((_) async => null);
 
       final asset = await manager.importLocalFile(
         filePath: sourceFile.path,
@@ -82,8 +83,9 @@ void main() {
       final sourceFile = File(p.join(tempDir.path, 'photo.png'));
       await sourceFile.writeAsBytes([0x89, 0x50, 0x4E, 0x47]);
 
-      when(() => mockStorage.generateThumbnail(any()))
-          .thenAnswer((_) async => '/thumbnails/thumb.jpg');
+      when(
+        () => mockStorage.generateThumbnail(any()),
+      ).thenAnswer((_) async => '/thumbnails/thumb.jpg');
 
       final asset = await manager.importLocalFile(
         filePath: sourceFile.path,
@@ -101,8 +103,9 @@ void main() {
       final sourceFile = File(p.join(tempDir.path, 'clip.mp4'));
       await sourceFile.writeAsBytes([0x00, 0x01, 0x02]);
 
-      when(() => mockStorage.generateVideoThumbnail(any()))
-          .thenAnswer((_) async => '/thumbnails/vthumb.jpg');
+      when(
+        () => mockStorage.generateVideoThumbnail(any()),
+      ).thenAnswer((_) async => '/thumbnails/vthumb.jpg');
 
       final asset = await manager.importLocalFile(
         filePath: sourceFile.path,
@@ -111,8 +114,9 @@ void main() {
         assetType: 'video',
       );
 
-      verify(() => mockStorage.generateVideoThumbnail(sourceFile.path))
-          .called(1);
+      verify(
+        () => mockStorage.generateVideoThumbnail(sourceFile.path),
+      ).called(1);
       expect(asset.thumbnailPath, '/thumbnails/vthumb.jpg');
     });
 
@@ -137,10 +141,12 @@ void main() {
       final assetDir = Directory(p.join(tempDir.path, 'assets', 'proj-1'));
       await assetDir.create(recursive: true);
 
-      when(() => mockStorage.getAssetDirectory(any()))
-          .thenAnswer((_) async => assetDir);
-      when(() => mockStorage.generateThumbnail(any()))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockStorage.getAssetDirectory(any()),
+      ).thenAnswer((_) async => assetDir);
+      when(
+        () => mockStorage.generateThumbnail(any()),
+      ).thenAnswer((_) async => null);
 
       final asset = await manager.saveFromBase64(
         base64Data: b64,
@@ -160,10 +166,12 @@ void main() {
       final assetDir = Directory(p.join(tempDir.path, 'assets', 'proj-1'));
       await assetDir.create(recursive: true);
 
-      when(() => mockStorage.getAssetDirectory(any()))
-          .thenAnswer((_) async => assetDir);
-      when(() => mockStorage.generateThumbnail(any()))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockStorage.getAssetDirectory(any()),
+      ).thenAnswer((_) async => assetDir);
+      when(
+        () => mockStorage.generateThumbnail(any()),
+      ).thenAnswer((_) async => null);
 
       final asset = await manager.saveFromBase64(
         base64Data: b64,
@@ -178,8 +186,9 @@ void main() {
       final assetDir = Directory(p.join(tempDir.path, 'assets', 'proj-1'));
       await assetDir.create(recursive: true);
 
-      when(() => mockStorage.getAssetDirectory(any()))
-          .thenAnswer((_) async => assetDir);
+      when(
+        () => mockStorage.getAssetDirectory(any()),
+      ).thenAnswer((_) async => assetDir);
 
       expect(
         () => manager.saveFromBase64(
@@ -196,25 +205,27 @@ void main() {
     test('deletes non-local-import asset file and thumbnail', () async {
       await seedProject('proj-1');
       final ts = now();
-      await assetDao.insertAsset(AssetsCompanion(
-        id: const Value('asset-1'),
-        projectId: const Value('proj-1'),
-        name: const Value('downloaded.png'),
-        type: const Value('image'),
-        filePath: const Value('/cache/downloaded.png'),
-        thumbnailPath: const Value('/cache/thumb.jpg'),
-        sourceType: const Value('browser_extension'),
-        createdAt: Value(ts),
-        updatedAt: Value(ts),
-      ));
+      await assetDao.insertAsset(
+        AssetsCompanion(
+          id: const Value('asset-1'),
+          projectId: const Value('proj-1'),
+          name: const Value('downloaded.png'),
+          type: const Value('image'),
+          filePath: const Value('/cache/downloaded.png'),
+          thumbnailPath: const Value('/cache/thumb.jpg'),
+          sourceType: const Value('browser_extension'),
+          createdAt: Value(ts),
+          updatedAt: Value(ts),
+        ),
+      );
 
-      when(() => mockStorage.deleteAssetFile(any()))
-          .thenAnswer((_) async {});
+      when(() => mockStorage.deleteAssetFile(any())).thenAnswer((_) async {});
 
       await manager.deleteAsset('asset-1');
 
-      verify(() => mockStorage.deleteAssetFile('/cache/downloaded.png'))
-          .called(1);
+      verify(
+        () => mockStorage.deleteAssetFile('/cache/downloaded.png'),
+      ).called(1);
       verify(() => mockStorage.deleteAssetFile('/cache/thumb.jpg')).called(1);
 
       final deleted = await assetDao.getAssetById('asset-1');
@@ -224,20 +235,21 @@ void main() {
     test('skips file deletion for local_import source type', () async {
       await seedProject('proj-1');
       final ts = now();
-      await assetDao.insertAsset(AssetsCompanion(
-        id: const Value('asset-2'),
-        projectId: const Value('proj-1'),
-        name: const Value('local.png'),
-        type: const Value('image'),
-        filePath: const Value('/user/photos/local.png'),
-        thumbnailPath: const Value('/cache/thumb.jpg'),
-        sourceType: const Value('local_import'),
-        createdAt: Value(ts),
-        updatedAt: Value(ts),
-      ));
+      await assetDao.insertAsset(
+        AssetsCompanion(
+          id: const Value('asset-2'),
+          projectId: const Value('proj-1'),
+          name: const Value('local.png'),
+          type: const Value('image'),
+          filePath: const Value('/user/photos/local.png'),
+          thumbnailPath: const Value('/cache/thumb.jpg'),
+          sourceType: const Value('local_import'),
+          createdAt: Value(ts),
+          updatedAt: Value(ts),
+        ),
+      );
 
-      when(() => mockStorage.deleteAssetFile(any()))
-          .thenAnswer((_) async {});
+      when(() => mockStorage.deleteAssetFile(any())).thenAnswer((_) async {});
 
       await manager.deleteAsset('asset-2');
 
@@ -255,8 +267,9 @@ void main() {
     test('throws when neither mediaUrl nor mediaBase64 provided', () async {
       final assetDir = Directory(p.join(tempDir.path, 'unsorted'));
       await assetDir.create(recursive: true);
-      when(() => mockStorage.getAssetDirectory(any()))
-          .thenAnswer((_) async => assetDir);
+      when(
+        () => mockStorage.getAssetDirectory(any()),
+      ).thenAnswer((_) async => assetDir);
 
       expect(
         () => manager.importFromExtension(
@@ -270,8 +283,9 @@ void main() {
     test('rejects non-http URL schemes', () async {
       final assetDir = Directory(p.join(tempDir.path, 'unsorted'));
       await assetDir.create(recursive: true);
-      when(() => mockStorage.getAssetDirectory(any()))
-          .thenAnswer((_) async => assetDir);
+      when(
+        () => mockStorage.getAssetDirectory(any()),
+      ).thenAnswer((_) async => assetDir);
 
       expect(
         () => manager.importFromExtension(
@@ -286,8 +300,9 @@ void main() {
     test('rejects localhost URLs', () async {
       final assetDir = Directory(p.join(tempDir.path, 'unsorted'));
       await assetDir.create(recursive: true);
-      when(() => mockStorage.getAssetDirectory(any()))
-          .thenAnswer((_) async => assetDir);
+      when(
+        () => mockStorage.getAssetDirectory(any()),
+      ).thenAnswer((_) async => assetDir);
 
       expect(
         () => manager.importFromExtension(
@@ -302,8 +317,9 @@ void main() {
     test('rejects private IP addresses', () async {
       final assetDir = Directory(p.join(tempDir.path, 'unsorted'));
       await assetDir.create(recursive: true);
-      when(() => mockStorage.getAssetDirectory(any()))
-          .thenAnswer((_) async => assetDir);
+      when(
+        () => mockStorage.getAssetDirectory(any()),
+      ).thenAnswer((_) async => assetDir);
 
       expect(
         () => manager.importFromExtension(

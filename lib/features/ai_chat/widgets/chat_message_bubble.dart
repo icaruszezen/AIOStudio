@@ -42,8 +42,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         vertical: 6,
       ),
       child: Row(
-        mainAxisAlignment:
-            _isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: _isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!_isUser) _buildAvatar(theme, isAi: true),
@@ -80,9 +81,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       child: Icon(
         isAi ? FluentIcons.robot : FluentIcons.contact,
         size: DesignTokens.iconMD,
-        color: isAi
-            ? AppColors.onAccent
-            : theme.resources.textFillColorPrimary,
+        color: isAi ? AppColors.onAccent : theme.resources.textFillColorPrimary,
       ),
     );
   }
@@ -107,12 +106,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         borderRadius: BorderRadius.only(
           topLeft: const Radius.circular(DesignTokens.radiusXL),
           topRight: const Radius.circular(DesignTokens.radiusXL),
-          bottomLeft: Radius.circular(
-            _isUser ? DesignTokens.radiusXL : 2,
-          ),
-          bottomRight: Radius.circular(
-            _isUser ? 2 : DesignTokens.radiusXL,
-          ),
+          bottomLeft: Radius.circular(_isUser ? DesignTokens.radiusXL : 2),
+          bottomRight: Radius.circular(_isUser ? 2 : DesignTokens.radiusXL),
         ),
       ),
       padding: const EdgeInsets.all(DesignTokens.spacingMD),
@@ -184,9 +179,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   Widget _buildErrorContent(FluentThemeData theme) {
     return Row(
       children: [
-        Icon(FluentIcons.error_badge,
-            size: DesignTokens.iconMD,
-            color: AppColors.error(theme.brightness)),
+        Icon(
+          FluentIcons.error_badge,
+          size: DesignTokens.iconMD,
+          color: AppColors.error(theme.brightness),
+        ),
         const SizedBox(width: DesignTokens.spacingSM),
         Flexible(
           child: SelectableText(
@@ -233,9 +230,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
               errorBuilder: (_, __, ___) => Container(
                 width: 120,
                 height: 120,
-                color: FluentTheme.of(context)
-                    .resources
-                    .subtleFillColorSecondary,
+                color: FluentTheme.of(
+                  context,
+                ).resources.subtleFillColorSecondary,
                 child: const Icon(FluentIcons.photo2, size: 32),
               ),
             ),
@@ -253,8 +250,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         content: Image.file(
           File(path),
           fit: BoxFit.contain,
-          errorBuilder: (_, __, ___) =>
-              const Center(child: Text('无法加载图片')),
+          errorBuilder: (_, __, ___) => const Center(child: Text('无法加载图片')),
         ),
         actions: [
           Button(
@@ -306,33 +302,41 @@ class _MarkdownContent extends StatelessWidget {
   final String data;
   final bool isDarkMode;
 
-  const _MarkdownContent({
-    required this.data,
-    required this.isDarkMode,
-  });
+  const _MarkdownContent({required this.data, required this.isDarkMode});
 
   @override
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
 
-    final pStyle = theme.typography.body?.copyWith(height: 1.6) ??
+    final pStyle =
+        theme.typography.body?.copyWith(height: 1.6) ??
         const TextStyle(fontSize: 14, height: 1.6);
 
     final config = isDarkMode
-        ? MarkdownConfig.darkConfig.copy(configs: [
-            PConfig(textStyle: pStyle),
-            PreConfig.darkConfig.copy(
-              wrapper: (child, code, language) => _CodeBlockWrapper(
-                  code: code, language: language, child: child),
-            ),
-          ])
-        : MarkdownConfig.defaultConfig.copy(configs: [
-            PConfig(textStyle: pStyle),
-            PreConfig(
-              wrapper: (child, code, language) => _CodeBlockWrapper(
-                  code: code, language: language, child: child),
-            ),
-          ]);
+        ? MarkdownConfig.darkConfig.copy(
+            configs: [
+              PConfig(textStyle: pStyle),
+              PreConfig.darkConfig.copy(
+                wrapper: (child, code, language) => _CodeBlockWrapper(
+                  code: code,
+                  language: language,
+                  child: child,
+                ),
+              ),
+            ],
+          )
+        : MarkdownConfig.defaultConfig.copy(
+            configs: [
+              PConfig(textStyle: pStyle),
+              PreConfig(
+                wrapper: (child, code, language) => _CodeBlockWrapper(
+                  code: code,
+                  language: language,
+                  child: child,
+                ),
+              ),
+            ],
+          );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -359,9 +363,7 @@ class _CodeBlockWrapper extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: DesignTokens.spacingSM),
       decoration: BoxDecoration(
         borderRadius: DesignTokens.borderRadiusLG,
-        border: Border.all(
-          color: theme.resources.cardStrokeColorDefault,
-        ),
+        border: Border.all(color: theme.resources.cardStrokeColorDefault),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -373,8 +375,9 @@ class _CodeBlockWrapper extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: theme.resources.subtleFillColorTertiary,
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(7)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(7),
+              ),
             ),
             child: Row(
               children: [

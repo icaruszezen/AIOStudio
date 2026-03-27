@@ -1,3 +1,4 @@
+import 'package:aio_studio/l10n/app_localizations.dart';
 import 'package:aio_studio/shared/widgets/empty_state.dart';
 import 'package:aio_studio/shared/widgets/error_state.dart';
 import 'package:fluent_ui/fluent_ui.dart';
@@ -5,6 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 Widget _wrap(Widget child) {
   return FluentApp(
+    localizationsDelegates: S.localizationsDelegates,
+    supportedLocales: S.supportedLocales,
+    locale: const Locale('zh'),
     home: ScaffoldPage(content: child),
   );
 }
@@ -12,12 +16,9 @@ Widget _wrap(Widget child) {
 void main() {
   group('EmptyState', () {
     testWidgets('renders icon and title', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const EmptyState(
-          icon: FluentIcons.folder_open,
-          title: '没有项目',
-        ),
-      ));
+      await tester.pumpWidget(
+        _wrap(const EmptyState(icon: FluentIcons.folder_open, title: '没有项目')),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byIcon(FluentIcons.folder_open), findsOneWidget);
@@ -25,25 +26,24 @@ void main() {
     });
 
     testWidgets('renders description when provided', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const EmptyState(
-          icon: FluentIcons.folder_open,
-          title: '没有项目',
-          description: '点击创建按钮新建项目',
+      await tester.pumpWidget(
+        _wrap(
+          const EmptyState(
+            icon: FluentIcons.folder_open,
+            title: '没有项目',
+            description: '点击创建按钮新建项目',
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('点击创建按钮新建项目'), findsOneWidget);
     });
 
     testWidgets('hides description when null', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const EmptyState(
-          icon: FluentIcons.folder_open,
-          title: '没有项目',
-        ),
-      ));
+      await tester.pumpWidget(
+        _wrap(const EmptyState(icon: FluentIcons.folder_open, title: '没有项目')),
+      );
       await tester.pumpAndSettle();
 
       final texts = find.byType(Text);
@@ -51,16 +51,15 @@ void main() {
     });
 
     testWidgets('renders action widget when provided', (tester) async {
-      await tester.pumpWidget(_wrap(
-        EmptyState(
-          icon: FluentIcons.add,
-          title: '空',
-          action: Button(
-            onPressed: () {},
-            child: const Text('新建'),
+      await tester.pumpWidget(
+        _wrap(
+          EmptyState(
+            icon: FluentIcons.add,
+            title: '空',
+            action: Button(onPressed: () {}, child: const Text('新建')),
           ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('新建'), findsOneWidget);
@@ -70,9 +69,7 @@ void main() {
 
   group('ErrorState', () {
     testWidgets('renders error icon and title', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const ErrorState(title: '加载失败'),
-      ));
+      await tester.pumpWidget(_wrap(const ErrorState(title: '加载失败')));
       await tester.pumpAndSettle();
 
       expect(find.byIcon(FluentIcons.error_badge), findsOneWidget);
@@ -80,12 +77,9 @@ void main() {
     });
 
     testWidgets('renders message when provided', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const ErrorState(
-          title: '出错了',
-          message: '网络连接超时',
-        ),
-      ));
+      await tester.pumpWidget(
+        _wrap(const ErrorState(title: '出错了', message: '网络连接超时')),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('网络连接超时'), findsOneWidget);
@@ -93,12 +87,9 @@ void main() {
 
     testWidgets('shows retry button when onRetry provided', (tester) async {
       var retried = false;
-      await tester.pumpWidget(_wrap(
-        ErrorState(
-          title: '失败',
-          onRetry: () => retried = true,
-        ),
-      ));
+      await tester.pumpWidget(
+        _wrap(ErrorState(title: '失败', onRetry: () => retried = true)),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('重试'), findsOneWidget);
@@ -109,9 +100,7 @@ void main() {
     });
 
     testWidgets('hides retry button when onRetry is null', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const ErrorState(title: '失败'),
-      ));
+      await tester.pumpWidget(_wrap(const ErrorState(title: '失败')));
       await tester.pumpAndSettle();
 
       expect(find.text('重试'), findsNothing);

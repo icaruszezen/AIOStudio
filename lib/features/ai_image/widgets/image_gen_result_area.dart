@@ -82,15 +82,14 @@ class ImageGenResultArea extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('修正后的提示词',
-                      style: theme.typography.caption?.copyWith(
-                        color: theme.accentColor,
-                      )),
-                  const SizedBox(height: 4),
-                  SelectableText(
-                    revisedPrompt,
-                    style: theme.typography.body,
+                  Text(
+                    '修正后的提示词',
+                    style: theme.typography.caption?.copyWith(
+                      color: theme.accentColor,
+                    ),
                   ),
+                  const SizedBox(height: 4),
+                  SelectableText(revisedPrompt, style: theme.typography.body),
                 ],
               ),
             ),
@@ -193,10 +192,7 @@ class ImageGenResultArea extends ConsumerWidget {
   }) {
     return Tooltip(
       message: label,
-      child: IconButton(
-        icon: Icon(icon, size: 14),
-        onPressed: onPressed,
-      ),
+      child: IconButton(icon: Icon(icon, size: 14), onPressed: onPressed),
     );
   }
 
@@ -205,9 +201,8 @@ class ImageGenResultArea extends ConsumerWidget {
       return Image.memory(
         image.bytes!,
         fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => const Center(
-          child: Icon(FluentIcons.photo2, size: 48),
-        ),
+        errorBuilder: (_, __, ___) =>
+            const Center(child: Icon(FluentIcons.photo2, size: 48)),
       );
     }
     if (image.url != null) {
@@ -221,15 +216,14 @@ class ImageGenResultArea extends ConsumerWidget {
             child: ProgressRing(
               value: progress.expectedTotalBytes != null
                   ? progress.cumulativeBytesLoaded /
-                      progress.expectedTotalBytes! *
-                      100
+                        progress.expectedTotalBytes! *
+                        100
                   : null,
             ),
           );
         },
-        errorBuilder: (_, __, ___) => const Center(
-          child: Icon(FluentIcons.photo2, size: 48),
-        ),
+        errorBuilder: (_, __, ___) =>
+            const Center(child: Icon(FluentIcons.photo2, size: 48)),
       );
     }
     return const Center(child: Icon(FluentIcons.photo2, size: 48));
@@ -258,27 +252,35 @@ class ImageGenResultArea extends ConsumerWidget {
     );
 
     if (result != null && context.mounted) {
-      final asset = await ref.read(imageGenProvider.notifier).saveToAsset(
+      final asset = await ref
+          .read(imageGenProvider.notifier)
+          .saveToAsset(
             imageIndex: imageIndex,
             projectId: result.projectId,
             name: result.name,
             tagIds: result.tagIds,
           );
       if (context.mounted) {
-        await displayInfoBar(context, builder: (ctx, close) {
-          return InfoBar(
-            title: Text(asset != null ? '已保存到资产库' : '保存失败'),
-            severity:
-                asset != null ? InfoBarSeverity.success : InfoBarSeverity.error,
-            onClose: close,
-          );
-        });
+        await displayInfoBar(
+          context,
+          builder: (ctx, close) {
+            return InfoBar(
+              title: Text(asset != null ? '已保存到资产库' : '保存失败'),
+              severity: asset != null
+                  ? InfoBarSeverity.success
+                  : InfoBarSeverity.error,
+              onClose: close,
+            );
+          },
+        );
       }
     }
   }
 
   Future<void> _copyToClipboard(
-      BuildContext context, AiGeneratedImage image) async {
+    BuildContext context,
+    AiGeneratedImage image,
+  ) async {
     String clipText;
     String infoMsg;
 
@@ -289,7 +291,9 @@ class ImageGenResultArea extends ConsumerWidget {
       try {
         _clipboardTempDir?.deleteSync(recursive: true);
       } catch (_) {}
-      _clipboardTempDir = await Directory.systemTemp.createTemp('aio_clipboard_');
+      _clipboardTempDir = await Directory.systemTemp.createTemp(
+        'aio_clipboard_',
+      );
       final tmpFile = File(p.join(_clipboardTempDir!.path, 'image.png'));
       await tmpFile.writeAsBytes(image.bytes!);
       clipText = tmpFile.path;
@@ -300,13 +304,16 @@ class ImageGenResultArea extends ConsumerWidget {
 
     await Clipboard.setData(ClipboardData(text: clipText));
     if (context.mounted) {
-      await displayInfoBar(context, builder: (ctx, close) {
-        return InfoBar(
-          title: Text(infoMsg),
-          severity: InfoBarSeverity.success,
-          onClose: close,
-        );
-      });
+      await displayInfoBar(
+        context,
+        builder: (ctx, close) {
+          return InfoBar(
+            title: Text(infoMsg),
+            severity: InfoBarSeverity.success,
+            onClose: close,
+          );
+        },
+      );
     }
   }
 
@@ -325,10 +332,12 @@ class ImageGenResultArea extends ConsumerWidget {
       if (image.bytes != null) {
         await File(savePath).writeAsBytes(image.bytes!);
       } else if (image.url != null) {
-        final dio = Dio(BaseOptions(
-          connectTimeout: AppConstants.defaultConnectTimeout,
-          receiveTimeout: AppConstants.defaultReceiveTimeout,
-        ));
+        final dio = Dio(
+          BaseOptions(
+            connectTimeout: AppConstants.defaultConnectTimeout,
+            receiveTimeout: AppConstants.defaultReceiveTimeout,
+          ),
+        );
         try {
           await dio.download(image.url!, savePath);
         } finally {
@@ -337,24 +346,30 @@ class ImageGenResultArea extends ConsumerWidget {
       }
 
       if (context.mounted) {
-        await displayInfoBar(context, builder: (ctx, close) {
-          return InfoBar(
-            title: const Text('文件已保存'),
-            severity: InfoBarSeverity.success,
-            onClose: close,
-          );
-        });
+        await displayInfoBar(
+          context,
+          builder: (ctx, close) {
+            return InfoBar(
+              title: const Text('文件已保存'),
+              severity: InfoBarSeverity.success,
+              onClose: close,
+            );
+          },
+        );
       }
     } catch (e) {
       if (context.mounted) {
         final userMsg = e is DioException ? '下载图片失败，请检查网络连接' : '保存失败，请重试';
-        await displayInfoBar(context, builder: (ctx, close) {
-          return InfoBar(
-            title: Text(userMsg),
-            severity: InfoBarSeverity.error,
-            onClose: close,
-          );
-        });
+        await displayInfoBar(
+          context,
+          builder: (ctx, close) {
+            return InfoBar(
+              title: Text(userMsg),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            );
+          },
+        );
       }
     }
   }

@@ -51,8 +51,8 @@ class ExtensionSection extends ConsumerWidget {
                       color: serverState.isLoading
                           ? AppColors.warning(b)
                           : isRunning
-                              ? AppColors.success(b)
-                              : AppColors.error(b),
+                          ? AppColors.success(b)
+                          : AppColors.error(b),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -61,8 +61,8 @@ class ExtensionSection extends ConsumerWidget {
                     serverState.isLoading
                         ? '启动中...'
                         : isRunning
-                            ? '运行中 (端口 $actualPort)'
-                            : '已停止',
+                        ? '运行中 (端口 $actualPort)'
+                        : '已停止',
                     style: theme.typography.body,
                   ),
                 ],
@@ -71,8 +71,9 @@ class ExtensionSection extends ConsumerWidget {
                 const SizedBox(height: DesignTokens.spacingSM),
                 Text(
                   '错误：${formatUserError(serverState.error!)}',
-                  style: theme.typography.body
-                      ?.copyWith(color: AppColors.error(b)),
+                  style: theme.typography.body?.copyWith(
+                    color: AppColors.error(b),
+                  ),
                 ),
               ],
               const SizedBox(height: DesignTokens.spacingLG),
@@ -88,9 +89,7 @@ class ExtensionSection extends ConsumerWidget {
                     max: 65535,
                     onChanged: (val) {
                       if (val != null) {
-                        ref
-                            .read(extensionPortProvider.notifier)
-                            .setPort(val);
+                        ref.read(extensionPortProvider.notifier).setPort(val);
                       }
                     },
                     mode: SpinButtonPlacementMode.inline,
@@ -103,9 +102,8 @@ class ExtensionSection extends ConsumerWidget {
                   title: const Text('端口已更改，需重启服务生效'),
                   severity: InfoBarSeverity.warning,
                   action: Button(
-                    onPressed: () => ref
-                        .read(extensionServerProvider.notifier)
-                        .restart(),
+                    onPressed: () =>
+                        ref.read(extensionServerProvider.notifier).restart(),
                     child: const Text('立即重启'),
                   ),
                 ),
@@ -120,7 +118,9 @@ class ExtensionSection extends ConsumerWidget {
                     width: 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color: connected ? AppColors.success(b) : AppColors.pending(b),
+                      color: connected
+                          ? AppColors.success(b)
+                          : AppColors.pending(b),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -128,7 +128,9 @@ class ExtensionSection extends ConsumerWidget {
                   Text(
                     connected ? '已连接' : '未连接',
                     style: theme.typography.body?.copyWith(
-                      color: connected ? AppColors.success(b) : AppColors.pending(b),
+                      color: connected
+                          ? AppColors.success(b)
+                          : AppColors.pending(b),
                     ),
                   ),
                 ],
@@ -197,8 +199,10 @@ class ExtensionSection extends ConsumerWidget {
                         : () {
                             final version = packageInfo.value!.version;
                             final asset = extensionAssetName(version);
-                            final fileUrl =
-                                githubReleaseAssetUrl(version, asset);
+                            final fileUrl = githubReleaseAssetUrl(
+                              version,
+                              asset,
+                            );
                             launchUrl(
                               Uri.parse(resolveGithubUrl(fileUrl, mirror)),
                             );
@@ -214,9 +218,8 @@ class ExtensionSection extends ConsumerWidget {
                   ),
                   const SizedBox(width: DesignTokens.spacingMD),
                   HyperlinkButton(
-                    onPressed: () => launchUrl(
-                      Uri.parse('$githubBaseUrl/releases'),
-                    ),
+                    onPressed: () =>
+                        launchUrl(Uri.parse('$githubBaseUrl/releases')),
                     child: const Text('所有版本'),
                   ),
                 ],

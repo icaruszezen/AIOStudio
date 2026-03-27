@@ -40,10 +40,23 @@ class DetailedStorageStats extends StorageStats {
 }
 
 const _imageExtensions = {
-  '.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff', '.svg',
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.gif',
+  '.webp',
+  '.bmp',
+  '.tiff',
+  '.svg',
 };
 const _videoExtensions = {
-  '.mp4', '.mov', '.avi', '.mkv', '.webm', '.flv', '.wmv',
+  '.mp4',
+  '.mov',
+  '.avi',
+  '.mkv',
+  '.webm',
+  '.flv',
+  '.wmv',
 };
 
 class LocalStorageService {
@@ -59,7 +72,9 @@ class LocalStorageService {
   /// underscore, hyphen) to prevent path-traversal attacks.
   static void _validateId(String id) {
     if (id.isEmpty || !_safeIdPattern.hasMatch(id)) {
-      throw ArgumentError('Invalid id (must be alphanumeric/hyphen/underscore): $id');
+      throw ArgumentError(
+        'Invalid id (must be alphanumeric/hyphen/underscore): $id',
+      );
     }
   }
 
@@ -122,8 +137,10 @@ class LocalStorageService {
 
     final stat = await file.stat();
     if (stat.size > _maxThumbnailSourceBytes) {
-      _log.w('Skipping thumbnail for oversized file '
-          '(${stat.size} bytes): $imagePath');
+      _log.w(
+        'Skipping thumbnail for oversized file '
+        '(${stat.size} bytes): $imagePath',
+      );
       return null;
     }
 
@@ -174,14 +191,15 @@ class LocalStorageService {
           .timeout(const Duration(seconds: 8));
 
       final tenPercent = (duration.inMilliseconds * 0.1).round();
-      final seekMs = tenPercent.clamp(2000, 30000).clamp(0, duration.inMilliseconds);
+      final seekMs = tenPercent
+          .clamp(2000, 30000)
+          .clamp(0, duration.inMilliseconds);
       await player.seek(Duration(milliseconds: seekMs));
 
       // Give the decoder a moment to render the seeked frame.
       await Future<void>.delayed(const Duration(milliseconds: 500));
 
-      final Uint8List? bytes =
-          await player.screenshot(format: 'image/jpeg');
+      final Uint8List? bytes = await player.screenshot(format: 'image/jpeg');
       if (bytes == null || bytes.isEmpty) {
         _log.w('Video screenshot returned null for $videoPath');
         return null;
@@ -206,7 +224,9 @@ class LocalStorageService {
     final canonicalRoot = p.canonicalize(root.path);
     final canonicalFile = p.canonicalize(filePath);
     if (!p.isWithin(canonicalRoot, canonicalFile)) {
-      _log.w('Blocked attempt to delete file outside data directory: $filePath');
+      _log.w(
+        'Blocked attempt to delete file outside data directory: $filePath',
+      );
       return;
     }
     final file = File(filePath);
@@ -320,6 +340,6 @@ class LocalStorageService {
     }
 
     await oldDir.delete(recursive: true);
-    _log.i('Migrated ${ files.length} files from $oldRoot to $newRoot');
+    _log.i('Migrated ${files.length} files from $oldRoot to $newRoot');
   }
 }

@@ -46,9 +46,10 @@ class _TextPreviewWidgetState extends State<TextPreviewWidget> {
     try {
       final file = File(widget.filePath);
       final lines = <String>[];
-      final stream = file.openRead().transform(utf8.decoder).transform(
-            const LineSplitter(),
-          );
+      final stream = file
+          .openRead()
+          .transform(utf8.decoder)
+          .transform(const LineSplitter());
       await for (final line in stream) {
         lines.add(line);
         if (lines.length >= _maxLines + 1) break;
@@ -76,14 +77,20 @@ class _TextPreviewWidgetState extends State<TextPreviewWidget> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(FluentIcons.error_badge,
-                size: 48, color: theme.resources.textFillColorSecondary),
+            Icon(
+              FluentIcons.error_badge,
+              size: 48,
+              color: theme.resources.textFillColorSecondary,
+            ),
             const SizedBox(height: 8),
             Text('无法读取文件', style: theme.typography.body),
             const SizedBox(height: 4),
-            Text(_error!,
-                style: theme.typography.caption
-                    ?.copyWith(color: theme.resources.textFillColorSecondary)),
+            Text(
+              _error!,
+              style: theme.typography.caption?.copyWith(
+                color: theme.resources.textFillColorSecondary,
+              ),
+            ),
           ],
         ),
       );
@@ -97,25 +104,30 @@ class _TextPreviewWidgetState extends State<TextPreviewWidget> {
           decoration: BoxDecoration(
             color: theme.resources.cardBackgroundFillColorDefault,
             border: Border(
-              bottom:
-                  BorderSide(color: theme.resources.cardStrokeColorDefault),
+              bottom: BorderSide(color: theme.resources.cardStrokeColorDefault),
             ),
           ),
           child: Row(
             children: [
-              Icon(FluentIcons.text_document,
-                  size: 14, color: theme.resources.textFillColorSecondary),
+              Icon(
+                FluentIcons.text_document,
+                size: 14,
+                color: theme.resources.textFillColorSecondary,
+              ),
               const SizedBox(width: 8),
               Text(
                 _truncated ? '超过 $_maxLines 行' : '$_totalLines 行',
-                style: theme.typography.caption
-                    ?.copyWith(color: theme.resources.textFillColorSecondary),
+                style: theme.typography.caption?.copyWith(
+                  color: theme.resources.textFillColorSecondary,
+                ),
               ),
               if (_truncated) ...[
                 const SizedBox(width: 8),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: theme.accentColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),

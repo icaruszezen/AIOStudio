@@ -49,8 +49,9 @@ class AssetFilterState {
   }) {
     return AssetFilterState(
       typeFilter: typeFilter != null ? typeFilter() : this.typeFilter,
-      projectFilter:
-          projectFilter != null ? projectFilter() : this.projectFilter,
+      projectFilter: projectFilter != null
+          ? projectFilter()
+          : this.projectFilter,
       tagFilters: tagFilters ?? this.tagFilters,
       sortField: sortField ?? this.sortField,
       sortAscending: sortAscending ?? this.sortAscending,
@@ -74,14 +75,14 @@ class AssetFilterState {
 
   @override
   int get hashCode => Object.hash(
-        typeFilter,
-        projectFilter,
-        Object.hashAll(tagFilters.toList()..sort()),
-        sortField,
-        sortAscending,
-        searchQuery,
-        viewMode,
-      );
+    typeFilter,
+    projectFilter,
+    Object.hashAll(tagFilters.toList()..sort()),
+    sortField,
+    sortAscending,
+    searchQuery,
+    viewMode,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -90,8 +91,8 @@ class AssetFilterState {
 
 final assetFilterProvider =
     NotifierProvider<AssetFilterNotifier, AssetFilterState>(
-  AssetFilterNotifier.new,
-);
+      AssetFilterNotifier.new,
+    );
 
 class AssetFilterNotifier extends Notifier<AssetFilterState> {
   Timer? _debounce;
@@ -150,21 +151,15 @@ class AssetFilterNotifier extends Notifier<AssetFilterState> {
 // ---------------------------------------------------------------------------
 
 final filteredAssetsProvider = StreamProvider.autoDispose<List<Asset>>((ref) {
-  final typeFilter = ref.watch(
-    assetFilterProvider.select((s) => s.typeFilter),
-  );
+  final typeFilter = ref.watch(assetFilterProvider.select((s) => s.typeFilter));
   final projectFilter = ref.watch(
     assetFilterProvider.select((s) => s.projectFilter),
   );
-  final tagFilters = ref.watch(
-    assetFilterProvider.select((s) => s.tagFilters),
-  );
+  final tagFilters = ref.watch(assetFilterProvider.select((s) => s.tagFilters));
   final searchQuery = ref.watch(
     assetFilterProvider.select((s) => s.searchQuery),
   );
-  final sortField = ref.watch(
-    assetFilterProvider.select((s) => s.sortField),
-  );
+  final sortField = ref.watch(assetFilterProvider.select((s) => s.sortField));
   final sortAscending = ref.watch(
     assetFilterProvider.select((s) => s.sortAscending),
   );

@@ -113,9 +113,8 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
     final asyncProject = ref.watch(projectDetailProvider(widget.projectId));
 
     return asyncProject.when(
-      loading: () => const ScaffoldPage(
-        content: LoadingIndicator(message: '加载项目详情...'),
-      ),
+      loading: () =>
+          const ScaffoldPage(content: LoadingIndicator(message: '加载项目详情...')),
       error: (e, _) => ScaffoldPage(
         content: Center(
           child: InfoBar(
@@ -171,9 +170,7 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
           ),
           _buildHeader(theme, project),
           const Divider(),
-          Expanded(
-            child: _buildTabView(theme, project),
-          ),
+          Expanded(child: _buildTabView(theme, project)),
         ],
       ),
     );
@@ -309,12 +306,18 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
       tabs: [
         Tab(
           text: const Text('资产'),
-          icon: const Icon(FluentIcons.photo_collection, size: DesignTokens.iconSM),
+          icon: const Icon(
+            FluentIcons.photo_collection,
+            size: DesignTokens.iconSM,
+          ),
           body: ProjectAssetsTab(projectId: project.id),
         ),
         Tab(
           text: const Text('提示词'),
-          icon: const Icon(FluentIcons.text_document, size: DesignTokens.iconSM),
+          icon: const Icon(
+            FluentIcons.text_document,
+            size: DesignTokens.iconSM,
+          ),
           body: ProjectPromptsTab(projectId: project.id),
         ),
         Tab(
@@ -392,7 +395,6 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
       },
     );
   }
-
 }
 
 class _StatCard extends StatelessWidget {
@@ -428,7 +430,11 @@ class _StatCard extends StatelessWidget {
                     color: accentColor.withValues(alpha: 0.12),
                     borderRadius: DesignTokens.borderRadiusMD,
                   ),
-                  child: Icon(icon, size: DesignTokens.iconMD, color: accentColor),
+                  child: Icon(
+                    icon,
+                    size: DesignTokens.iconMD,
+                    color: accentColor,
+                  ),
                 ),
                 const Spacer(),
               ],

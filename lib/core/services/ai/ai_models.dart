@@ -53,8 +53,8 @@ class AiModelInfo {
   int get hashCode => id.hashCode;
 
   bool get isChatModel => mode == 'chat' || mode == 'responses';
-  bool get isImageModel => mode == 'image_generation' ||
-      outputModalities.contains('image');
+  bool get isImageModel =>
+      mode == 'image_generation' || outputModalities.contains('image');
   bool get isVideoModel => mode == 'video_generation';
   bool get isEmbeddingModel => mode == 'embedding';
   bool get isAudioModel =>
@@ -103,7 +103,8 @@ class AiModelInfo {
       supportsWebSearch: supportsWebSearch ?? this.supportsWebSearch,
       supportsAudioInput: supportsAudioInput ?? this.supportsAudioInput,
       supportsAudioOutput: supportsAudioOutput ?? this.supportsAudioOutput,
-      supportsParallelFunctionCalling: supportsParallelFunctionCalling ??
+      supportsParallelFunctionCalling:
+          supportsParallelFunctionCalling ??
           this.supportsParallelFunctionCalling,
       supportsPromptCaching:
           supportsPromptCaching ?? this.supportsPromptCaching,
@@ -114,84 +115,77 @@ class AiModelInfo {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        if (contextWindow != null) 'context_window': contextWindow,
-        if (maxOutputTokens != null) 'max_output_tokens': maxOutputTokens,
-        'mode': mode,
-        'input_modalities': inputModalities,
-        'output_modalities': outputModalities,
-        'supports_vision': supportsVision,
-        'supports_function_calling': supportsFunctionCalling,
-        'supports_reasoning': supportsReasoning,
-        'supports_response_schema': supportsResponseSchema,
-        'supports_web_search': supportsWebSearch,
-        'supports_audio_input': supportsAudioInput,
-        'supports_audio_output': supportsAudioOutput,
-        'supports_parallel_function_calling': supportsParallelFunctionCalling,
-        'supports_prompt_caching': supportsPromptCaching,
-        'supports_system_messages': supportsSystemMessages,
-        'is_enabled': isEnabled,
-      };
+    'id': id,
+    if (contextWindow != null) 'context_window': contextWindow,
+    if (maxOutputTokens != null) 'max_output_tokens': maxOutputTokens,
+    'mode': mode,
+    'input_modalities': inputModalities,
+    'output_modalities': outputModalities,
+    'supports_vision': supportsVision,
+    'supports_function_calling': supportsFunctionCalling,
+    'supports_reasoning': supportsReasoning,
+    'supports_response_schema': supportsResponseSchema,
+    'supports_web_search': supportsWebSearch,
+    'supports_audio_input': supportsAudioInput,
+    'supports_audio_output': supportsAudioOutput,
+    'supports_parallel_function_calling': supportsParallelFunctionCalling,
+    'supports_prompt_caching': supportsPromptCaching,
+    'supports_system_messages': supportsSystemMessages,
+    'is_enabled': isEnabled,
+  };
 
   factory AiModelInfo.fromJson(Map<String, dynamic> json) => AiModelInfo(
-        id: json['id'] as String,
-        contextWindow: json['context_window'] as int?,
-        maxOutputTokens: json['max_output_tokens'] as int?,
-        mode: json['mode'] as String? ?? 'chat',
-        inputModalities: (json['input_modalities'] as List<dynamic>?)
-                ?.cast<String>() ??
-            const ['text'],
-        outputModalities: (json['output_modalities'] as List<dynamic>?)
-                ?.cast<String>() ??
-            const ['text'],
-        supportsVision: json['supports_vision'] as bool? ?? false,
-        supportsFunctionCalling:
-            json['supports_function_calling'] as bool? ?? false,
-        supportsReasoning: json['supports_reasoning'] as bool? ?? false,
-        supportsResponseSchema:
-            json['supports_response_schema'] as bool? ?? false,
-        supportsWebSearch: json['supports_web_search'] as bool? ?? false,
-        supportsAudioInput: json['supports_audio_input'] as bool? ?? false,
-        supportsAudioOutput: json['supports_audio_output'] as bool? ?? false,
-        supportsParallelFunctionCalling:
-            json['supports_parallel_function_calling'] as bool? ?? false,
-        supportsPromptCaching:
-            json['supports_prompt_caching'] as bool? ?? false,
-        supportsSystemMessages:
-            json['supports_system_messages'] as bool? ?? false,
-        isEnabled: json['is_enabled'] as bool? ?? true,
-      );
+    id: json['id'] as String,
+    contextWindow: json['context_window'] as int?,
+    maxOutputTokens: json['max_output_tokens'] as int?,
+    mode: json['mode'] as String? ?? 'chat',
+    inputModalities:
+        (json['input_modalities'] as List<dynamic>?)?.cast<String>() ??
+        const ['text'],
+    outputModalities:
+        (json['output_modalities'] as List<dynamic>?)?.cast<String>() ??
+        const ['text'],
+    supportsVision: json['supports_vision'] as bool? ?? false,
+    supportsFunctionCalling:
+        json['supports_function_calling'] as bool? ?? false,
+    supportsReasoning: json['supports_reasoning'] as bool? ?? false,
+    supportsResponseSchema: json['supports_response_schema'] as bool? ?? false,
+    supportsWebSearch: json['supports_web_search'] as bool? ?? false,
+    supportsAudioInput: json['supports_audio_input'] as bool? ?? false,
+    supportsAudioOutput: json['supports_audio_output'] as bool? ?? false,
+    supportsParallelFunctionCalling:
+        json['supports_parallel_function_calling'] as bool? ?? false,
+    supportsPromptCaching: json['supports_prompt_caching'] as bool? ?? false,
+    supportsSystemMessages: json['supports_system_messages'] as bool? ?? false,
+    isEnabled: json['is_enabled'] as bool? ?? true,
+  );
 
   /// Create from registry capability data (without an explicit id in the map).
-  factory AiModelInfo.fromCapability(
-      String modelId, Map<String, dynamic> cap) {
+  factory AiModelInfo.fromCapability(String modelId, Map<String, dynamic> cap) {
     return AiModelInfo(
       id: modelId,
       contextWindow: cap['max_input_tokens'] as int?,
       maxOutputTokens: cap['max_output_tokens'] as int?,
       mode: cap['mode'] as String? ?? 'chat',
-      inputModalities: (cap['supported_modalities'] as List<dynamic>?)
-              ?.cast<String>() ??
+      inputModalities:
+          (cap['supported_modalities'] as List<dynamic>?)?.cast<String>() ??
           const ['text'],
       outputModalities:
           (cap['supported_output_modalities'] as List<dynamic>?)
-                  ?.cast<String>() ??
-              const ['text'],
+              ?.cast<String>() ??
+          const ['text'],
       supportsVision: cap['supports_vision'] as bool? ?? false,
       supportsFunctionCalling:
           cap['supports_function_calling'] as bool? ?? false,
       supportsReasoning: cap['supports_reasoning'] as bool? ?? false,
-      supportsResponseSchema:
-          cap['supports_response_schema'] as bool? ?? false,
+      supportsResponseSchema: cap['supports_response_schema'] as bool? ?? false,
       supportsWebSearch: cap['supports_web_search'] as bool? ?? false,
       supportsAudioInput: cap['supports_audio_input'] as bool? ?? false,
       supportsAudioOutput: cap['supports_audio_output'] as bool? ?? false,
       supportsParallelFunctionCalling:
           cap['supports_parallel_function_calling'] as bool? ?? false,
-      supportsPromptCaching:
-          cap['supports_prompt_caching'] as bool? ?? false,
-      supportsSystemMessages:
-          cap['supports_system_messages'] as bool? ?? false,
+      supportsPromptCaching: cap['supports_prompt_caching'] as bool? ?? false,
+      supportsSystemMessages: cap['supports_system_messages'] as bool? ?? false,
     );
   }
 }
@@ -211,22 +205,22 @@ class AiChatMessage {
   });
 
   Map<String, dynamic> toJson() => {
-        'role': role,
-        'content': content,
-        if (imageUrls != null) 'image_urls': imageUrls,
-        'timestamp': timestamp.toIso8601String(),
-      };
+    'role': role,
+    'content': content,
+    if (imageUrls != null) 'image_urls': imageUrls,
+    'timestamp': timestamp.toIso8601String(),
+  };
 
   factory AiChatMessage.fromJson(Map<String, dynamic> json) => AiChatMessage(
-        role: json['role'] as String,
-        content: json['content'] as String,
-        imageUrls: (json['image_urls'] as List<dynamic>?)
-            ?.map((e) => e as String)
-            .toList(),
-        timestamp: json['timestamp'] != null
-            ? DateTime.parse(json['timestamp'] as String)
-            : DateTime.now(),
-      );
+    role: json['role'] as String,
+    content: json['content'] as String,
+    imageUrls: (json['image_urls'] as List<dynamic>?)
+        ?.map((e) => e as String)
+        .toList(),
+    timestamp: json['timestamp'] != null
+        ? DateTime.parse(json['timestamp'] as String)
+        : DateTime.now(),
+  );
 }
 
 /// Request payload for chat completion: messages, model, sampling, and stream flag.
@@ -246,12 +240,12 @@ class AiChatRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'messages': messages.map((m) => m.toJson()).toList(),
-        'model': model,
-        'temperature': temperature,
-        if (maxTokens != null) 'max_tokens': maxTokens,
-        'stream': stream,
-      };
+    'messages': messages.map((m) => m.toJson()).toList(),
+    'model': model,
+    'temperature': temperature,
+    if (maxTokens != null) 'max_tokens': maxTokens,
+    'stream': stream,
+  };
 }
 
 /// Assistant reply plus token usage from a completed chat call.
@@ -282,14 +276,14 @@ class AiChatResponse {
   }
 
   Map<String, dynamic> toJson() => {
-        'content': content,
-        'model': model,
-        'usage': {
-          'prompt_tokens': promptTokens,
-          'completion_tokens': completionTokens,
-          'total_tokens': totalTokens,
-        },
-      };
+    'content': content,
+    'model': model,
+    'usage': {
+      'prompt_tokens': promptTokens,
+      'completion_tokens': completionTokens,
+      'total_tokens': totalTokens,
+    },
+  };
 }
 
 /// Image generation input: prompt, model, size, count, and optional tuning fields.
@@ -321,18 +315,18 @@ class AiImageRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'prompt': prompt,
-        if (negativePrompt != null) 'negative_prompt': negativePrompt,
-        'model': model,
-        'width': width,
-        'height': height,
-        'count': count,
-        if (style != null) 'style': style,
-        if (quality != null) 'quality': quality,
-        if (cfgScale != null) 'cfg_scale': cfgScale,
-        if (steps != null) 'steps': steps,
-        if (seed != null) 'seed': seed,
-      };
+    'prompt': prompt,
+    if (negativePrompt != null) 'negative_prompt': negativePrompt,
+    'model': model,
+    'width': width,
+    'height': height,
+    'count': count,
+    if (style != null) 'style': style,
+    if (quality != null) 'quality': quality,
+    if (cfgScale != null) 'cfg_scale': cfgScale,
+    if (steps != null) 'steps': steps,
+    if (seed != null) 'seed': seed,
+  };
 }
 
 /// One generated image as a URL, base64 payload, and/or provider-revised prompt.
@@ -359,10 +353,10 @@ class AiGeneratedImage {
   }
 
   Map<String, dynamic> toJson() => {
-        if (url != null) 'url': url,
-        if (base64 != null) 'b64_json': base64,
-        if (revisedPrompt != null) 'revised_prompt': revisedPrompt,
-      };
+    if (url != null) 'url': url,
+    if (base64 != null) 'b64_json': base64,
+    if (revisedPrompt != null) 'revised_prompt': revisedPrompt,
+  };
 }
 
 /// Batch result wrapping a list of [AiGeneratedImage] entries.
@@ -381,8 +375,8 @@ class AiImageResponse {
   }
 
   Map<String, dynamic> toJson() => {
-        'data': images.map((i) => i.toJson()).toList(),
-      };
+    'data': images.map((i) => i.toJson()).toList(),
+  };
 }
 
 /// Video generation input: prompt, model, dimensions, duration, optional image-to-video URL.
@@ -404,13 +398,13 @@ class AiVideoRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'prompt': prompt,
-        'model': model,
-        'width': width,
-        'height': height,
-        'duration': duration,
-        if (imageUrl != null) 'image_url': imageUrl,
-      };
+    'prompt': prompt,
+    'model': model,
+    'width': width,
+    'height': height,
+    'duration': duration,
+    if (imageUrl != null) 'image_url': imageUrl,
+  };
 }
 
 /// Video job outcome: playable URL, async task id, status, and optional error text.
@@ -432,14 +426,14 @@ class AiVideoResponse {
         videoUrl: json['video_url'] as String?,
         taskId: json['task_id'] as String?,
         status: json['status'] as String? ?? 'unknown',
-        errorMessage: json['error_message'] as String? ??
-            json['error'] as String?,
+        errorMessage:
+            json['error_message'] as String? ?? json['error'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
-        if (videoUrl != null) 'video_url': videoUrl,
-        if (taskId != null) 'task_id': taskId,
-        'status': status,
-        if (errorMessage != null) 'error_message': errorMessage,
-      };
+    if (videoUrl != null) 'video_url': videoUrl,
+    if (taskId != null) 'task_id': taskId,
+    'status': status,
+    if (errorMessage != null) 'error_message': errorMessage,
+  };
 }

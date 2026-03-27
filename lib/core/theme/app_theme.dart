@@ -10,8 +10,9 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError('sharedPreferencesProvider must be overridden');
 });
 
-final themeNotifierProvider =
-    NotifierProvider<ThemeNotifier, ThemeMode>(ThemeNotifier.new);
+final themeNotifierProvider = NotifierProvider<ThemeNotifier, ThemeMode>(
+  ThemeNotifier.new,
+);
 
 class ThemeNotifier extends Notifier<ThemeMode> {
   @override
@@ -148,13 +149,13 @@ class AppTheme {
         : Colors.white;
 
     TextStyle base(double size, FontWeight weight, double height) => TextStyle(
-          fontFamily: DesignTokens.fontFamily,
-          fontFamilyFallback: DesignTokens.fontFallback,
-          fontSize: size,
-          fontWeight: weight,
-          height: height,
-          color: color,
-        );
+      fontFamily: DesignTokens.fontFamily,
+      fontFamilyFallback: DesignTokens.fontFallback,
+      fontSize: size,
+      fontWeight: weight,
+      height: height,
+      color: color,
+    );
 
     return Typography.raw(
       display: base(68, FontWeight.w600, 1.3),
@@ -191,10 +192,7 @@ class AppTheme {
     return _cachedLight!;
   }
 
-  static FluentThemeData dark(
-    AccentColor? accent, {
-    bool transparent = false,
-  }) {
+  static FluentThemeData dark(AccentColor? accent, {bool transparent = false}) {
     final effective = accent ?? Colors.blue;
     if (_cachedDark != null &&
         _cachedDarkAccent == effective &&

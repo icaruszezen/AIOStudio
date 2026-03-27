@@ -47,24 +47,24 @@ class ModelCapabilityPreset {
   });
 
   AiModelInfo apply(String modelId, {bool isEnabled = true}) => AiModelInfo(
-        id: modelId,
-        contextWindow: contextWindow,
-        maxOutputTokens: maxOutputTokens,
-        mode: mode,
-        inputModalities: inputModalities,
-        outputModalities: outputModalities,
-        supportsVision: supportsVision,
-        supportsFunctionCalling: supportsFunctionCalling,
-        supportsReasoning: supportsReasoning,
-        supportsResponseSchema: supportsResponseSchema,
-        supportsWebSearch: supportsWebSearch,
-        supportsAudioInput: supportsAudioInput,
-        supportsAudioOutput: supportsAudioOutput,
-        supportsParallelFunctionCalling: supportsParallelFunctionCalling,
-        supportsPromptCaching: supportsPromptCaching,
-        supportsSystemMessages: supportsSystemMessages,
-        isEnabled: isEnabled,
-      );
+    id: modelId,
+    contextWindow: contextWindow,
+    maxOutputTokens: maxOutputTokens,
+    mode: mode,
+    inputModalities: inputModalities,
+    outputModalities: outputModalities,
+    supportsVision: supportsVision,
+    supportsFunctionCalling: supportsFunctionCalling,
+    supportsReasoning: supportsReasoning,
+    supportsResponseSchema: supportsResponseSchema,
+    supportsWebSearch: supportsWebSearch,
+    supportsAudioInput: supportsAudioInput,
+    supportsAudioOutput: supportsAudioOutput,
+    supportsParallelFunctionCalling: supportsParallelFunctionCalling,
+    supportsPromptCaching: supportsPromptCaching,
+    supportsSystemMessages: supportsSystemMessages,
+    isEnabled: isEnabled,
+  );
 }
 
 class ModelCapabilityPresets {

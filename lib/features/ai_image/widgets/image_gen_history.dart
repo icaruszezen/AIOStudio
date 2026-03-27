@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/ai/ai_models.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../shared/utils/format_utils.dart';
 import '../../../shared/utils/error_utils.dart';
+import '../../../shared/utils/format_utils.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../providers/image_gen_provider.dart';
@@ -100,8 +100,11 @@ class _HistoryCardState extends ConsumerState<_HistoryCard> {
                   Tooltip(
                     message: '删除',
                     child: IconButton(
-                      icon: Icon(FluentIcons.delete, size: 14,
-                          color: AppColors.error(theme.brightness)),
+                      icon: Icon(
+                        FluentIcons.delete,
+                        size: 14,
+                        color: AppColors.error(theme.brightness),
+                      ),
                       onPressed: () => _confirmDelete(context, task),
                     ),
                   ),
@@ -130,7 +133,9 @@ class _HistoryCardState extends ConsumerState<_HistoryCard> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppColors.error(theme.brightness).withValues(alpha: 0.1),
+                          color: AppColors.error(
+                            theme.brightness,
+                          ).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -195,10 +200,17 @@ class _HistoryCardState extends ConsumerState<_HistoryCard> {
   Widget _statusIcon(String status, FluentThemeData theme) {
     switch (status) {
       case 'completed':
-        return Icon(FluentIcons.completed_solid,
-            size: 16, color: AppColors.success(theme.brightness));
+        return Icon(
+          FluentIcons.completed_solid,
+          size: 16,
+          color: AppColors.success(theme.brightness),
+        );
       case 'failed':
-        return Icon(FluentIcons.error_badge, size: 16, color: AppColors.error(theme.brightness));
+        return Icon(
+          FluentIcons.error_badge,
+          size: 16,
+          color: AppColors.error(theme.brightness),
+        );
       case 'running':
         return const SizedBox(
           width: 16,
@@ -206,20 +218,24 @@ class _HistoryCardState extends ConsumerState<_HistoryCard> {
           child: ProgressRing(strokeWidth: 2),
         );
       case 'cancelled':
-        return Icon(FluentIcons.blocked2, size: 16,
-            color: theme.resources.textFillColorSecondary);
+        return Icon(
+          FluentIcons.blocked2,
+          size: 16,
+          color: theme.resources.textFillColorSecondary,
+        );
       default:
-        return Icon(FluentIcons.clock,
-            size: 16, color: theme.resources.textFillColorSecondary);
+        return Icon(
+          FluentIcons.clock,
+          size: 16,
+          color: theme.resources.textFillColorSecondary,
+        );
     }
   }
 
   String _formatParams(String paramsJson) {
     try {
       final params = jsonDecode(paramsJson) as Map<String, dynamic>;
-      return params.entries
-          .map((e) => '${e.key}: ${e.value}')
-          .join(' · ');
+      return params.entries.map((e) => '${e.key}: ${e.value}').join(' · ');
     } catch (_) {
       return paramsJson;
     }
@@ -244,9 +260,9 @@ class _HistoryCardState extends ConsumerState<_HistoryCard> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: FluentTheme.of(context)
-                      .resources
-                      .cardStrokeColorDefault,
+                  color: FluentTheme.of(
+                    context,
+                  ).resources.cardStrokeColorDefault,
                 ),
               ),
               clipBehavior: Clip.antiAlias,

@@ -61,8 +61,8 @@ class _AssetGridItemState extends State<AssetGridItem> {
                 color: widget.isSelected
                     ? theme.accentColor
                     : _isHovered
-                        ? theme.accentColor.withValues(alpha: 0.4)
-                        : theme.resources.cardStrokeColorDefault,
+                    ? theme.accentColor.withValues(alpha: 0.4)
+                    : theme.resources.cardStrokeColorDefault,
                 width: widget.isSelected ? 2 : 1,
               ),
               boxShadow: _isHovered
@@ -137,5 +137,4 @@ class _AssetGridItemState extends State<AssetGridItem> {
       onDelete: widget.onDelete,
     );
   }
-
 }

@@ -4,10 +4,7 @@ import '../../core/theme/design_tokens.dart';
 
 /// Centered progress ring for async or loading UI, with an optional status message.
 class LoadingIndicator extends StatelessWidget {
-  const LoadingIndicator({
-    super.key,
-    this.message,
-  });
+  const LoadingIndicator({super.key, this.message});
 
   final String? message;
 

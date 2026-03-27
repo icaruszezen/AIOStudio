@@ -12,9 +12,9 @@ enum ChatRole {
   String toJson() => name;
 
   static ChatRole fromJson(String value) => ChatRole.values.firstWhere(
-        (e) => e.name == value,
-        orElse: () => ChatRole.user,
-      );
+    (e) => e.name == value,
+    orElse: () => ChatRole.user,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -87,30 +87,30 @@ class ChatMessage {
       Object.hash(id, content, isStreaming, error, completionTokens);
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'role': role.toJson(),
-        'content': content,
-        if (imagePaths != null) 'imagePaths': imagePaths,
-        if (promptTokens != null) 'promptTokens': promptTokens,
-        if (completionTokens != null) 'completionTokens': completionTokens,
-        'timestamp': timestamp.toIso8601String(),
-        if (error != null) 'error': error,
-      };
+    'id': id,
+    'role': role.toJson(),
+    'content': content,
+    if (imagePaths != null) 'imagePaths': imagePaths,
+    if (promptTokens != null) 'promptTokens': promptTokens,
+    if (completionTokens != null) 'completionTokens': completionTokens,
+    'timestamp': timestamp.toIso8601String(),
+    if (error != null) 'error': error,
+  };
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
-        id: json['id'] as String,
-        role: ChatRole.fromJson(json['role'] as String? ?? 'user'),
-        content: json['content'] as String? ?? '',
-        imagePaths: (json['imagePaths'] as List<dynamic>?)
-            ?.map((e) => e as String)
-            .toList(),
-        promptTokens: json['promptTokens'] as int?,
-        completionTokens: json['completionTokens'] as int?,
-        timestamp: json['timestamp'] != null
-            ? DateTime.parse(json['timestamp'] as String)
-            : DateTime.now(),
-        error: json['error'] as String?,
-      );
+    id: json['id'] as String,
+    role: ChatRole.fromJson(json['role'] as String? ?? 'user'),
+    content: json['content'] as String? ?? '',
+    imagePaths: (json['imagePaths'] as List<dynamic>?)
+        ?.map((e) => e as String)
+        .toList(),
+    promptTokens: json['promptTokens'] as int?,
+    completionTokens: json['completionTokens'] as int?,
+    timestamp: json['timestamp'] != null
+        ? DateTime.parse(json['timestamp'] as String)
+        : DateTime.now(),
+    error: json['error'] as String?,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -136,9 +136,9 @@ class Conversation {
     List<ChatMessage>? messages,
     DateTime? createdAt,
     DateTime? updatedAt,
-  })  : messages = messages ?? const [],
-        createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+  }) : messages = messages ?? const [],
+       createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now();
 
   ChatMessage? get lastMessage => messages.isEmpty ? null : messages.last;
 
@@ -157,8 +157,9 @@ class Conversation {
       title: title ?? this.title,
       providerId: providerId ?? this.providerId,
       model: model ?? this.model,
-      systemPrompt:
-          clearSystemPrompt ? null : (systemPrompt ?? this.systemPrompt),
+      systemPrompt: clearSystemPrompt
+          ? null
+          : (systemPrompt ?? this.systemPrompt),
       messages: messages ?? this.messages,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -178,30 +179,30 @@ class Conversation {
   int get hashCode => Object.hash(id, title, updatedAt, messages.length);
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'providerId': providerId,
-        'model': model,
-        if (systemPrompt != null) 'systemPrompt': systemPrompt,
-        'messages': messages.map((m) => m.toJson()).toList(),
-        'createdAt': createdAt.toIso8601String(),
-        'updatedAt': updatedAt.toIso8601String(),
-      };
+    'id': id,
+    'title': title,
+    'providerId': providerId,
+    'model': model,
+    if (systemPrompt != null) 'systemPrompt': systemPrompt,
+    'messages': messages.map((m) => m.toJson()).toList(),
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+  };
 
   factory Conversation.fromJson(Map<String, dynamic> json) => Conversation(
-        id: json['id'] as String,
-        title: json['title'] as String,
-        providerId: json['providerId'] as String,
-        model: json['model'] as String,
-        systemPrompt: json['systemPrompt'] as String?,
-        messages: (json['messages'] as List<dynamic>?)
-                ?.map(
-                    (e) => ChatMessage.fromJson(e as Map<String, dynamic>))
-                .toList() ??
-            [],
-        createdAt: DateTime.parse(json['createdAt'] as String),
-        updatedAt: DateTime.parse(json['updatedAt'] as String),
-      );
+    id: json['id'] as String,
+    title: json['title'] as String,
+    providerId: json['providerId'] as String,
+    model: json['model'] as String,
+    systemPrompt: json['systemPrompt'] as String?,
+    messages:
+        (json['messages'] as List<dynamic>?)
+            ?.map((e) => ChatMessage.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        [],
+    createdAt: DateTime.parse(json['createdAt'] as String),
+    updatedAt: DateTime.parse(json['updatedAt'] as String),
+  );
 
   String toJsonString() => jsonEncode(toJson());
 
@@ -240,10 +241,7 @@ class SelectedModel {
 
   String get storageKey => '$providerId::$modelId';
 
-  factory SelectedModel.fromStorageKey(
-    String key,
-    String providerName,
-  ) {
+  factory SelectedModel.fromStorageKey(String key, String providerName) {
     final sep = key.indexOf('::');
     if (sep < 0) {
       return SelectedModel(
