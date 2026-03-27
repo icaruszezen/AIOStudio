@@ -78,6 +78,8 @@ msix_config:
   msix_version: 1.0.7.0
   logo_path: assets/logo.png
   capabilities: internetClient, internetClientServer
+  # CI (GitHub Actions) is non-interactive; default cert install prompts/fails.
+  install_certificate: false
 
 flutter:
   generate: true
