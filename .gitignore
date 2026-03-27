@@ -119,6 +119,7 @@ app.*.map.json
 # =========================
 *.msix
 *.appx
+installer/Output/
 *.apk
 *.aab
 *.ipa

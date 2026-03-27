@@ -1,6 +1,6 @@
 {
   "name": "aio-studio-collector",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "private": true,
   "description": "快速保存网页图片和视频到 AIO Studio",
   "type": "module",

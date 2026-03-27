@@ -49,10 +49,20 @@ jobs:
       - run: flutter build windows --release
       - run: dart run msix:create
 
+      - name: Build Inno Setup installer
+        run: |
+          choco install innosetup -y --no-progress
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\aio_studio.iss /DAppVersion=${{ needs.validate-version.outputs.version }}
+
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: windows-release
           path: build/windows/x64/runner/Release/
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-installer
+          path: installer/Output/*.exe
 
   build-macos:
     needs: [validate-version]
@@ -231,6 +241,7 @@ jobs:
           cp "android-release/app-release.apk" "../aio-studio-android-v${VERSION}.apk"
           cp ios-release/*.ipa "../aio-studio-ios-v${VERSION}.ipa" 2>/dev/null || echo "::warning::iOS IPA not found in artifacts"
           cp "extension-release/aio-studio-extension.zip" "../aio-studio-extension-v${VERSION}.zip"
+          cp windows-installer/*.exe "../aio-studio-windows-setup-v${VERSION}.exe"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
@@ -238,6 +249,7 @@ jobs:
           name: AIO Studio v${{ needs.validate-version.outputs.version }}
           files: |
             aio-studio-windows-x64-v${{ needs.validate-version.outputs.version }}.zip
+            aio-studio-windows-setup-v${{ needs.validate-version.outputs.version }}.exe
             aio-studio-macos-v${{ needs.validate-version.outputs.version }}.zip
             aio-studio-linux-x64-v${{ needs.validate-version.outputs.version }}.tar.gz
             aio-studio-android-v${{ needs.validate-version.outputs.version }}.apk
